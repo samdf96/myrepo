@@ -9,8 +9,9 @@ Created on Fri Jan 12 05:01:24 2018
 import yt as yt
 #Loading Data from file.
 ds = yt.load("~/bigdata/data.0453.3d.hdf5")
+ds2 = yt.load("~/bigdata/chk.0453.3d.sink")
 #Printing Derived Variables to be able to use
-for i in sorted(ds.derived_field_list):
+for i in sorted(ds2.derived_field_list):
     print(i)
 
 
@@ -42,12 +43,12 @@ ds.add_field(("gas", "rms_speed"), units="cm/s", function=rms_speed)
 ad = ds.all_data()
 
 #Plotting 2D PDF
-
+'''
 plot_2D_PDF = yt.PhasePlot(ad, "density", "rms_speed", "cell_mass",
                     weight_field=None, fractional=True)
 
 plot_2D_PDF.save("2D_PDF_Density_RMS_Speed.png")
-    
+'''
 
 #Computations and Data Analysis
 '''
