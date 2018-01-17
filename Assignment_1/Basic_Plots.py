@@ -24,7 +24,21 @@ yt.SlicePlot(ds, 'x', "density").save("x_slice_plot.png")
 yt.SlicePlot(ds, 'y', "density").save("y_slice_plot.png")
 yt.SlicePlot(ds, 'z', "density").save("z_slice_plot.png")
 '''
+#Slice Plot with Velocity Vectors overlayed
+'''
+plot_vector = yt.SlicePlot(ds, 'x', "density")
+plot_vector.annotate_velocity(factor = 16)
+plot_vector.save("x_slice_plot_vector_field_overlay.png")
+'''
 
+#Slice plot with density contours overlayed
+'''
+plot_contour = yt.SlicePlot(ds, 'x', "density")
+plot_contour.annotate_contour("density")
+plot_contour.save("x_slice_plot_density_contours.png")
+'''
+
+#Projection Plots x-direction.
 '''
 #Creating Projection Plots in x-direction
 #print(sorted(ds.field_list))
@@ -44,6 +58,7 @@ def rms_speed(field, data):
 ds.add_field(("gas", "rms_speed"), units="cm/s", function=rms_speed)
 
 #Re-defining all data to include added rms_speed
+#Not sure if I need to do this.
 
 ad = ds.all_data()
 
@@ -56,11 +71,12 @@ plot_2D_PDF.save("2D_PDF_Density_RMS_Speed.png")
 '''
 
 #Plotting 1D PDF
+'''
 plot_1D_energy = yt.ProfilePlot(ad,"kinetic_energy","density")
 plot_1D_energy.save("1D_PDF_Energy.png")
 plot_1D_mass = yt.ProfilePlot(ad,"cell_mass","density")
 plot_1D_mass.save("1D_PDF_Mass.png")
-
+'''
 #Plotting Mean Velocity Projection Weighted
 '''
 plot_weighted_projection_z = yt.ProjectionPlot(ds,"z","rms_speed",weight_field="cell_mass")
@@ -77,5 +93,12 @@ plot_weighted_projection_y.save("2D_Projection_Weighted_RMS_Speed_y.png")
 #print("Total Kinetic Energy in Domain = ", ad.quantities.total_quantity([("gas", "kinetic_energy")]))
 #print("Total Momentum in x-direction in Domain = ", ad.quantities.total_quantity([("gas", "momentum_x")]))
 
+# 3D Rendering Plot just for fun
 
+#im, sc = yt.volume_render(ds, field=('gas', 'density'))
+'''
+plot_density_dusk = yt.ProjectionPlot(ds, "z", "density")
+plot_density_dusk.set_cmap(field="density", cmap='dusk')
+plot_density_dusk.save("plot_density_dusk.png")
+'''
 
