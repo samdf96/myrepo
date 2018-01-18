@@ -71,12 +71,12 @@ plot_2D_PDF.save("2D_PDF_Density_RMS_Speed.png")
 '''
 
 #Plotting 1D PDF
-'''
-plot_1D_energy = yt.ProfilePlot(ad,"kinetic_energy","density")
-plot_1D_energy.save("1D_PDF_Energy.png")
-plot_1D_mass = yt.ProfilePlot(ad,"cell_mass","density")
-plot_1D_mass.save("1D_PDF_Mass.png")
-'''
+
+plot_1D_PDF_Density = yt.ProfilePlot(ad, "density", "ones", weight_field=None)
+plot_1D_PDF_Density.save("1D_PDF_Density.png")
+plot_1D_PDF_Energy = yt.ProfilePlot(ad, "kinetic_energy", "ones", weight_field=None)
+plot_1D_PDF_Energy.save("1D_PDF_Energy.png")
+
 #Plotting Mean Velocity Projection Weighted
 '''
 plot_weighted_projection_z = yt.ProjectionPlot(ds,"z","rms_speed",weight_field="cell_mass")
