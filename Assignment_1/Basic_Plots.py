@@ -91,11 +91,11 @@ plot_weighted_projection_z.save("2D_Projection_Weighted_RMS_Velocity_z.png")
 
 #In x and y directions
 
-
+'''
 plot_weighted_projection_x = yt.ProjectionPlot(ds,"x","velocity_x",weight_field="cell_mass")
 plot_weighted_projection_x.set_cmap(field="velocity_x", cmap='bwr')
 plot_weighted_projection_x.save("2D_Projection_Weighted_RMS_Velocity_x.png")
-
+'''
 
 #Computations and Data Analysis
 
@@ -117,6 +117,17 @@ plot_density_dusk.save("plot_density_dusk.png")
 
 
 #Projection Plots of Angular Momentum
+dd = ds.sphere([0,0,0],(4,'pc'))
+dbox = ds.box([0,0,0],[5,5,5])
+
+
+z_projected_angular_momentum_x_box = yt.ProjectionPlot(ds,"z","angular_momentum_y",data_source=dbox)
+z_projected_angular_momentum_x_box.save("z_projected_angular_momentum_x_box.png")
 '''
-yt.ProjectionPlot(ds, "z", "angular_momentum_x").save("z_projected_x_angular_momentum.png")
+z_projected_angular_momentum_y = yt.ProjectionPlot(ds, "z", "angular_momentum_y",data_source=dd)
+z_projected_angular_momentum_y.set_cmap(field="angular_momentum_y", cmap='bwr')
+z_projected_angular_momentum_y.save("z_projected_angular_momentum_y.png")
+z_projected_angular_momentum_x = yt.ProjectionPlot(ds, "z", "angular_momentum_x",data_source=dd)
+z_projected_angular_momentum_x.set_cmap(field="angular_momentum_x", cmap='bwr')
+z_projected_angular_momentum_x.save("z_projected_angular_momentum_x.png")
 '''
