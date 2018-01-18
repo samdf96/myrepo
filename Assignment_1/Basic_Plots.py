@@ -90,12 +90,13 @@ plot_weighted_projection_z.save("2D_Projection_Weighted_RMS_Velocity_z.png")
 '''
 
 #In x and y directions
-'''
-plot_weighted_projection_x = yt.ProjectionPlot(ds,"x","rms_speed",weight_field="cell_mass")
-plot_weighted_projection_x.save("2D_Projection_Weighted_RMS_Speed_x.png")
-plot_weighted_projection_y = yt.ProjectionPlot(ds,"y","rms_speed",weight_field="cell_mass")
-plot_weighted_projection_y.save("2D_Projection_Weighted_RMS_Speed_y.png")
-'''
+
+
+plot_weighted_projection_x = yt.ProjectionPlot(ds,"x","velocity_x",weight_field="cell_mass")
+plot_weighted_projection_x.set_cmap(field="velocity_x", cmap='bwr')
+plot_weighted_projection_x.save("2D_Projection_Weighted_RMS_Velocity_x.png")
+
+
 #Computations and Data Analysis
 
 #Computing Total Mass in Domain
@@ -113,5 +114,9 @@ plot_density_dusk.save("plot_density_dusk.png")
 '''
 
 
+
+
 #Projection Plots of Angular Momentum
+'''
 yt.ProjectionPlot(ds, "z", "angular_momentum_x").save("z_projected_x_angular_momentum.png")
+'''
