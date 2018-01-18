@@ -44,8 +44,13 @@ plot_contour.save("x_slice_plot_density_contours.png")
 #print(sorted(ds.field_list))
 print(sorted(ds.derived_field_list))
 yt.ProjectionPlot(ds, "x", "density").save("x_mass_density_plot.png")
-yt.ProjectionPlot(ds, "x", "X-momentum").save("x_momentum_density_plot.png")
 '''
+'''
+plot_x_momentum_density = yt.ProjectionPlot(ds, "x", "X-momentum")
+plot_x_momentum_density.set_cmap(field="X-momentum", cmap='bwr')
+plot_x_momentum_density.save("x_momentum_density_plot.png")
+'''
+
 
 #Creating 1D Probability Density functions
 # Create a data object that represents the whole box.
@@ -71,16 +76,21 @@ plot_2D_PDF.save("2D_PDF_Density_RMS_Speed.png")
 '''
 
 #Plotting 1D PDF
-
+'''
 plot_1D_PDF_Density = yt.ProfilePlot(ad, "density", "ones", weight_field=None)
 plot_1D_PDF_Density.save("1D_PDF_Density.png")
 plot_1D_PDF_Energy = yt.ProfilePlot(ad, "kinetic_energy", "ones", weight_field=None)
 plot_1D_PDF_Energy.save("1D_PDF_Energy.png")
-
+'''
 #Plotting Mean Velocity Projection Weighted
 '''
-plot_weighted_projection_z = yt.ProjectionPlot(ds,"z","rms_speed",weight_field="cell_mass")
-plot_weighted_projection_z.save("2D_Projection_Weighted_RMS_Speed_z.png")
+plot_weighted_projection_z = yt.ProjectionPlot(ds,"z","velocity_z",weight_field="cell_mass")
+plot_weighted_projection_z.set_cmap(field="velocity_z", cmap='bwr')
+plot_weighted_projection_z.save("2D_Projection_Weighted_RMS_Velocity_z.png")
+'''
+
+#In x and y directions
+'''
 plot_weighted_projection_x = yt.ProjectionPlot(ds,"x","rms_speed",weight_field="cell_mass")
 plot_weighted_projection_x.save("2D_Projection_Weighted_RMS_Speed_x.png")
 plot_weighted_projection_y = yt.ProjectionPlot(ds,"y","rms_speed",weight_field="cell_mass")
@@ -102,3 +112,6 @@ plot_density_dusk.set_cmap(field="density", cmap='dusk')
 plot_density_dusk.save("plot_density_dusk.png")
 '''
 
+
+#Projection Plots of Angular Momentum
+yt.ProjectionPlot(ds, "z", "angular_momentum_x").save("z_projected_x_angular_momentum.png")
