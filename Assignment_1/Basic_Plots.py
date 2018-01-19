@@ -118,11 +118,16 @@ plot_density_dusk.save("plot_density_dusk.png")
 
 #Projection Plots of Angular Momentum
 dd = ds.sphere([0,0,0],(4,'pc'))
-dbox = ds.box([0,0,0],[5,5,5])
+dbox = ds.r[(0,'pc'):(5,'pc'), (0,'pc'):(5,'pc'), (0,'pc'):(5,'pc')]
 
-
-z_projected_angular_momentum_x_box = yt.ProjectionPlot(ds,"z","angular_momentum_y",data_source=dbox)
+#Boxed Region with area set above in dbox
+'''
+z_projected_angular_momentum_x_box = yt.ProjectionPlot(ds,"z","angular_momentum_x",data_source=dbox)
+z_projected_angular_momentum_x_box.set_cmap(field="angular_momentum_x", cmap='bwr')
 z_projected_angular_momentum_x_box.save("z_projected_angular_momentum_x_box.png")
+'''
+
+#Circular Regions with area set above in 'dd'
 '''
 z_projected_angular_momentum_y = yt.ProjectionPlot(ds, "z", "angular_momentum_y",data_source=dd)
 z_projected_angular_momentum_y.set_cmap(field="angular_momentum_y", cmap='bwr')
