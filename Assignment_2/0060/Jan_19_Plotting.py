@@ -93,25 +93,24 @@ array_size = np.size(arr_reshape[0])
 #Plane Fitting Process
     
     #Creating x,y coordintes for blocks of data
-x_coordinates = np.arange(0,array_size)
-y_coordinates = np.arange(0,array_size)
-z_velocity_mapping = np.empty(4096)
+xvalues = np.arange(0,256);
+yvalues = np.arange(0,256);
 
+xx, yy = np.meshgrid(xvalues, yvalues)
 
-z_velocity_mapping_sec_1 = np.ndarray.flatten(arr_reshape[0])
-z_velocity_mapping_sec_2 = np.ndarray.flatten(arr_reshape[1])
-z_velocity_mapping_sec_3 = np.ndarray.flatten(arr_reshape[2])
-z_velocity_mapping_sec_4 = np.ndarray.flatten(arr_reshape[3])
+xx = blockshaped(xx,array_split_size,array_split_size)
+yy = blockshaped(yy,array_split_size,array_split_size)
 
+print(np.ndarray.flatten(xx[0]))
+print(np.ndarray.flatten(yy[0]))
 
 
 #Importing Plane Fit Script here.
 from plane_fit import plane_fit
 
 #Making z of zeros for plane fit script
+first_plane_sec = np.zeros((16,1,3))
 
-first_plane_sec_1 = plane_fit(x_coordinates,y_coordinates,z_velocity_mapping_sec_1)
-first_plane_sec_2 = plane_fit(x_coordinates,y_coordinates,z_velocity_mapping_sec_2)
-first_plane_sec_3 = plane_fit(x_coordinates,y_coordinates,z_velocity_mapping_sec_3)
-first_plane_sec_4 = plane_fit(x_coordinates,y_coordinates,z_velocity_mapping_sec_4)
 
+for i in range(0,15):
+    first_plane_sec[i] = plane_fit(np.ndarray.flatten(xx[i]),np.ndarray.flatten(yy[i]),np.ndarray.flatten(arr_reshape[i]))
