@@ -39,11 +39,11 @@ ds = yt.load("~/bigdata/Fiducial00/data.0060.3d.hdf5")
 ad = ds.all_data()
 
 #Printing Derived Variables to be able to use (comment in if needed).
-'''
+
 for i in sorted(ds.derived_field_list):
     print(i)
-'''
 
+'''
 # Basic Projection Plots
 
 #Density Projection along z
@@ -66,7 +66,7 @@ z_projected_z_velocity.save("z_velocity_density_plot.png")
 
 plot_1D_PDF_Density = yt.ProfilePlot(ad, "density", "ones", weight_field=None)
 plot_1D_PDF_Density.save("1D_PDF_Density.png")
-
+'''
 ##############################################################################
 
 #Analysis of Data Section
@@ -106,7 +106,7 @@ def blockshaped(arr, nrows, ncols):
 
 #This creates a list of arrays, specifically a list of 'x' subregions.
 # This makes the index number go left to right and top to bottom.
-    
+ 
 array_split_size = 64 #Value for blocks
 array_split_size_sub = 16
 array_split_size_sub_tot = array_split_size // array_split_size_sub
@@ -114,7 +114,7 @@ arr_reshape = blockshaped(arr,array_split_size,array_split_size)
 #Callable Sizing Value
 array_size = np.size(arr_reshape[0])
 #Plane Fitting Process
-    
+
 #Creating x,y coordintes for blocks of data
 xvalues = np.arange(0,data_length);
 yvalues = np.arange(0,data_length);
@@ -153,6 +153,76 @@ for i in range(0,array_split_size_sub):
     gradients[i,0] = ((first_plane_sec[i,0,1]**2) + (first_plane_sec[i,0,2]**2))**(1/2)
     
 #Reshaping matrix for correct position to original plot scheme
-gradients = np.reshape(gradients,(array_split_size_sub_tot,array_split_size_sub_tot))
+gradients_table = np.reshape(gradients,(array_split_size_sub_tot,array_split_size_sub_tot))
 
-np.savetxt("gradient_magnitudes_0060.csv",gradients,delimiter=' & ', fmt='%.4g', newline=' \\\\\n')
+np.savetxt("gradient_magnitudes_0060.csv",gradients_table,delimiter=' & ', fmt='%.4g', newline=' \\\\\n')
+
+#New Steps for Feb 2nd Assignment
+
+#Finding mass contribution for all subregions
+
+cell_mass = ad.sum('cell_mass',axis='z') #Sums mass plane over z
+arr_2 = cell_mass['cell_mass']          #defining variable
+arr_2.shape = (data_length,data_length)
+arr_2 = np.array(arr_2)                 #Turning into Numpy Array
+#Resizing into superset of arrays
+arr_2 = blockshaped(arr_2,array_split_size,array_split_size)
+
+#Defining Empty array to store mass values.
+mass_sub_region = np.zeros((array_split_size_sub,1,1))
+
+for i in range(0,array_split_size_sub):
+    mass_sub_region[i] = np.sum(arr_2[i])
+
+#Now must compute Implied angular momentum for each subregion
+
+#Defining Constants
+beta = 1
+#Subbox size in pc
+length_pc_km = (1.25**2)*(3.086e13) #Gives L^2 as km*pc to cancel the gradient term
+km_to_m_squared = 1000**2
+
+#Computing implied angular momentum for each subbox
+
+angular_momentum_implied = np.zeros((array_split_size_sub,1,1))
+
+for i in range(0,array_split_size_sub):
+    angular_momentum_implied[i] = beta*((length_pc_km)**2) * mass_sub_region[i] * gradients[i] * km_to_m_squared
+
+
+#Total Actual Angular Momentum Magnitudes in the regions
+
+angular_momentum_magnitude = ad.integrate('angular_momentum_magnitude',weight=None,axis='z')
+angular_momentum_magnitude = angular_momentum_magnitude['angular_momentum_magnitude']
+angular_momentum_magnitude.shape = (data_length,data_length)  # Since the underlying data are 256^3
+
+angular_momentum_magnitude = np.array(angular_momentum_magnitude)  #Making Numpy array
+
+angular_momentum_magnitude = blockshaped(angular_momentum_magnitude,array_split_size,array_split_size)
+
+#Defining Empty Array to store values
+angular_momentum_magnitude_sub_regions = np.zeros((array_split_size_sub,1,1))
+
+for i in range(0,array_split_size_sub):
+    angular_momentum_magnitude_sub_regions[i] = np.sum(angular_momentum_magnitude[i])
+    
+#Plotting Values Obtaining
+
+#define x axis quadrant values
+x = np.linspace(1,16,16)
+y1 = np.zeros((array_split_size_sub,1))
+y2 = np.zeros((array_split_size_sub,1))
+for i in range(0,array_split_size_sub):
+    y1[i] = angular_momentum_magnitude_sub_regions[i]
+    y2[i] = angular_momentum_implied[i]
+    
+np.savetxt("Actual_J.csv",y1,delimiter=' & ', fmt='%.4g', newline=' \\\\\n')
+np.savetxt("Implied_J.csv",y2,delimiter=' & ', fmt='%.4g', newline=' \\\\\n')
+    
+plt.plot(x,y1,'b.',label='Angular Momentum')
+plt.plot(x,y2,'r.',label='Implied Angular Momentum')
+plt.legend(loc=1)
+plt.xlabel('Qaudrant Numbers')
+plt.ylabel(r'Angular Momentum $(m^2 g \ s^{-2})$')
+plt.title('Actual Angular Momentum vs Implied Angular Momentum')
+plt.savefig('Ang_Mom_Comparison.pdf')
