@@ -158,75 +158,7 @@ gradients_table = np.reshape(gradients,(array_split_size_sub_tot,array_split_siz
 np.savetxt("gradient_magnitudes_0060.csv",gradients_table,delimiter=' & ', fmt='%.4g', newline=' \\\\\n')
 
 #New Steps for Feb 2nd Assignment
-'''
-#Finding mass contribution for all subregions
 
-cell_mass = ad.sum('cell_mass',axis='z') #Sums mass plane over z
-arr_2 = cell_mass['cell_mass']          #defining variable
-arr_2.shape = (data_length,data_length)
-arr_2 = np.array(arr_2)                 #Turning into Numpy Array
-#Resizing into superset of arrays
-arr_2 = blockshaped(arr_2,array_split_size,array_split_size)
-
-#Defining Empty array to store mass values.
-mass_sub_region = np.zeros((array_split_size_sub,1,1))
-
-for i in range(0,array_split_size_sub):
-    mass_sub_region[i] = np.sum(arr_2[i])
-
-#Now must compute Implied angular momentum for each subregion
-
-#Defining Constants
-beta = 1
-#Subbox size in pc
-length_pc_km = (1.25**2)*(3.086e13) #Gives L^2 as km*pc to cancel the gradient term
-km_to_m_squared = 1000**2
-
-#Computing implied angular momentum for each subbox
-
-angular_momentum_implied = np.zeros((array_split_size_sub,1,1))
-
-for i in range(0,array_split_size_sub):
-    angular_momentum_implied[i] = beta*((length_pc_km)**2) * mass_sub_region[i] * gradients[i] * km_to_m_squared
-
-
-#Total Actual Angular Momentum Magnitudes in the regions
-
-angular_momentum_magnitude = ad.integrate('angular_momentum_magnitude',weight=None,axis='z')
-angular_momentum_magnitude = angular_momentum_magnitude['angular_momentum_magnitude']
-angular_momentum_magnitude.shape = (data_length,data_length)  # Since the underlying data are 256^3
-
-angular_momentum_magnitude = np.array(angular_momentum_magnitude)  #Making Numpy array
-
-angular_momentum_magnitude = blockshaped(angular_momentum_magnitude,array_split_size,array_split_size)
-
-#Defining Empty Array to store values
-angular_momentum_magnitude_sub_regions = np.zeros((array_split_size_sub,1,1))
-
-for i in range(0,array_split_size_sub):
-    angular_momentum_magnitude_sub_regions[i] = np.sum(angular_momentum_magnitude[i])
-    
-#Plotting Values Obtaining
-
-#define x axis quadrant values
-x = np.linspace(1,16,16)
-y1 = np.zeros((array_split_size_sub,1))
-y2 = np.zeros((array_split_size_sub,1))
-for i in range(0,array_split_size_sub):
-    y1[i] = angular_momentum_magnitude_sub_regions[i]
-    y2[i] = angular_momentum_implied[i]
-    
-np.savetxt("Actual_J.csv",y1,delimiter=' & ', fmt='%.4g', newline=' \\\\\n')
-np.savetxt("Implied_J.csv",y2,delimiter=' & ', fmt='%.4g', newline=' \\\\\n')
-    
-plt.plot(x,y1,'b.',label='Angular Momentum')
-plt.plot(x,y2,'r.',label='Implied Angular Momentum')
-plt.legend(loc=1)
-plt.xlabel('Qaudrant Numbers')
-plt.ylabel(r'Angular Momentum $(m^2 g \ s^{-2})$')
-plt.title('Actual Angular Momentum vs Implied Angular Momentum')
-plt.savefig('Ang_Mom_Comparison.pdf')
-'''
 # Computing Mass for each region
 
 # This next line integrates over a line of sight to create a Line-of-sight projection weighted by density
@@ -244,15 +176,15 @@ for i in range(0,array_split_size_sub):
 beta = 1
 #Subbox size in pc
 length = 1.25 #Given in pc
-pc_to_km = 1/(3.24078e-14) # To get units correctly
+unit_conv_2 = (1/(1.988e33))
 
 #Computing implied angular momentum for each subbox
 
 angular_momentum_implied = np.zeros((array_split_size_sub,1,1))
 
 for i in range(0,array_split_size_sub):
-    angular_momentum_implied[i] = beta * mass_cell_total[i] * gradients[i] * length**2 * pc_to_km
-#Gives in units of kg km^2 s^-1
+    angular_momentum_implied[i] = beta * mass_cell_total[i] * gradients[i] * length**2 * unit_conv_2
+
     
 # Computing Actual Angular Momentum Weighted by Density?
     
@@ -263,27 +195,29 @@ angular_momenutm_actual = np.array(angular_momentum_actual['angular_momentum_mag
 angular_momentum_actual = blockshaped(angular_momenutm_actual,array_split_size,array_split_size) #Splits into 16 arrays for the quadrants
 
 angular_momentum_actual_sum = np.zeros((array_split_size_sub,1,1))
-unit_conv = (1/1000)*((1/1000)**2) #g to kg and m to km (squared)
+unit_conv = (1/(1.988e33)) * (1/(3.086e18)) * (1e-5)
 for i in range(0,array_split_size_sub):
     angular_momentum_actual_sum[i] = np.sum(angular_momentum_actual[i]) * unit_conv
 
 #Plotting Values Obtaining
 
 #define x axis quadrant values
-x = np.linspace(1,16,16)
+x = np.linspace(4e19,3e20,1000)
 y1 = np.zeros((array_split_size_sub,1))
 y2 = np.zeros((array_split_size_sub,1))
 for i in range(0,array_split_size_sub):
     y1[i] = angular_momentum_actual_sum[i]
     y2[i] = angular_momentum_implied[i]
-    
+
 np.savetxt("Actual_J.csv",y1,delimiter=' & ', fmt='%.4g', newline=' \\\\\n')
 np.savetxt("Implied_J.csv",y2,delimiter=' & ', fmt='%.4g', newline=' \\\\\n')
     
-plt.plot(x,y1,'b.',label='Angular Momentum')
-plt.plot(x,y2,'r.',label='Implied Angular Momentum')
-plt.legend(loc=1)
-plt.xlabel('Qaudrant Numbers')
-plt.ylabel(r'Angular Momentum $(kg \ km^2 \ s^{-1})$')
+
+plt.loglog(y1,y2,'r.',label='Angular Momentum')
+plt.loglog(x, x, 'k-', alpha=0.75, zorder=0,label='Line of Unity')
+plt.legend(bbox_to_anchor=(1, 0.5))
+#plt.grid(True, which='both')
+plt.xlabel(r'Actual Angular Momentum $(M_{\odot} \ pc^2 \ Myr^{-1})$')
+plt.ylabel(r'Implied Angular Momentum $(M_{\odot} \ pc^2 \ Myr^{-1})$')
 plt.title('Actual Angular Momentum vs Implied Angular Momentum', y=1.08)
-plt.savefig('Ang_Mom_Comparison.pdf')
+plt.savefig('Ang_Mom_Comparison.pdf', bbox_inches='tight')
