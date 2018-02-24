@@ -86,12 +86,14 @@ plt.show()
 
 #Defining Value for underlying data set length
 data_length = 256
-arr = vz['velocity_z']
-arr.shape = (data_length,data_length)  # Since the underlying data are 256^3
+arr = vz.to_frb((10,'pc'),[256,256])
+arr = np.array(arr['velocity_z'])
+#arr = vz['velocity_z']
+#arr.shape = (data_length,data_length)  # Since the underlying data are 256^3
 
-arr = np.array(arr)  # Make this into a plain numpy array if needed.
-plt.imshow(arr)      
-plt.show()
+#arr = np.array(arr)  # Make this into a plain numpy array if needed.
+#plt.imshow(arr)      
+#plt.show()
 
 #Generate Subsections of Arrays.
 def blockshaped(arr, nrows, ncols):
