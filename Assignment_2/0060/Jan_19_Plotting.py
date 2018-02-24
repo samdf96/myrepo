@@ -24,6 +24,9 @@ Will need to set a few values in the script for differing data sets:
     Data Length (Number of pixels along a given axis for original data set)
     Array_split_size - number of pixels per subregion along a given axis
     Array_split_size_sub - number of subregions in total
+    Data Width - Length of one side of simulation space in pc
+    Beta - Constant for Computing Implied Angular Momentum
+    Subregion_edge_length (Implied Section) - Subregion edge length in pc.
 '''
 
 
@@ -147,7 +150,7 @@ for i in range(0,array_split_size_sub):
     
 #Now computing magnitudes of gradient into empty superset array as defined below
 
-gradients = np.zeros((16,1))
+gradients = np.zeros((array_split_size_sub,1))
 
 for i in range(0,array_split_size_sub):
     gradients[i,0] = ((first_plane_sec[i,0,1]**2) + (first_plane_sec[i,0,2]**2))**(1/2)
@@ -164,7 +167,8 @@ np.savetxt("gradient_magnitudes_0060.csv",gradients_table,delimiter=' & ', fmt='
 # This next line integrates over a line of sight to create a Line-of-sight projection weighted by density
 mass = ad.integrate('cell_mass',axis='z',weight=None)
 # Now we have to make this into a gridded set of pixel data.
-mass_cell = mass.to_frb((10,'pc'),[256,256])
+data_width = 10
+mass_cell = mass.to_frb((data_width,'pc'),[data_length,data_length])
 mass_cell = np.array(mass_cell['cell_mass'])
 
 mass_cell = blockshaped(mass_cell,array_split_size,array_split_size)
@@ -175,7 +179,7 @@ for i in range(0,array_split_size_sub):
 #Defining Constants
 beta = 1
 #Subbox size in pc
-length = 1.25 #Given in pc
+subregion_edge_length = 1.25 #Given in pc
 unit_conv_2 = (1/(1.988e33))
 
 #Computing implied angular momentum for each subbox
@@ -183,14 +187,14 @@ unit_conv_2 = (1/(1.988e33))
 angular_momentum_implied = np.zeros((array_split_size_sub,1,1))
 
 for i in range(0,array_split_size_sub):
-    angular_momentum_implied[i] = beta * mass_cell_total[i] * gradients[i] * length**2 * unit_conv_2
+    angular_momentum_implied[i] = beta * mass_cell_total[i] * gradients[i] * subregion_edge_length**2 * unit_conv_2
 
     
 # Computing Actual Angular Momentum Weighted by Density?
     
 angular_momentum_actual = ad.integrate('angular_momentum_magnitude',axis='z',weight=None)
 # Now we have to make this into a gridded set of pixel data.
-angular_momentum_actual = angular_momentum_actual.to_frb((10,'pc'),[256,256])
+angular_momentum_actual = angular_momentum_actual.to_frb((data_width,'pc'),[data_length,data_length])
 angular_momenutm_actual = np.array(angular_momentum_actual['angular_momentum_magnitude'])
 angular_momentum_actual = blockshaped(angular_momenutm_actual,array_split_size,array_split_size) #Splits into 16 arrays for the quadrants
 
@@ -212,7 +216,7 @@ for i in range(0,array_split_size_sub):
 np.savetxt("Actual_J.csv",y1,delimiter=' & ', fmt='%.4g', newline=' \\\\\n')
 np.savetxt("Implied_J.csv",y2,delimiter=' & ', fmt='%.4g', newline=' \\\\\n')
     
-
+#Plotting - Loglog (residual based with the unity line)
 plt.loglog(y1,y2,'r.',label='Angular Momentum')
 plt.loglog(x, x, 'k-', alpha=0.75, zorder=0,label='Line of Unity')
 plt.legend(bbox_to_anchor=(1, 0.5))
