@@ -118,7 +118,7 @@ for n in range(0,5):
     
     #Need to make it so that it runs over a certain array of sizes:   
     #Length of the edge of a box
-    length_variable = np.array([10,5,2.5,1.25,0.625], dtype=np.int64)
+    length_variable = np.array([10,5,2.5,1.25,0.625])
     #Total Number of Sub regions
     array_split_size_sub = np.array([1,4,16,64,256], dtype=np.int64)
     array_split_size = np.array([256,128,64,32,16], dtype=np.int64)
@@ -193,14 +193,14 @@ for n in range(0,5):
     beta = 1
     #Subbox size in pc
     subregion_edge_length = length_variable[n] #Given in pc
-    unit_conv_2 = (1/(1.988e33))
+    #unit_conv_2 = (1/(1.988e33)) old unit conversion for full J
     
     #Computing implied angular momentum for each subbox
     
-    angular_momentum_implied = np.zeros((array_split_size_sub,1,1))
+    angular_momentum_implied_specific = np.zeros((array_split_size_sub,1,1))
     
     for i in range(0,array_split_size_sub):
-        angular_momentum_implied[i] = beta * mass_cell_total[i] * gradients[i] * subregion_edge_length**2 * unit_conv_2
+        angular_momentum_implied_specific[i] = beta * gradients[i] * subregion_edge_length**2
     
         
     # Computing Actual Angular Momentum Weighted by Density?
@@ -209,33 +209,33 @@ for n in range(0,5):
     # Now we have to make this into a gridded set of pixel data.
     angular_momentum_actual = angular_momentum_actual.to_frb((data_width,'pc'),[data_length,data_length])
     angular_momenutm_actual = np.array(angular_momentum_actual['angular_momentum_magnitude'])
-    angular_momentum_actual = blockshaped(angular_momenutm_actual,array_split_size,array_split_size) #Splits into 16 arrays for the quadrants
+    angular_momentum_actual = blockshaped(angular_momenutm_actual,array_split_size,array_split_size)
     
-    angular_momentum_actual_sum = np.zeros((array_split_size_sub,1,1))
-    unit_conv = (1/(1.988e33)) * (1/(3.086e18)) * (1e-5)
+    angular_momentum_actual_specific_sum = np.zeros((array_split_size_sub,1,1))
+    unit_conv = (1/(3.086e18)) * (1e-5)
     for i in range(0,array_split_size_sub):
-        angular_momentum_actual_sum[i] = np.sum(angular_momentum_actual[i]) * unit_conv
+        angular_momentum_actual_specific_sum[i] = np.sum(angular_momentum_actual[i]) * unit_conv / mass_cell_total[i]
     
     #Plotting Values Obtaining
     
     #define x axis quadrant values
-    x = np.linspace(4e19,3e20,1000)
+    x = np.linspace(0,100,1000)
     y1 = np.zeros((array_split_size_sub,1))
     y2 = np.zeros((array_split_size_sub,1))
     for i in range(0,array_split_size_sub):
-        y1[i] = angular_momentum_actual_sum[i]
-        y2[i] = angular_momentum_implied[i]
+        y1[i] = angular_momentum_actual_specific_sum[i]
+        y2[i] = angular_momentum_implied_specific[i]
     
-    np.savetxt("Actual_J_{n}.csv".format(n=n),y1,delimiter=' & ', fmt='%.4g', newline=' \\\\\n')
-    np.savetxt("Implied_J_{n}.csv".format(n=n),y2,delimiter=' & ', fmt='%.4g', newline=' \\\\\n')
+    np.savetxt("Actual_J_specific_{n}.csv".format(n=n),y1,delimiter=' & ', fmt='%.4g', newline=' \\\\\n')
+    np.savetxt("Implied_J_specific_{n}.csv".format(n=n),y2,delimiter=' & ', fmt='%.4g', newline=' \\\\\n')
         
     #Plotting - Loglog (residual based with the unity line)
-    plt.loglog(y1,y2,'r.',label='Angular Momentum')
+    plt.loglog(y1,y2,'r.',label='Specific Angular Momentum')
     plt.loglog(x, x, 'k-', alpha=0.75, zorder=0,label='Line of Unity')
     plt.legend(bbox_to_anchor=(1, 0.5))
     #plt.grid(True, which='both')
-    plt.xlabel(r'Actual Angular Momentum $(M_{\odot} \ pc^2 \ Myr^{-1})$')
-    plt.ylabel(r'Implied Angular Momentum $(M_{\odot} \ pc^2 \ Myr^{-1})$')
-    plt.title('Actual Angular Momentum vs Implied Angular Momentum', y=1.08)
-    plt.savefig("Ang_Mom_Comparison_{n}.pdf".format(n=n), bbox_inches='tight')
+    plt.xlabel(r'Actual Specific Angular Momentum $(pc^2 \ Myr^{-1})$')
+    plt.ylabel(r'Implied Specific Angular Momentum $(pc^2 \ Myr^{-1})$')
+    plt.title('Actual Specific Angular Momentum vs Implied Specific Angular Momentum', y=1.08)
+    plt.savefig("Ang_Mom_Specific_Comparison_{n}.pdf".format(n=n), bbox_inches='tight')
     plt.gcf().clear()
