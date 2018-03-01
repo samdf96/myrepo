@@ -219,7 +219,7 @@ for n in range(0,5):
     #Plotting Values Obtaining
     
     #define x axis quadrant values
-    x = np.linspace(0,100,1000)
+    x = np.linspace(10,100,1000)
     y1 = np.zeros((array_split_size_sub,1))
     y2 = np.zeros((array_split_size_sub,1))
     for i in range(0,array_split_size_sub):
