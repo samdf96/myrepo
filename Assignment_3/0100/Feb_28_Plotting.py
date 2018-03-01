@@ -69,6 +69,15 @@ plot_1D_PDF_Density.save("1D_PDF_Density.png")
 
 #3d Render Plot for visualization of data.
 im, sc = yt.volume_render(ds, field=('gas', 'density'))
+source = sc[0]
+# Set the bounds of the transfer function - EWR edited
+source.tfh.set_bounds((1e-22, 1e-19))
+# set that the transfer function should be evaluated in log space
+source.tfh.set_log(True)
+# Make underdense regions appear opaque
+source.tfh.grey_opacity = True
+# save the image, flooring especially bright pixels for better contrast
+sc.save('data.0100.3d.hdf5_Render_density_fixed.png', sigma_clip=6.0)
 
 ##############################################################################
 
