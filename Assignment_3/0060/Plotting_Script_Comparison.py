@@ -51,6 +51,7 @@ plt.ylabel(r'Actual Specific Angular Momentum $(pc^2 \ Myr^{-1})$')
 plt.title('Specific Actual Angular Momentum vs Scale Factor')
 plt.legend(bbox_to_anchor=(1.25, 1.0))
 plt.savefig("j_vs_scale_factor_actual_0060.pdf", bbox_inches='tight')
+plt.savefig("j_vs_scale_factor_actual_0060.png", bbox_inches='tight')
 
 
 plt.figure(2)
@@ -66,6 +67,7 @@ plt.ylabel(r'Implied Specific Angular Momentum $(pc^2 \ Myr^{-1})$')
 plt.title('Specific Implied Angular Momentum vs Scale Factor')
 plt.legend(bbox_to_anchor=(1.25, 1.0))
 plt.savefig("j_vs_scale_factor_implied_0060.pdf", bbox_inches='tight')
+plt.savefig("j_vs_scale_factor_implied_0060.png", bbox_inches='tight')
 
 #Plotting Comparison Graphs with line of unity for all data
 #data points for line of unity
@@ -83,3 +85,4 @@ plt.ylabel(r'Implied Specific Angular Momentum $(pc^2 \ Myr^{-1})$')
 plt.legend(bbox_to_anchor=(1, 1.0))
 plt.title('Actual Specific Angular Momentum vs Implied Specific Angular Momentum', y=1.08)
 plt.savefig("Ang_Mom_Specific_Comparison_alldata_0060.pdf", bbox_inches='tight')
+plt.savefig("Ang_Mom_Specific_Comparison_alldata_0060.png", bbox_inches='tight')

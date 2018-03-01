@@ -235,4 +235,5 @@ for n in range(0,5):
     plt.ylabel(r'Implied Specific Angular Momentum $(pc^2 \ Myr^{-1})$')
     plt.title('Actual Specific Angular Momentum vs Implied Specific Angular Momentum', y=1.08)
     plt.savefig("Ang_Mom_Specific_Comparison_{n}.pdf".format(n=n), bbox_inches='tight')
+    plt.savefig("Ang_Mom_Specific_Comparison_{n}.png".format(n=n), bbox_inches='tight')
     plt.gcf().clear()
