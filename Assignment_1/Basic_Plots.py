@@ -106,7 +106,7 @@ plot_weighted_projection_x.save("2D_Projection_Weighted_RMS_Velocity_x.png")
 
 # 3D Rendering Plot just for fun
 
-#im, sc = yt.volume_render(ds, field=('gas', 'density'))
+im, sc = yt.volume_render(ds, field=('gas', 'density'))
 '''
 plot_density_dusk = yt.ProjectionPlot(ds, "z", "density")
 plot_density_dusk.set_cmap(field="density", cmap='dusk')

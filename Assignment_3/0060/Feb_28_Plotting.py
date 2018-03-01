@@ -67,6 +67,9 @@ z_projected_z_velocity.save("z_velocity_density_plot.png")
 plot_1D_PDF_Density = yt.ProfilePlot(ad, "density", "ones", weight_field=None)
 plot_1D_PDF_Density.save("1D_PDF_Density.png")
 
+#3d Render Plot for visualization of data.
+im, sc = yt.volume_render(ds, field=('gas', 'density'))
+
 ##############################################################################
 
 #Analysis of Data Section
