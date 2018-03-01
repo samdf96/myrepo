@@ -81,4 +81,4 @@ plt.loglog(x_plotting, x_plotting, 'k-', alpha=0.75, zorder=0,label='Line of Uni
 plt.xlabel(r'Actual Specific Angular Momentum $(pc^2 \ Myr^{-1})$')
 plt.ylabel(r'Implied Specific Angular Momentum $(pc^2 \ Myr^{-1})$')
 plt.title('Actual Specific Angular Momentum vs Implied Specific Angular Momentum', y=1.08)
-plt.savefig("Ang_Mom_Specific_Comparison_alldata_0060.pdf", bbox_inches='tight')
+plt.savefig("Ang_Mom_Specific_Comparison_alldata_0100.pdf", bbox_inches='tight')

@@ -33,7 +33,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 # Call different data sets here, possibly create loop.
-ds = yt.load("~/bigdata/Fiducial00/data.0060.3d.hdf5")
+ds = yt.load("~/bigdata/Fiducial00/data.0100.3d.hdf5")
 
 #Loading all data into one object.
 ad = ds.all_data()

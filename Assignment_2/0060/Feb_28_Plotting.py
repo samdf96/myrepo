@@ -23,7 +23,12 @@ Created on Wed Feb 28 20:29:55 2018
 Will need to set a few values in the script for differing data sets:
     Filename for importing data
     Data Length (Number of pixels along a given axis for original data set)
+    
+    Array_split_size - number of pixels per subregion along a given axis
+    Array_split_size_sub - number of subregions in total
+    Data Width - Length of one side of simulation space in pc (original data set)
     Beta - Constant for Computing Implied Angular Momentum
+    Subregion_edge_length (Implied Section) - Subregion edge length in pc.
 '''
 
 
@@ -33,7 +38,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 # Call different data sets here, possibly create loop.
-ds = yt.load("~/bigdata/Fiducial00/data.0060.3d.hdf5")
+ds = yt.load("~/bigdata/Fiducial00/data.0100.3d.hdf5")
 
 #Loading all data into one object.
 ad = ds.all_data()
@@ -106,21 +111,18 @@ def blockshaped(arr, nrows, ncols):
 #This creates a list of arrays, specifically a list of 'x' subregions.
 # This makes the index number go left to right and top to bottom.
  
+#Need to make it so that it runs over a certain array of sizes:   
+#Length of the edge of a box
+length_variable = np.array([10,5,2.5,1.25,0.625], dtype=np.int64)
+#Total Number of Sub regions
+array_split_size_sub = [1,4,16,64,256]
 
 
-for n in range(0,5):
+for n in length_variable:
 
-    
-    #Need to make it so that it runs over a certain array of sizes:   
-    #Length of the edge of a box
-    length_variable = np.array([10,5,2.5,1.25,0.625])
-    #Total Number of Sub regions
-    array_split_size_sub = np.array([1,4,16,64,256], dtype=np.int64)
-    array_split_size = np.array([256,128,64,32,16], dtype=np.int64)
-    gradients_split_size = np.array([1,2,4,8,16], dtype=np.int64)
-
-    array_split_size = array_split_size[n]
+    array_split_size = length_variable[n]*25.6 #Value for blocks
     array_split_size_sub = array_split_size_sub[n]
+    array_split_size_sub_tot = array_split_size // array_split_size_sub
     arr_reshape = blockshaped(arr,array_split_size,array_split_size)
     
     #Callable Sizing Value
@@ -165,10 +167,11 @@ for n in range(0,5):
         gradients[i,0] = ((first_plane_sec[i,0,1]**2) + (first_plane_sec[i,0,2]**2))**(1/2)
         
     #Reshaping matrix for correct position to original plot scheme
-    gradients_table = np.reshape(gradients,(gradients_split_size[n],gradients_split_size[n]))
+    gradients_table = np.reshape(gradients,(array_split_size_sub_tot,array_split_size_sub_tot))
     
-    np.savetxt("gradient_magnitudes_0060_{n}.csv".format(n=n),gradients_table,delimiter=' & ', fmt='%.4g', newline=' \\\\\n')
+    np.savetxt("gradient_magnitudes_0060.csv",gradients_table,delimiter=' & ', fmt='%.4g', newline=' \\\\\n')
     
+    #New Steps for Feb 2nd Assignment
     
     # Computing Mass for each region
     
@@ -188,14 +191,14 @@ for n in range(0,5):
     beta = 1
     #Subbox size in pc
     subregion_edge_length = length_variable[n] #Given in pc
-    #unit_conv_2 = (1/(1.988e33)) old unit conversion for full J
+    unit_conv_2 = (1/(1.988e33))
     
     #Computing implied angular momentum for each subbox
     
-    angular_momentum_implied_specific = np.zeros((array_split_size_sub,1,1))
+    angular_momentum_implied = np.zeros((array_split_size_sub,1,1))
     
     for i in range(0,array_split_size_sub):
-        angular_momentum_implied_specific[i] = beta * gradients[i] * subregion_edge_length**2
+        angular_momentum_implied[i] = beta * mass_cell_total[i] * gradients[i] * subregion_edge_length**2 * unit_conv_2
     
         
     # Computing Actual Angular Momentum Weighted by Density?
@@ -204,35 +207,32 @@ for n in range(0,5):
     # Now we have to make this into a gridded set of pixel data.
     angular_momentum_actual = angular_momentum_actual.to_frb((data_width,'pc'),[data_length,data_length])
     angular_momenutm_actual = np.array(angular_momentum_actual['angular_momentum_magnitude'])
-    angular_momentum_actual = blockshaped(angular_momenutm_actual,array_split_size,array_split_size)
+    angular_momentum_actual = blockshaped(angular_momenutm_actual,array_split_size,array_split_size) #Splits into 16 arrays for the quadrants
     
-    angular_momentum_actual_specific_sum = np.zeros((array_split_size_sub,1,1))
-    unit_conv = (1/(3.086e18)) * (1e-5)
+    angular_momentum_actual_sum = np.zeros((array_split_size_sub,1,1))
+    unit_conv = (1/(1.988e33)) * (1/(3.086e18)) * (1e-5)
     for i in range(0,array_split_size_sub):
-        angular_momentum_actual_specific_sum[i] = np.sum(angular_momentum_actual[i]) * unit_conv / mass_cell_total[i]
+        angular_momentum_actual_sum[i] = np.sum(angular_momentum_actual[i]) * unit_conv
     
     #Plotting Values Obtaining
     
     #define x axis quadrant values
-    x_plotting = np.linspace(2,11,1000)
+    x = np.linspace(4e19,3e20,1000)
     y1 = np.zeros((array_split_size_sub,1))
     y2 = np.zeros((array_split_size_sub,1))
     for i in range(0,array_split_size_sub):
-        y1[i] = angular_momentum_actual_specific_sum[i]
-        y2[i] = angular_momentum_implied_specific[i]
+        y1[i] = angular_momentum_actual_sum[i]
+        y2[i] = angular_momentum_implied[i]
     
-    np.savetxt("Actual_J_specific_{n}.csv".format(n=n),y1,delimiter=' & ', fmt='%.4g', newline=' \\\\\n')
-    np.savetxt("Implied_J_specific_{n}.csv".format(n=n),y2,delimiter=' & ', fmt='%.4g', newline=' \\\\\n')
+    np.savetxt("Actual_J{n}.csv".format(n=n),y1,delimiter=' & ', fmt='%.4g', newline=' \\\\\n')
+    np.savetxt("Implied_J{n}.csv".format(n=n),y2,delimiter=' & ', fmt='%.4g', newline=' \\\\\n')
         
     #Plotting - Loglog (residual based with the unity line)
-    plt.loglog(y1,y2,'r.',label='Specific Angular Momentum')
-    plt.loglog(x_plotting, x_plotting, 'k-', alpha=0.75, zorder=0,label='Line of Unity')
+    plt.loglog(y1,y2,'r.',label='Angular Momentum')
+    plt.loglog(x, x, 'k-', alpha=0.75, zorder=0,label='Line of Unity')
     plt.legend(bbox_to_anchor=(1, 0.5))
     #plt.grid(True, which='both')
-    #This is not working correctly.
-    #plt.axes().set_aspect('equal', 'datalim')
-    plt.xlabel(r'Actual Specific Angular Momentum $(pc^2 \ Myr^{-1})$')
-    plt.ylabel(r'Implied Specific Angular Momentum $(pc^2 \ Myr^{-1})$')
-    plt.title('Actual Specific Angular Momentum vs Implied Specific Angular Momentum', y=1.08)
-    plt.savefig("Ang_Mom_Specific_Comparison_{n}.pdf".format(n=n), bbox_inches='tight')
-    plt.gcf().clear()
+    plt.xlabel(r'Actual Angular Momentum $(M_{\odot} \ pc^2 \ Myr^{-1})$')
+    plt.ylabel(r'Implied Angular Momentum $(M_{\odot} \ pc^2 \ Myr^{-1})$')
+    plt.title('Actual Angular Momentum vs Implied Angular Momentum', y=1.08)
+    plt.savefig("Ang_Mom_Comparison{n}.pdf".format(n=n), bbox_inches='tight')
