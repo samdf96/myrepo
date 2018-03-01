@@ -234,6 +234,8 @@ for n in range(0,5):
     plt.loglog(x_plotting, x_plotting, 'k-', alpha=0.75, zorder=0,label='Line of Unity')
     plt.legend(bbox_to_anchor=(1, 0.5))
     #plt.grid(True, which='both')
+    #This is not working correctly.
+    #plt.axes().set_aspect('equal', 'datalim')
     plt.xlabel(r'Actual Specific Angular Momentum $(pc^2 \ Myr^{-1})$')
     plt.ylabel(r'Implied Specific Angular Momentum $(pc^2 \ Myr^{-1})$')
     plt.title('Actual Specific Angular Momentum vs Implied Specific Angular Momentum', y=1.08)
