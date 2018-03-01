@@ -219,7 +219,7 @@ for n in range(0,5):
     #Plotting Values Obtaining
     
     #define x axis quadrant values
-    x = np.linspace(10,100,1000)
+    x_plotting = np.linspace(2,11,1000)
     y1 = np.zeros((array_split_size_sub,1))
     y2 = np.zeros((array_split_size_sub,1))
     for i in range(0,array_split_size_sub):
@@ -231,7 +231,7 @@ for n in range(0,5):
         
     #Plotting - Loglog (residual based with the unity line)
     plt.loglog(y1,y2,'r.',label='Specific Angular Momentum')
-    plt.loglog(x, x, 'k-', alpha=0.75, zorder=0,label='Line of Unity')
+    plt.loglog(x_plotting, x_plotting, 'k-', alpha=0.75, zorder=0,label='Line of Unity')
     plt.legend(bbox_to_anchor=(1, 0.5))
     #plt.grid(True, which='both')
     plt.xlabel(r'Actual Specific Angular Momentum $(pc^2 \ Myr^{-1})$')
