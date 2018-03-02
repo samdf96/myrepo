@@ -30,3 +30,7 @@ sc.camera.position = ds.arr([0, 0, 0], 'unitary')
 # very bright pixels, producing an image with better contrast.
 sc.render()
 sc.save('Volume_Render_Blue_0060.png', sigma_clip=4)
+
+slc = yt.SlicePlot(ds, 'z', 'density')
+slc.annotate_grids()
+slc.save('Slice_Plot_z_density_grids_0060.png')
