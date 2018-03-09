@@ -13,70 +13,74 @@ from yt.analysis_modules.level_sets.api import *
 from yt.utilities.physical_constants import kboltz, mh
 from yt.units import Kelvin
 
-
-
 #Loading Data Set into Script
 ds = yt.load("~/bigdata/Fiducial00/data.0100.3d.hdf5")
 
-
-
 #All Data Object for Clumping Variable
-dbox1 = ds.r[(-5,'pc'):(0,'pc'), (-5,'pc'):(0,'pc'), (-5,'pc'):(0,'pc')]
 ad = ds.all_data()
 
+
+#Comment In to add in a Thermal Energy Density field for clumping
 '''
 def _therm(field, data):
    return(1.5 * (kboltz) * 10 * Kelvin / (2.32 * mh))
 yt.add_field(("gas","thermal_energy"), function=_therm, units="erg/g", force_override=True)
 '''
-# the field to be used for contouring
-field = ("gas", "density")
 
-# This is the multiplicative interval between contours.
-step = 2.0
 
-# Now we set some sane min/max values between which we want to find contours.
-# This is how we tell the clump finder what to look for -- it won't look for
-# contours connected below or above these threshold values.
-c_min = 10**np.floor(np.log10(dbox1[field]).mean()  )
-c_max = 10**np.floor(np.log10(dbox1[field]).max()+1)
+#Used for naming scheme of dbox_x areas
+namespace = globals()
+#Splitting Arrays for Octant Beginning and Ending Values for L length space
+l = 10 #Data Length of One edge of original ds data set
 
-# Now find get our 'base' clump -- this one just covers the whole domain.
-master_clump = Clump(dbox1, field)
+x1 = np.array((-l/2,0,-l/2,0,-l/2,0,-l/2,0))
+x2 = np.array((0,l/2,0,l/2,0,l/2,0,l/2))
+y1 = np.array((-l/2,-l/2,0,0,-l/2,-l/2,0,0))
+y2 = np.array((0,0,l/2,l/2,0,0,l/2,l/2))
+z1 = np.array((-l/2,-l/2,-l/2,-l/2,0,0,0,0))
+z2 = np.array((0,0,0,0,l/2,l/2,l/2,l/2))
 
-# Add a "validator" to weed out clumps with less than 20 cells.
-# As many validators can be added as you want.
 
-#Two Clump validators to choose from, want gravitationally bound one
+#Creating 4 Loop for 8 Octants of data space to reduce computation overload
+dbox_array = [] #Creating Empty Dictionary
 
-#master_clump.add_validator("min_cells", 21)
-master_clump.add_validator("gravitationally_bound", use_particles=False, use_thermal_energy=False)
+for i in range(0, 8):
+    dbox_array.append(ds.r[(x1[i],'pc'):(x2[i],'pc'), (y1[i],'pc'):(y2[i],'pc'), (z1[i],'pc'):(z2[i],'pc')])
+    
 
+
+    # the field to be used for contouring
+    field = ("gas", "density")
+
+    master_clump = Clump(dbox_array[i], ("gas", "density"))
+    clump_sizing = 500
+    master_clump.add_validator("min_cells", clump_sizing)
+    #master_clump.add_validator("gravitationally_bound",
+                           #use_particles=False,
+                           #use_thermal_energy=False)
+
+    c_min = dbox_array[i]["gas", "density"].mean()
+    c_max = dbox_array[i]["gas", "density"].max()
+    step = 2.0
+
+    find_clumps(master_clump, c_min, c_max, step)
+    prj = yt.ProjectionPlot(ds,"z",field, data_source=dbox_array[i])
+    prj.annotate_clumps(get_lowest_clumps(master_clump))
+    prj.save('Clump_0100_ClumpSizing_' + str(clump_sizing) + '_Octant_' + str(i) + '.png')
+
+'''
 # Calculate center of mass for all clumps.
 master_clump.add_info_item("center_of_mass")
 
-# Begin clump finding.
-find_clumps(master_clump, c_min, c_max, step)
-
-'''
 # Save the clump tree as a reloadable dataset
 fn = master_clump.save_as_dataset(fields=["density", "particle_mass"])
-'''
+
 
 # We can traverse the clump hierarchy to get a list of all of the 'leaf' clumps
 leaf_clumps = get_lowest_clumps(master_clump)
 
-# If you'd like to visualize these clumps, a list of clumps can be supplied to
-# the "clumps" callback on a plot.  First, we create a projection plot:
-prj = yt.ProjectionPlot(ds, 2, field, center='c', width=(10,'pc'))
 
-# Next we annotate the plot with contours on the borders of the clumps
-prj.annotate_clumps(leaf_clumps)
 
-# Save the plot to disk.
-prj.save('clumps_yt_code_0100.png')
-
-'''
 # Reload the clump dataset.
 cds = yt.load(fn)
 

@@ -106,7 +106,7 @@ plot_weighted_projection_x.save("2D_Projection_Weighted_RMS_Velocity_x.png")
 
 # 3D Rendering Plot just for fun
 
-im, sc = yt.volume_render(ds, field=('gas', 'density'))
+#im, sc = yt.volume_render(ds, field=('gas', 'density'))
 '''
 plot_density_dusk = yt.ProjectionPlot(ds, "z", "density")
 plot_density_dusk.set_cmap(field="density", cmap='dusk')
@@ -120,6 +120,8 @@ plot_density_dusk.save("plot_density_dusk.png")
 dd = ds.sphere([0,0,0],(4,'pc'))
 dbox = ds.r[(0,'pc'):(5,'pc'), (0,'pc'):(5,'pc'), (0,'pc'):(5,'pc')]
 
+z_projected_density_box = yt.ProjectionPlot(ds,"z","density", data_source=dbox)
+z_projected_density_box.save("z_projected_density_box.png")
 #Boxed Region with area set above in dbox
 '''
 z_projected_angular_momentum_x_box = yt.ProjectionPlot(ds,"z","angular_momentum_x",data_source=dbox)
