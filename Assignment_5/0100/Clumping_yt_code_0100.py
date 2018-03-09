@@ -16,19 +16,19 @@ from yt.units import Kelvin
 
 
 #Loading Data Set into Script
-ds = yt.load("~/bigdata/Fiducial00/data.0060.3d.hdf5")
+ds = yt.load("~/bigdata/Fiducial00/data.0100.3d.hdf5")
 
-for i in sorted(ds.derived_field_list):
-    print(i)
+
 
 #All Data Object for Clumping Variable
-dbox1 = ds.r[(0,'pc'):(5,'pc'), (0,'pc'):(5,'pc'), (0,'pc'):(5,'pc')]
+dbox1 = ds.r[(-5,'pc'):(0,'pc'), (-5,'pc'):(0,'pc'), (-5,'pc'):(0,'pc')]
 ad = ds.all_data()
 
+'''
 def _therm(field, data):
    return(1.5 * (kboltz) * 10 * Kelvin / (2.32 * mh))
 yt.add_field(("gas","thermal_energy"), function=_therm, units="erg/g", force_override=True)
-
+'''
 # the field to be used for contouring
 field = ("gas", "density")
 
@@ -38,7 +38,7 @@ step = 2.0
 # Now we set some sane min/max values between which we want to find contours.
 # This is how we tell the clump finder what to look for -- it won't look for
 # contours connected below or above these threshold values.
-c_min = 10**np.floor(np.log10(dbox1[field]).min()  )
+c_min = 10**np.floor(np.log10(dbox1[field]).mean()  )
 c_max = 10**np.floor(np.log10(dbox1[field]).max()+1)
 
 # Now find get our 'base' clump -- this one just covers the whole domain.
@@ -74,7 +74,7 @@ prj = yt.ProjectionPlot(ds, 2, field, center='c', width=(10,'pc'))
 prj.annotate_clumps(leaf_clumps)
 
 # Save the plot to disk.
-prj.save('clumps_yt_code_0060.png')
+prj.save('clumps_yt_code_0100.png')
 
 '''
 # Reload the clump dataset.
