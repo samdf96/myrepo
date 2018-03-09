@@ -58,7 +58,8 @@ for i in range(0, 8):
     #master_clump.add_validator("gravitationally_bound",
                            #use_particles=False,
                            #use_thermal_energy=False)
-
+    
+    master_clump.add_info_item("center_of_mass")
     c_min = dbox_array[i]["gas", "density"].mean()
     c_max = dbox_array[i]["gas", "density"].max()
     step = 2.0
@@ -68,6 +69,11 @@ for i in range(0, 8):
     prj.annotate_clumps(get_lowest_clumps(master_clump))
     prj.save('Clump_0100_ClumpSizing_' + str(clump_sizing) + '_Octant_' + str(i) + '.png')
 
+#Start work Mar 10 Here
+    #fn = master_clump.save_as_dataset(fields=["density"])
+    # Reload the clump dataset.
+    #cds = yt.load(fn)
+    #print (master_clump.tree["clump", "center_of_mass"])
 '''
 # Calculate center of mass for all clumps.
 master_clump.add_info_item("center_of_mass")
