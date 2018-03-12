@@ -19,8 +19,6 @@ ds = yt.load("~/bigdata/Fiducial00/data.0100.3d.hdf5")
 #All Data Object for Clumping Variable
 ad = ds.all_data()
 
-for i in sorted(ds.derived_field_list):
-    print(i)
 
 #Comment In to add in a Thermal Energy Density field for clumping
 '''
@@ -46,14 +44,14 @@ z2 = np.array((0,0,0,0,l/2,l/2,l/2,l/2))
 #Creating 4 Loop for 8 Octants of data space to reduce computation overload
 dbox_array = [] #Creating Empty Dictionary
 
-for i in range(0, 1):
+for i in range(0, 8):
     dbox_array.append(ds.r[(x1[i],'pc'):(x2[i],'pc'), (y1[i],'pc'):(y2[i],'pc'), (z1[i],'pc'):(z2[i],'pc')])
 
     # the field to be used for contouring
     field = ("gas", "density")
 
     master_clump = Clump(dbox_array[i], ("gas", "density")) #Makes the first big clump
-    clump_sizing = 50  #Any Clump size smaller than this value get eliminated
+    clump_sizing = 500  #Any Clump size smaller than this value get eliminated
     master_clump.add_validator("min_cells", clump_sizing)
     '''
     master_clump.add_validator("gravitationally_bound",
@@ -62,31 +60,29 @@ for i in range(0, 1):
     '''
     
     master_clump.add_info_item("center_of_mass") #Adds Center of Mass info for Clumps
-    #Setting Limits for Clump Finding 
-    c_min = 5e-21
+    #Setting Limits for Clump Finding
+    c_min = dbox_array[i]["gas", "density"].mean()
     c_max = dbox_array[i]["gas", "density"].max()
-    step = 1000
-    find_clumps(master_clump, 5e-21, c_max, step) #Finds Clumps
+    step = 2.0
 
+    find_clumps(master_clump, c_min, c_max, step)   #Finds Clumps
     prj = yt.ProjectionPlot(ds,"z",field, data_source=dbox_array[i])    #Projcetion Plot
-    prj.set_zlim('density', 1e-3, 3e-2) #Setting limits for all pictures to be the same
     prj.annotate_clumps(get_lowest_clumps(master_clump))    #Draws Contours on top of projection
     prj.save('Clump_0100_ClumpSizing_' + str(clump_sizing) + '_Octant_' + str(i) + '.png')  #Saves Fig
 
-    #Grabs Lowest Tree Values (Leaves)
-    lc = get_lowest_clumps(master_clump)
-    for j in range(0,len(lc)):
-        print(lc[j].quantities.center_of_mass())
-        print(lc[j].quantities.angular_momentum_vector())
-        #print(lc[j].quantities.velocity_z())
-    '''
+    #Grabs Lowest Tree Values
+    leaf_clumps = get_lowest_clumps(master_clump)
+    clump_density = np.array(leaf_clumps[0]["gas", "density"])
+    print(leaf_clumps[0].quantities.total_mass())
+    #print(leaf_clumps[0]["gas", "center_of_mass"])
+    
     #Saves the Clumping Data Set
-    #fn = master_clump.save_as_dataset('~/bigdata/Fiducial00/Clump_Data_Fielder/'+'%s_clump_%d' % (str(ds), i), fields=["density"])
-    #cds = yt.load(fn)
+    fn = master_clump.save_as_dataset('~/bigdata/Fiducial00/Clump_Data_Fielder/'+'%s_clump_%d' % (str(ds), i), fields=["density"])
+    cds = yt.load(fn)
     #leaf_clumps_reloaded = cds.leaves
     #print (cds.leaves)
     #print (cds.tree["clump", "center_of_mass"])
-
+'''
 # We can traverse the clump hierarchy to get a list of all of the 'leaf' clumps
 leaf_clumps = get_lowest_clumps(master_clump)
 
