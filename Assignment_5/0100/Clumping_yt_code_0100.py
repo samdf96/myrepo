@@ -18,10 +18,10 @@ ds = yt.load("~/bigdata/Fiducial00/data.0100.3d.hdf5")
 
 #All Data Object for Clumping Variable
 ad = ds.all_data()
-
+'''
 for i in sorted(ds.derived_field_list):
     print(i)
-
+'''
 #Comment In to add in a Thermal Energy Density field for clumping
 '''
 def _therm(field, data):
@@ -44,7 +44,7 @@ z2 = np.array((0,0,0,0,l/2,l/2,l/2,l/2))
 
 
 #Creating 4 Loop for 8 Octants of data space to reduce computation overload
-dbox_array = [] #Creating Empty Dictionary
+dbox_array = [] #Creating Empty List
 
 for i in range(0, 1):
     dbox_array.append(ds.r[(x1[i],'pc'):(x2[i],'pc'), (y1[i],'pc'):(y2[i],'pc'), (z1[i],'pc'):(z2[i],'pc')])
@@ -75,9 +75,20 @@ for i in range(0, 1):
 
     #Grabs Lowest Tree Values (Leaves)
     lc = get_lowest_clumps(master_clump)
+ 
+    center_of_mass = np.zeros((len(lc),3))
+    box_region = np.zeros((len(lc),3,2))
+    max_x_distance = np.zeros((len(lc),1))
     for j in range(0,len(lc)):
-        print(lc[j].quantities.center_of_mass())
-        print(lc[j].quantities.angular_momentum_vector())
+        com = np.array(lc[j].quantities.center_of_mass())   #Writes current com into array
+        center_of_mass[j] = com     #Writes to center_of_mass array
+        #print(lc[j].quantities.angular_momentum_vector())
+        bregions = np.array(lc[j].quantities.extrema([('gas','x'),('gas','y'),('gas','z')]))
+        box_region[j] = bregions # Creates Boundaries for clump box
+        
+        
+        
+        
         #print(lc[j].quantities.velocity_z())
     '''
     #Saves the Clumping Data Set
