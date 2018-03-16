@@ -210,13 +210,13 @@ for n in range(0,5):
         angular_momentum_implied_specific[i] = beta * gradients[i] * subregion_edge_length**2
     
         
-    # Computing Actual Angular Momentum Weighted by Density?
+    # Computing Actual Angular Momentum Weighted by Density
         
     angular_momentum_actual = ad.integrate('angular_momentum_magnitude',axis='z',weight=None)
     # Now we have to make this into a gridded set of pixel data.
     angular_momentum_actual = angular_momentum_actual.to_frb((data_width,'pc'),[data_length,data_length])
-    angular_momenutm_actual = np.array(angular_momentum_actual['angular_momentum_magnitude'])
-    angular_momentum_actual = blockshaped(angular_momenutm_actual,array_split_size,array_split_size)
+    angular_momentum_actual = np.array(angular_momentum_actual['angular_momentum_magnitude'])
+    angular_momentum_actual = blockshaped(angular_momentum_actual,array_split_size,array_split_size)
     
     angular_momentum_actual_specific_sum = np.zeros((array_split_size_sub,1,1))
     unit_conv = (1/(3.086e18)) * (1e-5)
