@@ -7,6 +7,7 @@ Created on Thu Mar  8 19:52:29 2018
 """
 
 import numpy as np
+np.set_printoptions(threshold=np.inf)
 
 import yt
 from yt.analysis_modules.level_sets.api import *
@@ -21,6 +22,8 @@ ds = yt.load("~/bigdata/Fiducial00/data.0100.3d.hdf5")
 
 #All Data Object for Clumping Variable
 ad = ds.all_data()
+
+
 '''
 for i in sorted(ds.derived_field_list):
     print(i)
@@ -32,9 +35,9 @@ def _therm(field, data):
 yt.add_field(("gas","thermal_energy"), function=_therm, units="erg/g", force_override=True)
 '''
 
-
 #Used for naming scheme of dbox_x areas
 namespace = globals()
+
 #Splitting Arrays for Octant Beginning and Ending Values for L length space
 l = 10 #Data Length of One edge of original ds data set
 
@@ -48,6 +51,7 @@ octant = 8
 
 #Creating 4 Loop for 8 Octants of data space to reduce computation overload
 dbox_array = [] #Creating Empty List
+angular_momentum_list = [] #Creating Empty list to store values in for later
 
 for i in range(0,octant):
     dbox_array.append(ds.r[(x1[i],'pc'):(x2[i],'pc'), (y1[i],'pc'):(y2[i],'pc'), (z1[i],'pc'):(z2[i],'pc')])
@@ -93,21 +97,26 @@ for i in range(0,octant):
         bregions = np.array(lc[j].quantities.extrema([('gas','x'),('gas','y'),('gas','z')]))
         box_region[j] = bregions # Creates Boundaries for clump boxes
         
+
     for k in range(0,len(lc)):
         dbox_clump = ds.r[(box_region[k,0,0],'cm'):(box_region[k,0,1],'cm'), (box_region[k,1,0],'cm'):(box_region[k,1,1],'cm'), (box_region[k,2,0],'cm'):(box_region[k,2,1],'cm')]
         #test_proj = yt.ProjectionPlot(ds,"z",field, data_source=dbox_clump)
         #test_proj.save('test_proj_' + str(k) + '.png')
+        #plt.clf()
+        
         
         # This creates a projection weighting by density for clump
         vz = dbox_clump.integrate('velocity_z',weight='density',axis='z')
-        
+        '''
         test_image = plt.scatter(vz['px'],vz['py'],c=vz['velocity_z'])
         plt.colorbar()
         plt.show()
         plt.clf()
+        '''
         
         # For x-axis
         dist_x = box_region[k,0,1] - box_region[k,0,0]  #Finds x-axis distance
+        dist_x_scale_1 = np.abs(com[0]/master_dist)
         scale_x = dist_x / master_dist  #Gets Scale factor for x
         data_length_x_pc = scale_x * master_dist_pc
         data_length_x_non_rounded = scale_x * master_dist_data  #Data_length for forcing mesh
@@ -120,14 +129,45 @@ for i in range(0,octant):
         data_length_y_non_rounded = scale_y * master_dist_data  #Data_length for forcing mesh
         data_length_y = m.floor(data_length_y_non_rounded)
         
-        #Data of z_velocity into np.arrray
-        arr = vz.to_frb((data_length_x_pc,'pc'),(data_length_x,data_length_y), height=(data_length_y_pc,'pc'))
-        arr = np.array(arr['velocity_z'])
         
+        #Data of z_velocity into np.arrray
+        arr = vz.to_frb((master_dist_pc,'pc'),(master_dist_data,master_dist_data))
+        #arr = vz.to_frb((data_length_x_pc,'pc'),(data_length_x,data_length_y), height=(data_length_y_pc,'pc'))
+        arr = np.array(arr['velocity_z'])
+        arr = np.nan_to_num(arr)
+        #print('Mean of z-velocity =', np.mean(arr) )
+        #print('Sum of z-velocity =', np.sum(arr))
+        
+        '''
+        #Parameters to making sphere around clump
+        dist_x_scale_sphere = np.abs(com[0]/master_dist)
+        dist_y_scale_sphere = np.abs(com[1]/master_dist)
+        dist_z_scale_sphere = np.abs(com[2]/master_dist)
+        radius_x = data_length_x_pc / 2
+        radius_y = data_length_y_pc / 2
+        dist_z = box_region[k,2,1]-box_region[k,2,0]
+        scale_z = dist_z / master_dist
+        data_length_z_pc = scale_z * master_dist_pc
+        radius_z = data_length_z_pc / 2
+        radius_array = [radius_x,radius_y,radius_z]
+        #Returns max axis length of clump area
+        #Might not be good, maybe average?
+        radius = np.max(radius_array)
+        dbox_sphere = ds.sphere([dist_x_scale_sphere,dist_y_scale_sphere,dist_z_scale_sphere],(radius,'pc'))
+        
+        
+        
+        #Creating velocity mapping
+        vz = dbox_sphere.integrate('velocity_z',axis='z')
+        arr = np.array(vz['velocity_z']).reshape(256,256)
+        test_proj = yt.ProjectionPlot(ds,"z",("gas", "density"), data_source=dbox_sphere)
+        test_proj.save('test.png')
+        '''
+
         #Plane Fitting Process Start
         #Creating x,y coordintes for blocks of data
-        xvalues = np.arange(0,data_length_x);
-        yvalues = np.arange(0,data_length_y);
+        xvalues = np.arange(0,master_dist_data);
+        yvalues = np.arange(0,master_dist_data);
     
         xx, yy = np.meshgrid(xvalues, yvalues)  #Creates x,y for planefitting
         
@@ -164,11 +204,45 @@ for i in range(0,octant):
         
         #Integration on line of sight
         angular_momentum_actual = dbox_clump.integrate('angular_momentum_magnitude',axis='z',weight=None)
-        angular_momentum_actual = angular_momentum_actual.to_frb((data_length_x_pc,'pc'),[data_length_x,data_length_y],height=(data_length_y_pc,'pc'))
+        angular_momentum_actual = angular_momentum_actual.to_frb((master_dist_pc,'pc'),(master_dist_data,master_dist_data))
         angular_momentum_actual = np.array(angular_momentum_actual['angular_momentum_magnitude'])
+        angluar_momentum_actual = np.nan_to_num(angular_momentum_actual)
+        #print(angular_momentum_actual)
+        print(np.sum(angular_momentum_actual))
         
         #Defining Empty Array
         angular_momentum_actual_specific_sum = np.zeros((1,1))
         unit_conv = (1/(3.086e18)) * (1e-5)
         angular_momentum_actual_specific_sum = np.sum(angular_momentum_actual) * unit_conv / mass_cell_total
-        
+    
+        angular_momentum_list.append([gradient,mass_cell_total,angular_momentum_implied_specific,angular_momentum_actual_specific_sum])
+
+angular_momentum_list = np.array(angular_momentum_list)
+'''
+#Plotting Values Obtaining
+    
+#define x axis quadrant values
+x_plotting = np.linspace(2,11,1000)
+y1 = np.zeros((len(angular_momentum_list),1))
+y2 = np.zeros((len(angular_momentum_list),1))
+for i in range(0,len(angular_momentum_list)):
+    y1[i] = angular_momentum_actual_specific_sum[i]
+    y2[i] = angular_momentum_implied_specific[i]
+                            
+    np.savetxt("Actual_J_specific_{n}.csv".format(n=n),y1,delimiter=' & ', fmt='%.4g', newline=' \\\\\n')
+    np.savetxt("Implied_J_specific_{n}.csv".format(n=n),y2,delimiter=' & ', fmt='%.4g', newline=' \\\\\n')
+                                
+    #Plotting - Loglog (residual based with the unity line)
+    plt.loglog(y1,y2,'r.',label='Specific Angular Momentum')
+    plt.loglog(x_plotting, x_plotting, 'k-', alpha=0.75, zorder=0,label='Line of Unity')
+    plt.legend(bbox_to_anchor=(1, 0.5))
+    #plt.grid(True, which='both')
+    #This is not working correctly.
+    #plt.axes().set_aspect('equal', 'datalim')
+    plt.xlabel(r'Actual Specific Angular Momentum $(pc^2 \ Myr^{-1})$')
+    plt.ylabel(r'Implied Specific Angular Momentum $(pc^2 \ Myr^{-1})$')
+    plt.title('Actual Specific Angular Momentum vs Implied Specific Angular Momentum', y=1.08)
+    plt.savefig("Ang_Mom_Specific_Comparison_{n}.pdf".format(n=n), bbox_inches='tight')
+    plt.savefig("Ang_Mom_Specific_Comparison_{n}.png".format(n=n), bbox_inches='tight')
+    plt.gcf().clear()    
+'''                   

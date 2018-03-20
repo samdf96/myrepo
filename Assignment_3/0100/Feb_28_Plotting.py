@@ -45,7 +45,7 @@ for i in sorted(ds.derived_field_list):
 '''
 
 # Basic Projection Plots
-
+'''
 #Density Projection along z
 yt.ProjectionPlot(ds, "z", "density").save("z_mass_density_plot.png")
 
@@ -80,7 +80,7 @@ source.tfh.grey_opacity = True
 sc.save('data.0100.3d.hdf5_Render_density_fixed.png', sigma_clip=6.0)
 
 ##############################################################################
-
+'''
 #Analysis of Data Section
 
 
@@ -119,8 +119,8 @@ def blockshaped(arr, nrows, ncols):
 # This makes the index number go left to right and top to bottom.
  
 
-
-for n in range(0,5):
+#n ranges from (0,5)
+for n in range(0,1):
 
     
     #Need to make it so that it runs over a certain array of sizes:   
@@ -217,7 +217,7 @@ for n in range(0,5):
     angular_momentum_actual = angular_momentum_actual.to_frb((data_width,'pc'),[data_length,data_length])
     angular_momentum_actual = np.array(angular_momentum_actual['angular_momentum_magnitude'])
     angular_momentum_actual = blockshaped(angular_momentum_actual,array_split_size,array_split_size)
-    
+    print(angular_momentum_actual)
     angular_momentum_actual_specific_sum = np.zeros((array_split_size_sub,1,1))
     unit_conv = (1/(3.086e18)) * (1e-5)
     for i in range(0,array_split_size_sub):
