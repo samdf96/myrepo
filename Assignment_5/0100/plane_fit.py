@@ -35,11 +35,11 @@ def plane_fit(x, y, z, robust=False):
                   x-x0, 
                   y-y0]
 
-    lsqcoeffs, _, _, _ = np.linalg.lstsq(dataz,z)
+    lsqcoeffs, residuals, _, _ = np.linalg.lstsq(dataz,z)
     if robust:
         outputs = lsq(myplane, np.r_[lsqcoeffs],
                       args=([x-x0,
                              y-y0, z]),
                       loss = 'soft_l1')
         lsqcoeffs = outputs.x
-    return(lsqcoeffs)
+    return(lsqcoeffs,residuals)

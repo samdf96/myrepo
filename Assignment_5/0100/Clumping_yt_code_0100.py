@@ -14,6 +14,7 @@ from yt.analysis_modules.level_sets.api import *
 #from yt.utilities.physical_constants import kboltz, mh
 #from yt.units import Kelvin
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 import math as m
 from plane_fit import plane_fit
 
@@ -55,7 +56,7 @@ angular_momentum_list_x_projection = []
 angular_momentum_list_y_projection = []
 angular_momentum_list_z_projection = []
 
-for i in range(0,octant):   #Master Loop for Octants
+for i in range(0,1):   #Master Loop for Octants
     #Creating Boxed Regions for Octants of Data Simulation Set Here
     dbox_array.append(ds.r[(x1[i],'pc'):(x2[i],'pc'), (y1[i],'pc'):(y2[i],'pc'), (z1[i],'pc'):(z2[i],'pc')])
 
@@ -104,7 +105,8 @@ for i in range(0,octant):   #Master Loop for Octants
         
 
 #Main Loop for All the clump regions, to determine parameters
-    for k in range(0,len(lc)):
+        #Default end value ln(lc)
+    for k in range(0,1):
         dbox_clump = ds.r[(box_region[k,0,0],'cm'):(box_region[k,0,1],'cm'), (box_region[k,1,0],'cm'):(box_region[k,1,1],'cm'), (box_region[k,2,0],'cm'):(box_region[k,2,1],'cm')]
 
 ######### Section for finding length of each box in pc ###############
@@ -141,20 +143,42 @@ for i in range(0,octant):   #Master Loop for Octants
         vy = dbox_clump.integrate('velocity_y', weight='density', axis='y')
         vz = dbox_clump.integrate('velocity_z', weight='density', axis='z')
         
+        
+        '''
+        #Saving Data Into CSV for testing
+        vx_z = dbox_clump.integrate('velocity_x', weight='density', axis='z')
+        vx_z_arr = vx_z.to_frb((l,'pc'),(data_length_x,data_length_y))
+        vx_z_arr = np.array(vx_z_arr['velocity_x'])
+        plt.scatter(vx_z['px'],vx_z['py'],c=vx_z['velocity_x'])
+        plt.colorbar()
+        plt.show()
+     
+        vy_z = dbox_clump.integrate('velocity_y', weight='density', axis='z')
+        plt.scatter(vz['px'],vz['py'],c=vy_z['velocity_y'])
+        plt.colorbar()
+        plt.show()
+        '''
+        
         #Data of x_velocity into arrray
         arr_x = vx.to_frb((l,'pc'),(master_dist_data,master_dist_data))
         arr_x = np.array(arr_x['velocity_x'])
         arr_x = np.nan_to_num(arr_x) #Gets rid of nan entries
+        plt.scatter(vx['px'],vx['py'],c=vx['velocity_x'])
+        plt.colorbar()
+        plt.show()
+        np.savetxt("Arr_x_Clump_Octant_{j}_Clump_{k}.csv".format(j=j,k=k),arr_x,delimiter=' & ', fmt='%.4g', newline=' \\\\\n')
         
         #Data of y_velocity into arrray
         arr_y = vy.to_frb((l,'pc'),(master_dist_data,master_dist_data))
         arr_y = np.array(arr_y['velocity_y'])
         arr_y = np.nan_to_num(arr_y) #Gets rid of nan entries
+        np.savetxt("Arr_y_Clump_Octant_{j}_Clump_{k}.csv".format(j=j,k=k),arr_y,delimiter=' & ', fmt='%.4g', newline=' \\\\\n')
         
         #Data of z_velocity into arrray
         arr_z = vz.to_frb((l,'pc'),(master_dist_data,master_dist_data))
         arr_z = np.array(arr_z['velocity_z'])
         arr_z = np.nan_to_num(arr_z) #Gets rid of nan entries
+        np.savetxt("Arr_z_Clump_Octant_{j}_Clump_{k}.csv".format(j=j,k=k),arr_z,delimiter=' & ', fmt='%.4g', newline=' \\\\\n')
 
         #Plane Fitting Process Start
         #Creating i,j coordintes for blocks of data
@@ -163,16 +187,27 @@ for i in range(0,octant):   #Master Loop for Octants
     
         ii, jj = np.meshgrid(ivalues, jvalues)  #Creates i,j for planefitting
         
+        ii_flat = np.ndarray.flatten(ii)
+        jj_flat = np.ndarray.flatten(jj)
+        
         #Creating Empty Arrays for Gradient Values
         first_plane_sec_x = np.zeros((1,3))
         first_plane_sec_y = np.zeros((1,3))
         first_plane_sec_z = np.zeros((1,3))
         
         #Runs the Plane fitting to get a gradient values
-        first_plane_sec_x = plane_fit(np.ndarray.flatten(ii),np.ndarray.flatten(jj),np.ndarray.flatten(arr_x))
-        first_plane_sec_y = plane_fit(np.ndarray.flatten(ii),np.ndarray.flatten(jj),np.ndarray.flatten(arr_y))
-        first_plane_sec_z = plane_fit(np.ndarray.flatten(ii),np.ndarray.flatten(jj),np.ndarray.flatten(arr_z))
+        first_plane_sec_x = plane_fit(ii_flat,jj_flat,np.ndarray.flatten(arr_x))[0]
+        first_plane_sec_y = plane_fit(ii_flat,jj_flat,np.ndarray.flatten(arr_y))[0]
+        first_plane_sec_z = plane_fit(ii_flat,jj_flat,np.ndarray.flatten(arr_z))[0]
+        
+        v_plane_x = first_plane_sec_x[0] + (ii_flat*first_plane_sec_x[1]) + (jj_flat*first_plane_sec_x[2])
+        
+        
+        first_plane_sec_x_residuals = plane_fit(ii_flat,jj_flat,np.ndarray.flatten(arr_x))[1]
+        first_plane_sec_y_residuals = plane_fit(ii_flat,jj_flat,np.ndarray.flatten(arr_y))[1]
+        first_plane_sec_z_residuals = plane_fit(ii_flat,jj_flat,np.ndarray.flatten(arr_z))[1]
 
+        
         #Need Conversion for values in km/s/pc instead of cm/s/pixel
         conv_length = 1/(10000) #cm to km
         conv_distance = master_dist_data/l #pixel to pc
@@ -400,4 +435,4 @@ plt.title('Z-Axis Line of Sight', y=1.08)
 plt.savefig("Ang_Mom_Specific_Comparison_0100_Z-LOS.pdf", bbox_inches='tight')
 plt.savefig("Ang_Mom_Specific_Comparison_0100_Z-LOS.png", bbox_inches='tight')
 plt.show() 
-       
+    
