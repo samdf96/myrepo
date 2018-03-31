@@ -160,7 +160,7 @@ for i in range(0,1):   #Master Loop for Octants
         '''
         
         #Data of x_velocity into arrray
-        arr_x = vx.to_frb((l,'pc'),(master_dist_data,master_dist_data))
+        arr_x = vx.to_frb(dist_x,dist_y,(data_length_x,data_length_y))
         arr_x = np.array(arr_x['velocity_x'])
         arr_x = np.nan_to_num(arr_x) #Gets rid of nan entries
         plt.scatter(vx['px'],vx['py'],c=vx['velocity_x'])
