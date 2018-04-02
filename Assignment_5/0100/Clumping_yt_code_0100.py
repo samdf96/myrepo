@@ -68,7 +68,7 @@ for i in range(0,octant):   #Master Loop for Octants
 
     #Creating Master Clump, and Clump Parameters
     master_clump = Clump(dbox_array[i], ("gas", "density")) #Makes the first big clump
-    clump_sizing = 200  #Any Clump size smaller than this value get eliminated
+    clump_sizing = 100  #Any Clump size smaller than this value get eliminated
     
     #Validator is the minimum clump size:
     master_clump.add_validator("min_cells", clump_sizing)
@@ -169,18 +169,19 @@ for i in range(0,octant):   #Master Loop for Octants
         vz_positions_xy.append(vz_positions[-1,1])   #Last Column Value
         
         #For Creation of x-coords,y-coords
-        x_values = np.arange(1,(vz_positions_xy[1]-vz_positions_xy[0]+2))
-        y_values = np.arange(1,(vz_positions_xy[3]-vz_positions_xy[2]+2))
+        vz_x_values = np.arange(1,(vz_positions_xy[1]-vz_positions_xy[0]+2))
+        vz_y_values = np.arange(1,(vz_positions_xy[3]-vz_positions_xy[2]+2))
         
-        yy, xx = np.meshgrid(x_values, y_values)
+        vz_yy, vz_xx = np.meshgrid(vz_x_values, vz_y_values)
         
-        vz_px = np.array(xx)
-        vz_py = np.array(yy)
+        vz_px = np.array(vz_xx)
+        vz_py = np.array(vz_yy)
         
         #Extracts the data into a new numpy array for plane fitting
         vz_arr_red = vz_arr[vz_positions_xy[0]:vz_positions_xy[1]+1,vz_positions_xy[2]:vz_positions_xy[3]+1]
         
         '''
+        #Old Method using positions values from vz, didnt work.
         #Extracts the x-position values from 'px'
         x_values = np.array(vz['px'])
         x_values = np.reshape(x_values,(256,256))
@@ -214,8 +215,7 @@ for i in range(0,octant):   #Master Loop for Octants
         
         beta=1
         angular_momentum_vz_implied_specific = beta * gradient_z * dist_x * dist_y
-        
-        
+   
         #Integration on line of sight
         angular_momentum_actual_x = dbox_clump.sum('angular_momentum_x')
         angular_momentum_actual_y = dbox_clump.sum('angular_momentum_y') 
