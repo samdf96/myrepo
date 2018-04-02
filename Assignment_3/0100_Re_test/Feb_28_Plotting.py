@@ -120,7 +120,7 @@ def blockshaped(arr, nrows, ncols):
  
 
 #n ranges from (0,5)
-for n in range(0,1):
+for n in range(0,5):
 
     
     #Need to make it so that it runs over a certain array of sizes:   
@@ -185,8 +185,8 @@ for n in range(0,1):
     # Computing Mass for each region
     
     # This next line integrates over a line of sight to create a Line-of-sight projection weighted by density
-#    mass = ad.sum('cell_mass',axis='z') #See Re-test Directory
-    mass = ad.integrate('cell_mass',axis='z',weight=None)
+    mass = ad.sum('cell_mass',axis='z')
+#    mass = ad.integrate('cell_mass',axis='z',weight=None)
     # Now we have to make this into a gridded set of pixel data.
     data_width = data_length_pc
     mass_cell = mass.to_frb((data_width,'pc'),[data_length,data_length])
@@ -213,8 +213,8 @@ for n in range(0,1):
         
     # Computing Actual Angular Momentum Weighted by Density
     
-#    angular_momentum_actual = ad.sum('angular_momentum_magnitude',axis='z')#See Re-test Directory
-    angular_momentum_actual = ad.integrate('angular_momentum_magnitude',axis='z',weight=None)
+    angular_momentum_actual = ad.sum('angular_momentum_magnitude',axis='z')
+#    angular_momentum_actual = ad.integrate('angular_momentum_magnitude',axis='z',weight=None)
     # Now we have to make this into a gridded set of pixel data.
     angular_momentum_actual = angular_momentum_actual.to_frb((data_width,'pc'),[data_length,data_length])
     angular_momentum_actual = np.array(angular_momentum_actual['angular_momentum_magnitude'])
