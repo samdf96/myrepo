@@ -392,19 +392,19 @@ angular_momentum_list_x_projection = np.array(angular_momentum_list_x_projection
 angular_momentum_list_y_projection = np.array(angular_momentum_list_y_projection)
 angular_momentum_list_z_projection = np.array(angular_momentum_list_z_projection)
 
-'''
+
 #Saving Data to files.
-np.savetxt("Angular_Momentum_0100_x_projection.csv",
+np.savetxt("Angular_Momentum_0100_x_projection_clumpsize_{clump_sizing}.csv".format(clump_sizing=clump_sizing),
            angular_momentum_list_x_projection,
            delimiter=' & ', fmt='%.4g', newline=' \\\\\n')
-np.savetxt("Angular_Momentum_0100_y_projection.csv",
+np.savetxt("Angular_Momentum_0100_y_projection_clumpsize_{clump_sizing}.csv".format(clump_sizing=clump_sizing),
            angular_momentum_list_y_projection,
            delimiter=' & ', fmt='%.4g', newline=' \\\\\n')
-np.savetxt("Angular_Momentum_0100_z_projection.csv",
+np.savetxt("Angular_Momentum_0100_z_projection_clumpsize_{clump_sizing}.csv".format(clump_sizing=clump_sizing),
            angular_momentum_list_z_projection,
            delimiter=' & ', fmt='%.4g', newline=' \\\\\n')
 
-'''
+
 
 # =============================================================================
 # ~~~~~~~~~~~~~~~~~~~~~ Plotting Comparison Graphs ~~~~~~~~~~~~~~~~~~~
