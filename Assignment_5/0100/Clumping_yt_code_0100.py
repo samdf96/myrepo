@@ -107,15 +107,18 @@ for i in range(0,octant):   #Master Loop for Octants
         box_region[j] = bregions # Creates Boundaries for clump boxes
         
 
-#Main Loop for All the clump regions, to determine parameters
-        #Default end value ln(lc)
-    for k in range(0,len(lc)):
+# =============================================================================
+# ~~~~~~~ Main Loop for All the clump regions, to determine parameters
+# =============================================================================
+        
+        
+    for k in range(0,len(lc)):  #Default end value ln(lc)
         dbox_clump = ds.r[(box_region[k,0,0],'cm'):(box_region[k,0,1],'cm'), (box_region[k,1,0],'cm'):(box_region[k,1,1],'cm'), (box_region[k,2,0],'cm'):(box_region[k,2,1],'cm')]
 
-######### Section for finding length of each box in pc ###############
-
-#Also finds scale factors needed for angular momentum computation
-        # i.e. Length of box in pc of each axis.
+# =============================================================================
+# Section for finding length of each box in cgs and pc units, used later.
+# Also find the scale factors needed for angular momentum computations.
+# =============================================================================
 
         # For x-axis
         dist_x = box_region[k,0,1] - box_region[k,0,0]  #Finds x-axis distance
@@ -139,14 +142,22 @@ for i in range(0,octant):   #Master Loop for Octants
         data_length_z_non_rounded = scale_z * master_dist_data  #Data_length for forcing mesh
         data_length_z = m.floor(data_length_z_non_rounded)
         
-######################################################################  
+# =============================================================================
+# Start of Plane fitting Velocity and Angular Momentum Calculations  
+# =============================================================================
         
         # This creates projections weighting by density for clump
         vx = dbox_clump.integrate('velocity_x', weight='density', axis='x')
         vy = dbox_clump.integrate('velocity_y', weight='density', axis='y')
         vz = dbox_clump.integrate('velocity_z', weight='density', axis='z')
+        beta=1 #Sets Beta Value for Code
         
-################### For z-line of sight ##############################
+        #Finding Mass for Clump
+        mass_cell_total = np.array(dbox_clump.quantities.total_mass())[0]
+        
+# =============================================================================
+# Z-LOS Calculations
+# =============================================================================
         #Create Scatter Plot
         '''
         plt.scatter(vz['px'],vz['py'],c=vz['velocity_z'])
@@ -180,18 +191,25 @@ for i in range(0,octant):   #Master Loop for Octants
         #Extracts the data into a new numpy array for plane fitting
         vz_arr_red = vz_arr[vz_positions_xy[0]:vz_positions_xy[1]+1,vz_positions_xy[2]:vz_positions_xy[3]+1]
         
-        '''
-        #Old Method using positions values from vz, didnt work.
-        #Extracts the x-position values from 'px'
-        x_values = np.array(vz['px'])
-        x_values = np.reshape(x_values,(256,256))
-        vz_px = x_values[vz_positions_xy[0]:vz_positions_xy[1]+1,vz_positions_xy[2]:vz_positions_xy[3]+1]
         
-        #Extracting the y-positions values from 'py'
-        y_values = np.array(vz['py'])
-        y_values = np.reshape(y_values,(256,256))
-        vz_py = y_values[vz_positions_xy[0]:vz_positions_xy[1]+1,vz_positions_xy[2]:vz_positions_xy[3]+1]
-        '''
+# =============================================================================
+# Was Used to initially compute the meshgrids in terms of the positional
+# arguments given in the data_objects, did not end up working when forcing
+# the 'vz/vx/vy' with the to_frb() function. Instead using default mesh,
+# plus conversion to units after the fact. See below.
+# =============================================================================
+# =============================================================================
+#         #Extracts the x-position values from 'px'
+#         x_values = np.array(vz['px'])
+#         x_values = np.reshape(x_values,(256,256))
+#         vz_px = x_values[vz_positions_xy[0]:vz_positions_xy[1]+1,vz_positions_xy[2]:vz_positions_xy[3]+1]
+#         
+#         #Extracting the y-positions values from 'py'
+#         y_values = np.array(vz['py'])
+#         y_values = np.reshape(y_values,(256,256))
+#         vz_py = y_values[vz_positions_xy[0]:vz_positions_xy[1]+1,vz_positions_xy[2]:vz_positions_xy[3]+1]
+# =============================================================================
+        
         
         
         #Creating Mesh for x-coord and y-coords
@@ -208,12 +226,126 @@ for i in range(0,octant):   #Master Loop for Octants
         #Computing Gradient term for km/s/pc
         gradient_z_kms = gradient_z * (3.086e13)
         
-        #Finding Mass for Clump
-        mass_cell_total = np.array(dbox_clump.quantities.total_mass())[0]
+        '''
+        #Computing V_plane
+        vz_plane = first_plane_sec_z[0] + (vz_px*first_plane_sec_z[1]) + (vz_py*first_plane_sec_z[2])
+        vz_plane_tran = np.transpose(vz_plane)
         
-        angular_momentum_implied_specific = np.zeros((1,1))
+        plt.scatter(vz_px,vz_py,c=vz_plane)
+        plt.colorbar()
+        plt.show()
         
-        beta=1
+        #Residual Graph
+        vz_residuals = vz_plane_tran - vz_arr_red
+        
+        plt.scatter(vz_px,vz_py,c=vz_residuals.ravel())
+        plt.colorbar()
+        plt.show()
+        '''
+        
+# =============================================================================
+# X-LOS Calculations       
+# =============================================================================
+        #Create Scatter Plot
+        '''
+        plt.scatter(vx['py'],vx['pz'],c=vx['velocity_x'])
+        plt.colorbar()
+        plt.show()
+        '''
+        
+        #Turn data into array (can only do 256,256)
+        vx_reform = vx.to_frb((l,'pc'),(master_dist_data,master_dist_data))
+        vx_arr = np.array(vx_reform['velocity_x'])
+        vx_arr = np.reshape(vx_arr,(256,256))
+
+        #Find where the data is non-nan valued
+        vx_positions = np.argwhere(~np.isnan(vx_arr))
+        
+        vx_positions_yz = []    #Creating list for array slicing
+        vx_positions_yz.append(vx_positions[0,0]) #First Row Value
+        vx_positions_yz.append(vx_positions[-1,0]) #Last Row Value
+        vx_positions_yz.append(vx_positions[0,1])    #First Column Value
+        vx_positions_yz.append(vx_positions[-1,1])   #Last Column Value
+        
+        #For Creation of x-coords,y-coords
+        vx_y_values = np.arange(1,(vx_positions_yz[1]-vx_positions_yz[0]+2))
+        vx_z_values = np.arange(1,(vx_positions_yz[3]-vx_positions_yz[2]+2))
+        
+        vx_yy, vx_zz = np.meshgrid(vx_y_values, vx_z_values)    #Creates Meshgrid
+        
+        vx_py = np.array(vx_yy) #Turns into arrays
+        vx_pz = np.array(vx_zz) #Turns into arrays
+        
+        #Extracts the data into a new numpy array for plane fitting
+        vx_arr_red = vx_arr[vx_positions_yz[0]:vx_positions_yz[1]+1,vx_positions_yz[2]:vx_positions_yz[3]+1]
+        
+        #Plane Fitting Process
+        vx_py_flat = np.ndarray.flatten(vx_py)
+        vx_pz_flat = np.ndarray.flatten(vx_pz)
+        vx_arr_flat= np.ndarray.flatten(vx_arr_red)
+        first_plane_sec_x = np.zeros((1,3)) #Creates Empty Array
+        first_plane_sec_x = plane_fit(vx_py_flat,vx_pz_flat,vx_arr_flat) #Plane Fit
+        #Computing Gradient Term
+        conv_factor = 1/ ((5/128)*(3.086e18))   #For cm/s/pixel to 1/s
+        gradient_x = ((first_plane_sec_x[1]**2) + (first_plane_sec_x[2]**2))**(1/2) * conv_factor
+        #Computing Gradient term for km/s/pc
+        gradient_x_kms = gradient_x * (3.086e13)
+        
+# =============================================================================
+# Y-LOS Calculations       
+# =============================================================================
+        #Create Scatter Plot
+        '''
+        plt.scatter(vx['py'],vx['pz'],c=vx['velocity_x'])
+        plt.colorbar()
+        plt.show()
+        '''
+        
+        #Turn data into array (can only do 256,256)
+        vy_reform = vy.to_frb((l,'pc'),(master_dist_data,master_dist_data))
+        vy_arr = np.array(vy_reform['velocity_y'])
+        vy_arr = np.reshape(vy_arr,(256,256))
+
+        #Find where the data is non-nan valued
+        vy_positions = np.argwhere(~np.isnan(vy_arr))
+        
+        vy_positions_xz = []    #Creating list for array slicing
+        vy_positions_xz.append(vy_positions[0,0]) #First Row Value
+        vy_positions_xz.append(vy_positions[-1,0]) #Last Row Value
+        vy_positions_xz.append(vy_positions[0,1])    #First Column Value
+        vy_positions_xz.append(vy_positions[-1,1])   #Last Column Value
+        
+        #For Creation of x-coords,y-coords
+        vy_x_values = np.arange(1,(vy_positions_xz[1]-vy_positions_xz[0]+2))
+        vy_z_values = np.arange(1,(vy_positions_xz[3]-vy_positions_xz[2]+2))
+        
+        vy_xx, vy_zz = np.meshgrid(vy_x_values, vy_z_values)    #Creates Meshgrid
+        
+        vy_px = np.array(vy_xx) #Turns into arrays
+        vy_pz = np.array(vy_zz) #Turns into arrays
+        
+        #Extracts the data into a new numpy array for plane fitting
+        vy_arr_red = vy_arr[vy_positions_xz[0]:vy_positions_xz[1]+1,vy_positions_xz[2]:vy_positions_xz[3]+1]
+        
+        #Plane Fitting Process
+        vy_px_flat = np.ndarray.flatten(vy_px)
+        vy_pz_flat = np.ndarray.flatten(vy_pz)
+        vy_arr_flat= np.ndarray.flatten(vy_arr_red)
+        first_plane_sec_y = np.zeros((1,3)) #Creates Empty Array
+        first_plane_sec_y = plane_fit(vy_px_flat,vy_pz_flat,vy_arr_flat) #Plane Fit
+        #Computing Gradient Term
+        conv_factor = 1/ ((5/128)*(3.086e18))   #For cm/s/pixel to 1/s
+        gradient_y = ((first_plane_sec_y[1]**2) + (first_plane_sec_y[2]**2))**(1/2) * conv_factor
+        #Computing Gradient term for km/s/pc
+        gradient_y_kms = gradient_y * (3.086e13)
+        
+
+# =============================================================================
+# This is where the Specific Angular Mometum is computed
+# =============================================================================
+        
+        angular_momentum_vx_implied_specific = beta * gradient_x * dist_y * dist_z
+        angular_momentum_vy_implied_specific = beta * gradient_y * dist_x * dist_z
         angular_momentum_vz_implied_specific = beta * gradient_z * dist_x * dist_y
    
         #Integration on line of sight
@@ -230,8 +362,23 @@ for i in range(0,octant):   #Master Loop for Octants
         angular_momentum_actual_xy_specific = angular_momentum_actual_xy / mass_cell_total
         angular_momentum_actual_xz_specific = angular_momentum_actual_xz / mass_cell_total
         angular_momentum_actual_yz_specific = angular_momentum_actual_yz / mass_cell_total
-        
-        
+    
+        angular_momentum_list_x_projection.append([gradient_x_kms,
+                                      gradient_x,
+                                      mass_cell_total,
+                                      angular_momentum_vx_implied_specific,
+                                      angular_momentum_actual_total_specific,
+                                      angular_momentum_actual_yz_specific
+                                      ])
+    
+        angular_momentum_list_y_projection.append([gradient_y_kms,
+                                      gradient_y,
+                                      mass_cell_total,
+                                      angular_momentum_vy_implied_specific,
+                                      angular_momentum_actual_total_specific,
+                                      angular_momentum_actual_xz_specific
+                                      ])
+    
         angular_momentum_list_z_projection.append([gradient_z_kms,
                                       gradient_z,
                                       mass_cell_total,
@@ -239,10 +386,120 @@ for i in range(0,octant):   #Master Loop for Octants
                                       angular_momentum_actual_total_specific,
                                       angular_momentum_actual_xy_specific
                                       ])
+
+# Creating Array of Values for this list, for plotting below.
+angular_momentum_list_x_projection = np.array(angular_momentum_list_x_projection)
+angular_momentum_list_y_projection = np.array(angular_momentum_list_y_projection)
 angular_momentum_list_z_projection = np.array(angular_momentum_list_z_projection)
 
-cgs_to_astro = ((3.24078e-19)**2) * (3.154e13) 
+'''
+#Saving Data to files.
+np.savetxt("Angular_Momentum_0100_x_projection.csv",
+           angular_momentum_list_x_projection,
+           delimiter=' & ', fmt='%.4g', newline=' \\\\\n')
+np.savetxt("Angular_Momentum_0100_y_projection.csv",
+           angular_momentum_list_y_projection,
+           delimiter=' & ', fmt='%.4g', newline=' \\\\\n')
+np.savetxt("Angular_Momentum_0100_z_projection.csv",
+           angular_momentum_list_z_projection,
+           delimiter=' & ', fmt='%.4g', newline=' \\\\\n')
 
+'''
+
+# =============================================================================
+# ~~~~~~~~~~~~~~~~~~~~~ Plotting Comparison Graphs ~~~~~~~~~~~~~~~~~~~
+# =============================================================================
+
+# =============================================================================
+# Unit Conversion for cgs [cm^2 / s] to Astro units [pc^2 / Myr]
+cgs_to_astro = ((3.24078e-19)**2) * (3.154e13) 
+# =============================================================================
+    
+################### For X-Projection #################################
+
+qx = len(angular_momentum_list_x_projection)
+#Redfining Empty Arrays
+y1 = np.zeros((qx,1))
+y2 = np.zeros((qx,1))
+y3 = np.zeros((qx,1))
+for i in range(0,qx):
+    y1[i] = angular_momentum_list_x_projection[i,4]
+    y2[i] = angular_momentum_list_x_projection[i,5]
+    y3[i] = angular_momentum_list_x_projection[i,3]
+    
+#Switching to Astro Units
+y1 = np.multiply(y1,cgs_to_astro)
+y2 = np.multiply(y2,cgs_to_astro)
+y3 = np.multiply(y3,cgs_to_astro)
+
+y1_min = np.around(np.min(y1),2)
+y2_min = np.around(np.min(y2),2)
+y1_max = np.around(np.max(y1),1)
+y2_max = np.around(np.max(y2),1)
+
+x_min = np.min([y1_min,y2_min])
+x_max = np.max([y1_max,y2_max])
+
+#Plotting - Loglog (residual based with the unity line)
+plt.figure(1)
+plt.loglog(y1,y3,'r.',label='Implied vs Total')
+plt.loglog(y2,y3,'b*', label='Implied vs Partial')
+x_plotting = np.linspace(x_min,x_max,1000)
+plt.loglog(x_plotting, x_plotting, 'k-', alpha=0.75, zorder=0,label='Line of Unity')
+plt.legend(bbox_to_anchor=(1, 0.5))
+#plt.grid(True, which='both')
+#This is not working correctly.
+#plt.axes().set_aspect('equal', 'datalim')
+plt.xlabel(r'Actual Specific Angular Momentum $(pc^2 / Myr)$')
+plt.ylabel(r'Implied Specific Angular Momentum $(pc^2 / Myr)$')
+plt.title('X-Axis Line of Sight', y=1.08)
+plt.savefig("Ang_Mom_Specific_Comparison_0100_X-LOS.pdf", bbox_inches='tight')
+plt.savefig("Ang_Mom_Specific_Comparison_0100_X-LOS.png", bbox_inches='tight')
+plt.show()
+
+
+################### For Y-Projection #################################
+
+qy = len(angular_momentum_list_y_projection)
+#Redfining Empty Arrays
+y1 = np.zeros((qy,1))
+y2 = np.zeros((qy,1))
+y3 = np.zeros((qy,1))
+for i in range(0,qy):
+    y1[i] = angular_momentum_list_y_projection[i,4]
+    y2[i] = angular_momentum_list_y_projection[i,5]
+    y3[i] = angular_momentum_list_y_projection[i,3]
+
+#Switching to Astro Units
+y1 = np.multiply(y1,cgs_to_astro)
+y2 = np.multiply(y2,cgs_to_astro)
+y3 = np.multiply(y3,cgs_to_astro)
+
+y1_min = np.around(np.min(y1),2)
+y2_min = np.around(np.min(y2),2)
+y1_max = np.around(np.max(y1),1)
+y2_max = np.around(np.max(y2),1)
+
+x_min = np.min([y1_min,y2_min])
+x_max = np.max([y1_max,y2_max])
+                              
+#Plotting - Loglog (residual based with the unity line)
+plt.figure(2)
+plt.loglog(y1,y3,'r.',label='Implied vs Total')
+plt.loglog(y2,y3,'b*', label='Implied vs Partial')
+x_plotting = np.linspace(x_min,x_max,1000)
+plt.loglog(x_plotting, x_plotting, 'k-', alpha=0.75, zorder=0,label='Line of Unity')
+plt.legend(bbox_to_anchor=(1, 0.5))
+#plt.grid(True, which='both')
+#This is not working correctly.
+#plt.axes().set_aspect('equal', 'datalim')
+plt.xlabel(r'Actual Specific Angular Momentum $(pc^2 / Myr)$')
+plt.ylabel(r'Implied Specific Angular Momentum $(pc^2 / Myr)$')
+plt.title('Y-Axis Line of Sight', y=1.08)
+plt.savefig("Ang_Mom_Specific_Comparison_0100_Y-LOS.pdf", bbox_inches='tight')
+plt.savefig("Ang_Mom_Specific_Comparison_0100_Y-LOS.png", bbox_inches='tight')
+plt.show()
+    
 ################### For Z-Projection #################################
 
 qz = len(angular_momentum_list_z_projection)
@@ -286,6 +543,9 @@ plt.savefig("Ang_Mom_Specific_Comparison_0100_Z-LOS.png", bbox_inches='tight')
 plt.show() 
 
 
+# =============================================================================
+# Below, is the old code used to compute angular momentum, and plotting.
+# =============================================================================
 '''        
         #Data of x_velocity into arrray
         #arr_x = vx.to_frb((l,'pc'),(master_dist_data,master_dist_data))
