@@ -68,7 +68,7 @@ for i in range(0,octant):   #Master Loop for Octants
 
     #Creating Master Clump, and Clump Parameters
     master_clump = Clump(dbox_array[i], ("gas", "density")) #Makes the first big clump
-    clump_sizing = 100  #Any Clump size smaller than this value get eliminated
+    clump_sizing = 150  #Any Clump size smaller than this value get eliminated
     
     #Validator is the minimum clump size:
     master_clump.add_validator("min_cells", clump_sizing)
@@ -453,8 +453,8 @@ plt.legend(bbox_to_anchor=(1, 0.5))
 plt.xlabel(r'Actual Specific Angular Momentum $(pc^2 / Myr)$')
 plt.ylabel(r'Implied Specific Angular Momentum $(pc^2 / Myr)$')
 plt.title('X-Axis Line of Sight', y=1.08)
-plt.savefig("Ang_Mom_Specific_Comparison_0100_X-LOS.pdf", bbox_inches='tight')
-plt.savefig("Ang_Mom_Specific_Comparison_0100_X-LOS.png", bbox_inches='tight')
+plt.savefig("Ang_Mom_Specific_Comparison_0100_Clumpsizing_{clump_sizing}_X-LOS.pdf".format(clump_sizing=clump_sizing), bbox_inches='tight')
+plt.savefig("Ang_Mom_Specific_Comparison_0100_Clumpsizing_{clump_sizing}_X-LOS.png".format(clump_sizing=clump_sizing), bbox_inches='tight')
 plt.show()
 
 
@@ -496,8 +496,8 @@ plt.legend(bbox_to_anchor=(1, 0.5))
 plt.xlabel(r'Actual Specific Angular Momentum $(pc^2 / Myr)$')
 plt.ylabel(r'Implied Specific Angular Momentum $(pc^2 / Myr)$')
 plt.title('Y-Axis Line of Sight', y=1.08)
-plt.savefig("Ang_Mom_Specific_Comparison_0100_Y-LOS.pdf", bbox_inches='tight')
-plt.savefig("Ang_Mom_Specific_Comparison_0100_Y-LOS.png", bbox_inches='tight')
+plt.savefig("Ang_Mom_Specific_Comparison_0100_Clumpsizing_{clump_sizing}_Y-LOS.pdf".format(clump_sizing=clump_sizing), bbox_inches='tight')
+plt.savefig("Ang_Mom_Specific_Comparison_0100_Clumpsizing_{clump_sizing}_Y-LOS.png".format(clump_sizing=clump_sizing), bbox_inches='tight')
 plt.show()
     
 ################### For Z-Projection #################################
@@ -538,8 +538,8 @@ plt.legend(bbox_to_anchor=(1, 0.5))
 plt.xlabel(r'Actual Specific Angular Momentum $(pc^2 / Myr)$')
 plt.ylabel(r'Implied Specific Angular Momentum $(pc^2 / Myr)$')
 plt.title('Z-Axis Line of Sight', y=1.08)
-plt.savefig("Ang_Mom_Specific_Comparison_0100_Z-LOS.pdf", bbox_inches='tight')
-plt.savefig("Ang_Mom_Specific_Comparison_0100_Z-LOS.png", bbox_inches='tight')
+plt.savefig("Ang_Mom_Specific_Comparison_0100_Clumpsizing_{clump_sizing}_Z-LOS.pdf".format(clump_sizing=clump_sizing), bbox_inches='tight')
+plt.savefig("Ang_Mom_Specific_Comparison_0100_Clumpsizing_{clump_sizing}_Z-LOS.png".format(clump_sizing=clump_sizing), bbox_inches='tight')
 plt.show() 
 
 
