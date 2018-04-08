@@ -179,7 +179,7 @@ for n in range(0,5):
     #Reshaping matrix for correct position to original plot scheme
     gradients_table = np.reshape(gradients,(gradients_split_size[n],gradients_split_size[n]))
     
-    np.savetxt("gradient_magnitudes_0060_{n}.csv".format(n=n),gradients_table,delimiter=' & ', fmt='%.4g', newline=' \\\\\n')
+    np.savetxt("gradient_magnitudes_0100_{n}.csv".format(n=n),gradients_table,delimiter=' & ', fmt='%.4g', newline=' \\\\\n')
     
     
     # Computing Mass for each region
