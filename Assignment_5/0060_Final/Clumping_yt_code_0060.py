@@ -68,7 +68,7 @@ for i in range(0,octant):   #Master Loop for Octants
 
     #Creating Master Clump, and Clump Parameters
     master_clump = Clump(dbox_array[i], ("gas", "density")) #Makes the first big clump
-    clump_sizing = 150  #Any Clump size smaller than this value get eliminated
+    clump_sizing = 50  #Any Clump size smaller than this value get eliminated
     
     #Validator is the minimum clump size:
     master_clump.add_validator("min_cells", clump_sizing)
