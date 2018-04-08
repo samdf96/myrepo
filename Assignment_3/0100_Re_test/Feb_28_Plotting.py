@@ -45,7 +45,7 @@ for i in sorted(ds.derived_field_list):
 '''
 
 # Basic Projection Plots
-'''
+
 #Density Projection along z
 yt.ProjectionPlot(ds, "z", "density").save("z_mass_density_plot.png")
 
@@ -80,7 +80,7 @@ source.tfh.grey_opacity = True
 sc.save('data.0100.3d.hdf5_Render_density_fixed.png', sigma_clip=6.0)
 
 ##############################################################################
-'''
+
 #Analysis of Data Section
 
 
