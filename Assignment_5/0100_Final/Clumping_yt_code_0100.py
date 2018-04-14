@@ -13,8 +13,10 @@ import yt
 from yt.analysis_modules.level_sets.api import *
 #from yt.utilities.physical_constants import kboltz, mh
 #from yt.units import Kelvin
+import scipy.linalg
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
+import matplotlib.ticker as mtick
 import math as m
 from plane_fit import plane_fit
 
@@ -226,6 +228,33 @@ for i in range(0,octant):   #Master Loop for Octants
         #Computing Gradient term for km/s/pc
         gradient_z_kms = gradient_z * (3.086e13)
         
+#Extra Plotting for Presentation
+        # best-fit linear plane
+        data = np.c_[vz_px_flat,vz_py_flat,vz_arr_flat]
+        mn = np.min(data, axis=0)
+        mx = np.max(data, axis=0)
+        X,Y = np.meshgrid(np.linspace(mn[0], mx[0], 20), np.linspace(mn[1], mx[1], 20))
+        
+        A = np.c_[data[:,0], data[:,1], np.ones(data.shape[0])]
+        C,_,_,_ = scipy.linalg.lstsq(A, data[:,2])    # coefficients
+    
+        # evaluate it on grid
+        Z = C[0]*X + C[1]*Y + C[2]
+        
+        fig = plt.figure()
+        ax = fig.gca(projection='3d')
+        ax.plot_surface(X, Y, Z, rstride=1, cstride=1, alpha=0.2)
+        ax.scatter(data[:,0], data[:,1], data[:,2], c='r', s=1)
+        plt.xlabel('X')
+        plt.ylabel('Y')
+        ax.zaxis.set_major_formatter(mtick.FormatStrFormatter('%.0e'))
+        ax.set_zlabel('Z')
+        ax.axis('equal')
+        ax.axis('tight')
+        plt.savefig("Plane_Fitting_z_Octant_{i}_Clump_{k}.pdf".format(i=i,k=k), bbox_inches='tight')
+        plt.savefig("Plane_Fitting_z_Octant_{i}_Clump_{k}.png".format(i=i,k=k), bbox_inches='tight')        
+        plt.show()
+        
         '''
         #Computing V_plane
         vz_plane = first_plane_sec_z[0] + (vz_px*first_plane_sec_z[1]) + (vz_py*first_plane_sec_z[2])
@@ -338,6 +367,8 @@ for i in range(0,octant):   #Master Loop for Octants
         gradient_y = ((first_plane_sec_y[1]**2) + (first_plane_sec_y[2]**2))**(1/2) * conv_factor
         #Computing Gradient term for km/s/pc
         gradient_y_kms = gradient_y * (3.086e13)
+        
+
         
 
 # =============================================================================
