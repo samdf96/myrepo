@@ -144,6 +144,8 @@ def velocity_array_reducer(velocity_integrated_array):
     '''
     #Find where the data is non-nan valued
     v_positions = np.argwhere(~np.isnan(velocity_integrated_array))
+
+
     
     v_positions_ij = []    #Creating list for array slicing
     v_positions_ij.append(v_positions[0,0]) #First Row Value
@@ -235,6 +237,7 @@ arr_x = velocity_array(data_object_clump[0],'velocity_x','x')
 arr_z_test,vz_px,vz_py = velocity_array_reducer(arr_z)
 arr_x_test,vx_py,vx_pz  = velocity_array_reducer(arr_x)
 
+# Text for John	
 
 
 
