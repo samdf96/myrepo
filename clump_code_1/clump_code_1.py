@@ -16,6 +16,8 @@ from yt.analysis_modules.level_sets.api import *
 import math as m
 import sys
 import matplotlib.pyplot as plt
+from scipy.optimize import least_squares as lsq
+
 
 
 #filename = sys.argv[1]
@@ -177,7 +179,43 @@ def velocity_array_reducer(velocity_int_array,velocity_int_data_object,axis):
                                                         v_positions_ij[2]:v_positions_ij[3]+1]
         return(velocity_int_array_reduced,vy_px,vy_pz)
         
+def myplane(p, x, y, z):
+    '''
+    Imported from Erik Rosolowsky
+    '''
+    return(p[0] + p[1] * x + p[2] * y - z)
+
+
+def plane_fit(x, y, z, robust=False):
+    """
+    Imported from Erik Rosolowsky
+    Fits a plane to data without any given uncertainties or weighting.
+    Arguments:
+    ----------
+    x, y: float
+       x and y coordinates of the data
+    z: float
+       z-coordinates to which the values are fit
+    Returns:
+    --------
+    coefficients:
+       3-element vector with components [ z0 (constant offset) , grad_x, grad_y]
     
+    """
+
+    x0, y0 = np.median(x), np.median(y)
+    dataz = np.c_[np.ones(x.size), 
+                  x-x0, 
+                  y-y0]
+
+    lsqcoeffs, _, _, _ = np.linalg.lstsq(dataz,z)
+    if robust:
+        outputs = lsq(myplane, np.r_[lsqcoeffs],
+                      args=([x-x0,
+                             y-y0, z]),
+                      loss = 'soft_l1')
+        lsqcoeffs = outputs.x
+    return(lsqcoeffs)
     
     
 
