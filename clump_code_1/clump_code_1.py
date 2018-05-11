@@ -119,13 +119,13 @@ def velocity_array(data_object,velocity,axis):
             Velocity: the component of velocity to be integrated
             Axis: Line of sight along which velocity component is integrated
     '''
-    vz = data_object.integrate(velocity, weight='density', axis=axis)
-    v_reform = vz.to_frb((l,'pc'),(master_dist_data,master_dist_data))
+    v_object = data_object.integrate(velocity, weight='density', axis=axis)
+    v_reform = v_object.to_frb((l,'pc'),(master_dist_data,master_dist_data))
     v_arr = np.array(v_reform[velocity])
     v_arr = np.reshape(v_arr,(master_dist_data,master_dist_data))
-    return(v_arr)
+    return(v_arr,v_object)
     
-def velocity_array_reducer(velocity_integrated_array):
+def velocity_array_reducer(velocity_int_array,velocity_int_data_object,axis):
     '''
     Takes velocity integrated array that is in the original dimension size
     with imbedded data values surrounded by nan values
@@ -143,9 +143,7 @@ def velocity_array_reducer(velocity_integrated_array):
         e.g. Calling Z-LOS array, gives first coordinate x, and second coordinate y
     '''
     #Find where the data is non-nan valued
-    v_positions = np.argwhere(~np.isnan(velocity_integrated_array))
-
-
+    v_positions = np.argwhere(~np.isnan(velocity_int_array))
     
     v_positions_ij = []    #Creating list for array slicing
     v_positions_ij.append(v_positions[0,0]) #First Row Value
@@ -153,23 +151,38 @@ def velocity_array_reducer(velocity_integrated_array):
     v_positions_ij.append(v_positions[0,1])    #First Column Value
     v_positions_ij.append(v_positions[-1,1])   #Last Column Value
     
-    #For Creation of x-coords,y-coords
-    v_i_values = np.arange(1,(v_positions_ij[1]-v_positions_ij[0]+2))
-    v_j_values = np.arange(1,(v_positions_ij[3]-v_positions_ij[2]+2))
     
-    v_jj, v_ii = np.meshgrid(v_i_values, v_j_values)
+    if axis == 'z':
+        # Finds appropriate px coordinates and py coordinates
+        vx_coordinates = np.array(velocity_int_data_object['px'])
+        vx_coordinates = np.reshape(vx_coordinates,(master_dist_data,master_dist_data))
+        vz_px = vx_coordinates[v_positions_ij[0]:v_positions_ij[1]+1,v_positions_ij[2]:v_positions_ij[3]+1]
+        vy_coordinates = np.array(velocity_int_data_object['py'])
+        vy_coordinates = np.reshape(vy_coordinates,(master_dist_data,master_dist_data))
+        vz_py = vy_coordinates[v_positions_ij[0]:v_positions_ij[1]+1,v_positions_ij[2]:v_positions_ij[3]+1]
+        velocity_int_array_reduced = velocity_int_array[v_positions_ij[0]:v_positions_ij[1]+1,
+                                                        v_positions_ij[2]:v_positions_ij[3]+1]
+        
+        return(velocity_int_array_reduced,vz_px,vz_py)
     
-    v_pi = np.array(v_ii)
-    v_pj = np.array(v_jj)
+    if axis == 'y':
+        # Finds appropriate px coordinates and pz coordinates
+        vx_coordinates = np.array(velocity_int_data_object['px'])
+        vx_coordinates = np.reshape(vx_coordinates,(master_dist_data,master_dist_data))
+        vy_px = vx_coordinates[v_positions_ij[0]:v_positions_ij[1]+1,v_positions_ij[2]:v_positions_ij[3]+1]
+        vz_coordinates = np.array(velocity_int_data_object['pz'])
+        vz_coordinates = np.reshape(vz_coordinates,(master_dist_data,master_dist_data))
+        vy_pz = vz_coordinates[v_positions_ij[0]:v_positions_ij[1]+1,v_positions_ij[2]:v_positions_ij[3]+1]
+        velocity_int_array_reduced = velocity_int_array[v_positions_ij[0]:v_positions_ij[1]+1,
+                                                        v_positions_ij[2]:v_positions_ij[3]+1]
+        return(velocity_int_array_reduced,vy_px,vy_pz)
+        
     
-    #Extracts the data into a new numpy array for plane fitting
-    velocity_integrated_array_reduced = velocity_integrated_array[v_positions_ij[0]:v_positions_ij[1]+1,v_positions_ij[2]:v_positions_ij[3]+1]
-    return(velocity_integrated_array_reduced,v_pi,v_pj)
     
     
 
 #Loads data into File
-ds = yt.load("data.0060.3d.hdf5")
+ds = yt.load("~/Documents/Astro_AngMom/Astro-Clump/data.0060.3d.hdf5")
 master_dist_data = int(ds.domain_dimensions[0])
 
 #Creates a Data Object containing all the Simulation Data
@@ -231,13 +244,19 @@ for i in range(0,len(bregion)):
 #%%
 
 #Testing: Calling the velocity_array definition
-arr_z = velocity_array(data_object_clump[0],'velocity_z','z')
-arr_x = velocity_array(data_object_clump[0],'velocity_x','x')
+arr_z, vz = velocity_array(data_object_clump[0],'velocity_z','z')
+arr_x, vx = velocity_array(data_object_clump[0],'velocity_x','x')
+arr_y, vy = velocity_array(data_object_clump[0],'velocity_y','y')
 
-arr_z_test,vz_px,vz_py = velocity_array_reducer(arr_z)
-arr_x_test,vx_py,vx_pz  = velocity_array_reducer(arr_x)
 
-# Text for John	
+arr_z_reduced, vz_px, vz_py = velocity_array_reducer(arr_z,vz,'z')
+
+x_position_vx = np.array(vx['px'])
+y_position_vy = np.array(vy['py'])
+z_position_vz = np.array(vz['pz'])
+
+
+
 
 
 
