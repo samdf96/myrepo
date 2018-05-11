@@ -281,16 +281,24 @@ for i in range(0,len(bregion)):
 
 #%%
 
-#Testing: Calling the velocity_array definition
+#Testing: Calling the velocity_array definition on just one clump (the first)
 arr_z, vz = velocity_array(data_object_clump[0],'velocity_z','z')
 arr_x, vx = velocity_array(data_object_clump[0],'velocity_x','x')
 arr_y, vy = velocity_array(data_object_clump[0],'velocity_y','y')
 
 
 arr_z_reduced, vz_px, vz_py = velocity_array_reducer(arr_z,vz,'z')
+#arr_y_reduced, vy_px, vy_pz = velocity_array_reducer(arr_y,vy,'y')
 
 x_position_vx = np.array(vx['px'])
 y_position_vy = np.array(vy['py'])
+
+# =============================================================================
+# This next line returns an error, because the positional values of 'pz' are
+# not found in the vz argument. Same errors happen when running the module
+# to reduce array to correct values for axis' other than z
+# see above commented line for error
+# =============================================================================
 z_position_vz = np.array(vz['pz'])
 
 
