@@ -1,0 +1,46 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1561\cocoasubrtf400
+{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\margl1440\margr1440\vieww13600\viewh16580\viewkind0
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
+
+\f0\fs28 \cf0 Change Log - Clumping Code\
+\
+v2.0 - May 15th 2018\
+\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\
+- Changes to the script:\
+	- Defining Global Variables - need to move these to another file at a later time\
+	- Imported most packages that will be used for the entirety of the script\
+	- Definition/Return Modules Added:\
+		- Bounding Box (gives lower and upper bounds for a box)\
+		- Clump Box (creates data objects given bounding box)\
+		- Velocity array (integrates over line of sight)\
+		- Velocity array reducer (rids of nan data and writes perp coordinates)\
+		- Array Flattener (flattens arrays into 1D)\
+		- Plane Fit (Imported from Erik Rosolowsky, fits planes)\
+		- Plane Fit visualization (used to plot data in 3d)\
+		- Gradient Construction (used to compute gradients)\
+		- Implied Angular Momentum (used to compute)\
+		- Actual Angular Momentum( give data object, get 4 outputs relating to Ang-Mom)\
+\
+	Main part of the script:\
+		- Wrote enough to input one file, and output the angular momentum data into numpy arrays\
+\
+\
+\
+\
+\
+\
+v1.0 - May 4th 2018\
+\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\
+- Added clump_code_1.py\
+- clump_code_1.py changes include\
+	- importing specific packages\
+	- defining octant splitting for data\
+	- defining master clump maker\
+	- defining clump finder\
+	- defining centre of mass\
+- Wrote part of the main body of the .py file to compute data: includes;\
+	- Loading data\
+	- Working through all the defined functions above}
