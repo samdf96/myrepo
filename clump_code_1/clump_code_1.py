@@ -78,10 +78,13 @@ for i in range(4,len(octant)):
 com = np.zeros((len(clumps),1,3))
 bregion = np.zeros((len(clumps),3,2))
 
+
+
 # Creates lists for center_of_mass of clump list -> stores in com
 # Creates list for bounding boxes of clump list -> stores in bregion
 for i in range(0,len(clumps)):
     com[i] = center_of_mass(clumps[i])
+    
     bregion[i] = bounding_box(clumps[i])
 
 
@@ -97,6 +100,14 @@ for i in range(0,len(clumps)):
 data_object_clump = [] #Setting Empty list for loop
 mass_clump_g = []       #Setting Empty list for loop
 dist_span_cm = np.zeros((len(bregion),3,1))
+#   Setting Empty Arrays to store individual coordinates for COM of Clumps
+#   and distance spanned over each axis for each clump
+com_x = np.zeros((len(clumps),1))
+com_y = np.zeros((len(clumps),1))
+com_z = np.zeros((len(clumps),1))
+dist_span_cm_x = np.zeros((len(clumps),1))
+dist_span_cm_y = np.zeros((len(clumps),1))
+dist_span_cm_z = np.zeros((len(clumps),1))
 for i in range(0,len(bregion)):
     data_object_clump.append(clump_box(ds,bregion[i]))
     
@@ -110,6 +121,16 @@ for i in range(0,len(bregion)):
     
     # Already in array format for export later
     dist_span_cm[i] = dist_tot
+    
+    #Store individual clump COM coordinates
+    com_x[i,0] = com[i,0,0]
+    com_y[i,0] = com[i,0,1]
+    com_z[i,0] = com[i,0,2]
+    
+    #Store individual clump spanning distances for each axis
+    dist_span_cm_x[i,0] = dist_tot[0,0]
+    dist_span_cm_y[i,0] = dist_tot[1,0]
+    dist_span_cm_z[i,0] = dist_tot[2,0]
 
 #Turn into Array for later export (see bottom of script for this step)
 mass_clump_g = np.array(mass_clump_g)
@@ -118,8 +139,16 @@ mass_clump_g = np.array(mass_clump_g)
 # =============================================================================
 # CHECK IN POINT: What we have so far here in the script
 #
-# list known as data_object_clump which has each of the regions found by the 
-# clumping algorithm.
+#   data_object_clump: list
+#       a list of YTRegions that represent the clumps found
+#   mass_clump_g: array
+#       an array representing the total mass of each clump
+#   dist_span_cm: array
+#       an array with each superset array having all axis distances
+#   dist_span_cm_(x,y,z): array
+#       an array with just (x,y,z)-spanning distance for all clumps
+#   com_(x,y,z): array
+#       an array with just (x,y,z)-coordinates for all clumps
 # =============================================================================
 
 #Defining Empty Lists to store data into, will convert into arrays later on
@@ -219,12 +248,20 @@ grad_x = np.array(grad_x)
 grad_y = np.array(grad_y)
 grad_z = np.array(grad_z)
 
+# =============================================================================
+
 #Exporting into archive with the name in the string for first input
 np.savez('clump_data',
          clump_number=clump_number,
-         center_of_mass=com,
+         center_of_mass_total=com,
+         center_of_mass_x=com_x,
+         center_of_mass_y=com_y,
+         center_of_mass_z=com_z,
          mass=mass_clump_g,
-         spanning_distance=dist_span_cm,
+         spanning_distance_total=dist_span_cm,
+         spanning_distance_x=dist_span_cm_x,
+         spanning_distance_y=dist_span_cm_y,
+         spanning_distance_z=dist_span_cm_z,
          gradient_x_los=grad_x,
          gradient_y_los=grad_y,
          gradient_z_los=grad_z,

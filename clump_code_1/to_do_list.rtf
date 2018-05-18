@@ -17,4 +17,16 @@ May 16th 2018 - \
 \
 i.e. \'91import definitions as d\'92 then \'91d.octant_split()\'92\
 \
+May 18th 2018: 4:00PM\
+\
+- Created data_table.py to create data tables using astropy.table module.\
+\
+I think it would be best to associate the numpy arrays with units prior to exporting them, as long as the archived file can handle that type of data, that way the data set that is archived will be completely ready to go for tabling and plotting right out of the gate. Seems more organized if we defined quantities inside the main script file as that is where the data is computed.\
+\
+May 18th 2018 4:21PM\
+\
+Tested and not working: associating a unit with a certain array and then exporting via numpy.savez() function looses the unit information and just returns the array data when called upon.\
+\
+Look into astropy.io.fits data file system to move data from one location to another. This should retain unit information so that we can define units in the computational section of the file, and not have to deal with it after importing to the tabling file or plotting file.\
+\
 }

@@ -7,6 +7,15 @@
 
 \f0\fs28 \cf0 Change Log - Clumping Code\
 \
+v.2.51 - May 18th 2018\
+- Added:\
+	- data_table.py\
+		- this file will take the npz archive file exported by the main computations script and load it into space\
+			to be used for tabling the data is a nice way that is readable for viewers.\
+- Changes to the coding script:\
+	- added individual centre-of-mass components arrays, will use in data_table.py file for coordinate system, 		seems cleaner to do it this way. Have one com array with all components, and also individualized		components so that we don\'92t have to deal too much with numpy in the data_table.py file.\
+	- added individual spanning distance component arrays, will use this just like above.\
+\
 v2.5 - May 16th 2018\
 \'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\
 - Added:\
