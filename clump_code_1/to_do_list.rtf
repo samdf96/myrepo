@@ -2,12 +2,13 @@
 {\fonttbl\f0\fswiss\fcharset0 Helvetica;}
 {\colortbl;\red255\green255\blue255;}
 {\*\expandedcolortbl;;}
-\margl1440\margr1440\vieww12600\viewh10200\viewkind0
+\margl1440\margr1440\vieww15000\viewh10200\viewkind0
 \pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 
 \f0\fs28 \cf0 To Do List:\
 \
-May 16th 2018 - \
+May 16th 2018\
+\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\
 \
 - Have two more files (scripts) \
 	- which take the outputted data and plot it visually\
@@ -18,15 +19,50 @@ May 16th 2018 - \
 i.e. \'91import definitions as d\'92 then \'91d.octant_split()\'92\
 \
 May 18th 2018: 4:00PM\
+\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\
 \
 - Created data_table.py to create data tables using astropy.table module.\
 \
 I think it would be best to associate the numpy arrays with units prior to exporting them, as long as the archived file can handle that type of data, that way the data set that is archived will be completely ready to go for tabling and plotting right out of the gate. Seems more organized if we defined quantities inside the main script file as that is where the data is computed.\
 \
 May 18th 2018 4:21PM\
+\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\
 \
 Tested and not working: associating a unit with a certain array and then exporting via numpy.savez() function looses the unit information and just returns the array data when called upon.\
 \
 Look into astropy.io.fits data file system to move data from one location to another. This should retain unit information so that we can define units in the computational section of the file, and not have to deal with it after importing to the tabling file or plotting file.\
+\
+May 18th 2018 10:50PM\
+\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\
+\
+Looks like the astropy.nddata will be the most useful way to transfer data with built in units to export from one file, and call up in the other. Will take a look at building data sets and associating a certain unit to each of those data sets.\
+\
+Looks at this portion of the documentation, might be possible to convert lists straight into NDdata to skip the numpy array creation step. Could save on code length and complexity:\
+\
+{\field{\*\fldinst{HYPERLINK "http://docs.astropy.org/en/stable/nddata/nddata.html#overview"}}{\fldrslt http://docs.astropy.org/en/stable/nddata/nddata.html#overview}}\
+\
+May 23rd 2018\
+\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\
+\
+Talked to Erik and decided this is the best way of doing things:\
+\
+{\field{\*\fldinst{HYPERLINK "http://docs.astropy.org/en/stable/io/fits/usage/table.html"}}{\fldrslt http://docs.astropy.org/en/stable/io/fits/usage/table.html}}\
+\
+Look for Creating a FITS table in the webpage for information as where to get started.\
+\
+May 24th 2018\
+\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\
+\
+So I think what I will do is, create columns when certain data is computed, using `fits.Column()`. I checked the function, and you can pass it a _unit_ argument, so that checks out. I can either keep these columns until the end, or as I go through the code I can add it into a table by using `fits.BinTableHDU.from_columns()`, there's probably an append command I can use to continually add on columns as I go. Then I can save it all to a fits file using `.writeto('file_name_here.fits')`\
+\
+May 25th 2018\
+\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\
+\
+Next Steps include:\
+	- Separating a cgs BinTable object from a astro BinTable, this way we can have all the data set in terms of both cgs for main export of values, and astro for plotting purposes\
+	- Start Writing Plotting Script, which takes in the data, seperates it accordingly, then outputs the plots into a separate folder.\
+	- Start Writing Tabling Script, takes in the FITS file and creates a table,		- Perhaps multiple tables for different things, angular momentum comparison, gradient, clump object info\
+\
+\
 \
 }

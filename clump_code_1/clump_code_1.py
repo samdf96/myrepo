@@ -1,4 +1,3 @@
-
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
@@ -11,6 +10,8 @@ Created on Thu May  3 19:53:52 2018
 #Importing packages here
 import yt
 import numpy as np
+import astropy.units as u
+from astropy.io import fits
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
 # To be used with YAML file which we will create later on
@@ -136,6 +137,33 @@ for i in range(0,len(bregion)):
 mass_clump_g = np.array(mass_clump_g)
 
 
+
+#Creation of Columns for Astropy FITS for all quantities computed above
+q_com_x = fits.Column(name='Center of Mass Coordinate (x)',
+                      format='D',unit='Hz',array=com_x)
+q_com_y = fits.Column(name='Center of Mass Coordinate (y)',
+                      format='D',unit='Hz',array=com_y)
+q_com_z = fits.Column(name='Center of Mass Coordinate (z)',
+                      format='D',unit='Hz',array=com_z)
+
+q_mass_clump = fits.Column(name='Mass',format='D',unit='g',array=mass_clump_g)
+
+q_dist_span_x = fits.Column(name='Length (x axis)',
+                            format='D',
+                            unit='cm',
+                            array=dist_span_cm_x)
+q_dist_span_y = fits.Column(name='Length (y axis)',
+                            format='D',
+                            unit='cm',
+                            array=dist_span_cm_y)
+q_dist_span_z = fits.Column(name='Length (z axis)',
+                            format='D',
+                            unit='cm',
+                            array=dist_span_cm_z)
+
+
+
+
 # =============================================================================
 # CHECK IN POINT: What we have so far here in the script
 #
@@ -234,8 +262,13 @@ for i in range(0,len(bregion)):
     am_actual_partial_yz.append(ang_mom_actual_yz)
     # =========================================================================
 
+  
+#Defining Unit for Angular Momentum
+ang_mom_unit = u.kg * (u.m**2) / u.s
+per_sec_unit = u.dimensionless_unscaled / u.s
 
-# Turning all the data into numpy arrays to export
+
+# Turning all the data into numpy arrays to convert to Column objects
 clump_number = np.arange(1,len(bregion)+1)
 am_actual_total = np.array(am_actual_total)
 am_actual_partial_xy = np.array(am_actual_partial_xy)
@@ -248,30 +281,83 @@ grad_x = np.array(grad_x)
 grad_y = np.array(grad_y)
 grad_z = np.array(grad_z)
 
-# =============================================================================
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
+#Creation of Columns for Astropy FITS for all quantities computed above
 
-#Exporting into archive with the name in the string for first input
-np.savez('clump_data',
-         clump_number=clump_number,
-         center_of_mass_total=com,
-         center_of_mass_x=com_x,
-         center_of_mass_y=com_y,
-         center_of_mass_z=com_z,
-         mass=mass_clump_g,
-         spanning_distance_total=dist_span_cm,
-         spanning_distance_x=dist_span_cm_x,
-         spanning_distance_y=dist_span_cm_y,
-         spanning_distance_z=dist_span_cm_z,
-         gradient_x_los=grad_x,
-         gradient_y_los=grad_y,
-         gradient_z_los=grad_z,
-         am_imp_x_los=am_implied_x,
-         am_imp_y_los=am_implied_y,
-         am_imp_z_los=am_implied_z,
-         am_actual_total=am_actual_total,
-         am_actual_xy=am_actual_partial_xy,
-         am_actual_xz=am_actual_partial_xz,
-         am_actual_yz=am_actual_partial_yz)
+q_clump_number = fits.Column(name='Clump Number',
+                             format='D',
+                             unit='dimensionless_unscaled',
+                             array=clump_number)
 
+#Actual Data for Angular Momentum
+q_am_actual_total = fits.Column(name='Actual Total Angular Momentum',
+                                format='D',
+                                unit=str(ang_mom_unit),
+                                array=am_actual_total)
+q_am_actual_partial_xy = fits.Column(name='Actual Partial Angular Momentum (x+y components)',
+                                     format='D',
+                                     unit=str(ang_mom_unit),
+                                     array=am_actual_partial_xy)
+q_am_actual_partial_xz = fits.Column(name='Actual Partial Angular Momentum (x+z components)',
+                                     format='D',
+                                     unit=str(ang_mom_unit),
+                                     array=am_actual_partial_xz)
+q_am_actual_partial_yz = fits.Column(name='Actual Partial Angular Momentum (y+z components)',
+                                     format='D',
+                                     unit=str(ang_mom_unit),
+                                     array=am_actual_partial_yz)
 
+# Implied Data for Angular Momentum
+q_am_implied_x = fits.Column(name='Implied Total Angular momentum (x LOS)',
+                             format='D',
+                             unit='ang_mom_unit',
+                             array=am_implied_x)
+q_am_implied_y = fits.Column(name='Implied Total Angular momentum (y LOS)',
+                             format='D',
+                             unit='ang_mom_unit',
+                             array=am_implied_y)
+q_am_implied_z = fits.Column(name='Implied Total Angular momentum (z LOS)',
+                             format='D',
+                             unit='ang_mom_unit',
+                             array=am_implied_z)
 
+# Gradients for Implied Angular Momentum Plane Fitting
+q_grad_x = fits.Column(name='Plane Fitting Gradient (x LOS)',
+                       format='D',
+                       unit=str(per_sec_unit),
+                       array=grad_x)
+q_grad_y = fits.Column(name='Plane Fitting Gradient (y LOS)',
+                       format='D',
+                       unit=str(per_sec_unit),
+                       array=grad_y)
+q_grad_z = fits.Column(name='Plane Fitting Gradient (z LOS)',
+                       format='D',
+                       unit=str(per_sec_unit),
+                       array=grad_z)
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
+
+#Creating ColDefs Object
+coldefs = fits.ColDefs([q_clump_number,
+                        q_com_x,
+                        q_com_y,
+                        q_com_z,
+                        q_mass_clump,
+                        q_dist_span_x,
+                        q_dist_span_y,
+                        q_dist_span_z,
+                        q_am_actual_total,
+                        q_am_actual_partial_xy,
+                        q_am_actual_partial_xz,
+                        q_am_actual_partial_yz,
+                        q_am_implied_x,
+                        q_am_implied_y,
+                        q_am_implied_z,
+                        q_grad_x,
+                        q_grad_y,
+                        q_grad_z])
+    
+
+# Creating HDU Object from ColDefs
+hdu = fits.BinTableHDU.from_columns(coldefs)
+
+hdu.writeto('data_clump.fits', overwrite=True) #INSERT STRING CONNECTED TO DATAFILE INPUT FOR SCRIPT

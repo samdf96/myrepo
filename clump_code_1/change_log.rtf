@@ -2,12 +2,32 @@
 {\fonttbl\f0\fswiss\fcharset0 Helvetica;}
 {\colortbl;\red255\green255\blue255;}
 {\*\expandedcolortbl;;}
-\margl1440\margr1440\vieww13600\viewh16580\viewkind0
+\margl1440\margr1440\vieww12700\viewh16580\viewkind0
 \pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 
 \f0\fs28 \cf0 Change Log - Clumping Code\
 \
+v2.6 - May 24th 2018\
+\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\
+Changes to clump_code_1.py\
+	- added in astropy.units module\
+	- added in fits module of astropy.io\
+	- Main changes to the file:\
+		- Added Column object creation for quantities that are exported\
+			- these are done as we go through the code.\
+		- After all Column objects are created a ColDefs object is created from all the Column objects\
+		- A HDU is created using `fits.BinTableHDU.from_columns()` function\
+		- This hdu is written to a FITS file\
+	- When Column object were created, units were associated with data sets in order to transfer\
+	these to a Table environment at a later time.\
+Removed:\
+	- data_storage.py\
+		- This used the old numpy.savez() file archive outputted by main coding script\
+			- no longer being used\
+	\
+\
 v.2.51 - May 18th 2018\
+\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\
 - Added:\
 	- data_table.py\
 		- this file will take the npz archive file exported by the main computations script and load it into space\
