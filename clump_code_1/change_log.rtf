@@ -7,6 +7,23 @@
 
 \f0\fs28 \cf0 Change Log - Clumping Code\
 \
+v2.7 - May 28th 2018\
+\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\
+Changes to clump_code_1.py\
+	- moved \'93global parameters\'94 to initialize.py file\
+	- wrapped entire file in a def statement that takes in one filename input, and outputs a FITS file\
+		- called the analyzer function\
+	- Fixed:\
+		- Unit assignment was incorrect for some quantities, has been corrected.\
+	- Added:\
+		- String splitter, takes the incoming file name, and grabs the timestamp, assigns it to output\
+\
+Added: initialize.py\
+	- Script defines (for now) global parameters\
+	- Calls the analyzer function with filename, and all global parameters\
+	- Inserted the module glob, which can search for filenames and extensions, and can pass it onto the analyzer function to compute all the necessary values\
+\
+\
 v2.6 - May 24th 2018\
 \'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\
 Changes to clump_code_1.py\
