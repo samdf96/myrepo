@@ -2,7 +2,7 @@
 {\fonttbl\f0\fswiss\fcharset0 Helvetica;}
 {\colortbl;\red255\green255\blue255;}
 {\*\expandedcolortbl;;}
-\margl1440\margr1440\vieww15000\viewh10200\viewkind0
+\margl1440\margr1440\vieww13700\viewh16580\viewkind0
 \pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 
 \f0\fs28 \cf0 To Do List:\
@@ -60,9 +60,48 @@ May 25th 2018\
 \
 Next Steps include:\
 	- Separating a cgs BinTable object from a astro BinTable, this way we can have all the data set in terms of both cgs for main export of values, and astro for plotting purposes\
-	- Start Writing Plotting Script, which takes in the data, seperates it accordingly, then outputs the plots into a separate folder.\
+	- Start Writing Plotting Script, which takes in the data, separates it accordingly, then outputs the plots into a separate folder.\
 	- Start Writing Tabling Script, takes in the FITS file and creates a table,		- Perhaps multiple tables for different things, angular momentum comparison, gradient, clump object info\
 \
+Inquire about the following:\
+\
+Saving FITS file with string that is related to the input datafile name of the simulation data\
+Using `dtype=` option when saving the data to a column. Would forgo the formatting to do afterwards, if not overridden at a later time.\
+\
+\
+May 28th 2018\
+\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\
+\
+Steps to import data into script from FITS file:\
+\
+\'95 from astropy.oi import fits\
+\'95 hdu1 = fits.open(\'91file_name.fits\'92)\
+\'95 hdu1.info() # This returns information about hdu1, displays all the HDULists objects that are in the FITS file\
+\'95 hdu_table = hdu[1] # Takes the HduBinTable and sets it as its own object\
+\'95 hdu_table.columns #Gives the Coldefs result of the object, lists all the columns\
+\'95 hdu_table.columns[0] #Returns the name, format, and unit of the column\
+\'95 hdu_table.columns.names #returns the names of each column (could be handy for naming variables)\
+\'95 hdu_table.data #returns all the data in a FITS_rec(), goes from left to right, then top to bottom\
+\
+Important pieces: Can save a column as an object simply by calling:\
+	\'95 column1 = hdu_table.columns[0] # OR\
+	\'95 column1 = hdu_table.columns[\'91Clump Number\'92] # By calling it\'92s name\
+\
+Now we can grab the data (or array values from that column) by invoking the command:\
+	\'95 column1.array\
+\
+Now we can call the usual functions of the object (array) and manipulate it accordingly\
+\
+
+\fs36 Is there a way to store what the variable was originally called in order to transfer that to another file?\
+\
+\'95 I think the best way to go about it is this:\
+		\'95 Name them as python variables, and output this to the FITS file, the tabling.py file will handle naming them properly for the table itself.\
+		\'95 That way, we don\'92t have to create two sets of variables across two files.\
+\
+Only problem - can\'92t extract unit info from the columns, at least I haven\'92t found it yet\
+
+\fs28 \
 \
 \
 }

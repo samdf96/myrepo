@@ -50,7 +50,7 @@ from definitions import angular_momentum_actual
 
 
 #Loads data into File
-ds = yt.load("~/Documents/Astro_AngMom/Astro-Clump/data.0060.3d.hdf5")
+ds = yt.load("~/Documents/Astro_AngMom/data.0060.3d.hdf5")
 master_dist_data = int(ds.domain_dimensions[0])
 
 #Creates a Data Object containing all the Simulation Data
@@ -79,7 +79,9 @@ for i in range(4,len(octant)):
 com = np.zeros((len(clumps),1,3))
 bregion = np.zeros((len(clumps),3,2))
 
-
+#Defining Unit for Angular Momentum
+ang_mom_unit = u.kg * (u.m**2) / u.s
+per_sec_unit = u.dimensionless_unscaled / u.s
 
 # Creates lists for center_of_mass of clump list -> stores in com
 # Creates list for bounding boxes of clump list -> stores in bregion
@@ -140,11 +142,11 @@ mass_clump_g = np.array(mass_clump_g)
 
 #Creation of Columns for Astropy FITS for all quantities computed above
 q_com_x = fits.Column(name='Center of Mass Coordinate (x)',
-                      format='D',unit='Hz',array=com_x)
+                      format='D',unit=str(per_sec_unit),array=com_x)
 q_com_y = fits.Column(name='Center of Mass Coordinate (y)',
-                      format='D',unit='Hz',array=com_y)
+                      format='D',unit=str(per_sec_unit),array=com_y)
 q_com_z = fits.Column(name='Center of Mass Coordinate (z)',
-                      format='D',unit='Hz',array=com_z)
+                      format='D',unit=str(per_sec_unit),array=com_z)
 
 q_mass_clump = fits.Column(name='Mass',format='D',unit='g',array=mass_clump_g)
 
@@ -262,12 +264,6 @@ for i in range(0,len(bregion)):
     am_actual_partial_yz.append(ang_mom_actual_yz)
     # =========================================================================
 
-  
-#Defining Unit for Angular Momentum
-ang_mom_unit = u.kg * (u.m**2) / u.s
-per_sec_unit = u.dimensionless_unscaled / u.s
-
-
 # Turning all the data into numpy arrays to convert to Column objects
 clump_number = np.arange(1,len(bregion)+1)
 am_actual_total = np.array(am_actual_total)
@@ -310,15 +306,15 @@ q_am_actual_partial_yz = fits.Column(name='Actual Partial Angular Momentum (y+z 
 # Implied Data for Angular Momentum
 q_am_implied_x = fits.Column(name='Implied Total Angular momentum (x LOS)',
                              format='D',
-                             unit='ang_mom_unit',
+                             unit=str(ang_mom_unit),
                              array=am_implied_x)
 q_am_implied_y = fits.Column(name='Implied Total Angular momentum (y LOS)',
                              format='D',
-                             unit='ang_mom_unit',
+                             unit=str(ang_mom_unit),
                              array=am_implied_y)
 q_am_implied_z = fits.Column(name='Implied Total Angular momentum (z LOS)',
                              format='D',
-                             unit='ang_mom_unit',
+                             unit=str(ang_mom_unit),
                              array=am_implied_z)
 
 # Gradients for Implied Angular Momentum Plane Fitting
@@ -360,4 +356,5 @@ coldefs = fits.ColDefs([q_clump_number,
 # Creating HDU Object from ColDefs
 hdu = fits.BinTableHDU.from_columns(coldefs)
 
-hdu.writeto('data_clump.fits', overwrite=True) #INSERT STRING CONNECTED TO DATAFILE INPUT FOR SCRIPT
+#INSERT STRING CONNECTED TO DATAFILE INPUT FOR SCRIPT
+hdu.writeto('data_clump.fits', overwrite=True)
