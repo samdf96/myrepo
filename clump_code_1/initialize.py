@@ -8,24 +8,33 @@ Created on Mon May 28 15:26:55 2018
 
 import clump_code_1 as cc
 import glob
+import yaml
+import io
+
+# =============================================================================
+# OLD CODE FOR LOCAL MACBOOK AIR DIRECTORIES
+# #Directory to save all data and config files
+# data_dir = '/Users/sfielder/Documents/Astro_Data/'
+# flist = glob.glob(data_dir+'*.hdf5')
+# save_dir_fits = data_dir+'FITS_Files/'
+# config_dir = data_dir+'configs/'
+# =============================================================================
 
 
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
-# To be used with YAML file which we will create later on
-#import sys
-#filename = sys.argv[1]
+#Finds all files with the .hdf5 extension in the bigdata directory
+flist = glob.glob('/home/sfielder/bigdata/**/*.hdf5')
+data_dir = '/home/sfielder/Documents/Clumps'
+out_dir = data_dir+'FITS_YAML'
+
+with io.open(data_dir+"config_1.yaml", 'r') as stream:
+    data_loaded = yaml.load(stream)
 
 
-#Defining Global Variables Here - Move to File After
-l=10	#Length of Original Data Set
-cmin = 5e-21	#Minimum Density Threshold for Clump Finding
-#cmax = 5e-20	#Maximum Density Threshold for Clump Finding
-step = 100	 #Step-size multiplier for Clump Finding
-beta = 1        # For Implied Angular Momentum Calculation.
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
-
-flist = glob.glob('/Users/sfielder/Documents/Astro_AngMom/*.hdf5')
-
-#%%
 for i in range(0,len(flist)):
-    cc.analyzer(flist[i],l,cmin,step,beta)
+    cc.analyzer(flist[i],
+                data_loaded['l'],
+                data_loaded['cmin'],
+                data_loaded['step'],
+                data_loaded['beta'],
+                data_loaded['clump_sizing'],
+                out_dir)

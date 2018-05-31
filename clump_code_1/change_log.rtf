@@ -7,6 +7,18 @@
 
 \f0\fs28 \cf0 Change Log - Clumping Code\
 \
+v2.8 - May 31st 2018\
+\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\
+Changes to clump_code_1.py\
+	- Added headers to the fits file, to store global input parameters listed in the yams config file\
+	- Changed naming structure for output file, now naming Fiducialxx runs to avoid doubling up on files and getting errors. Might need to change this one last time if we are inputting multiple config files.\
+Added: yaml_writer.py\
+	- Not completed yet, but takes in a dictionary of global input parameters, and makes a yam file.\
+	- Might be deprecated in the future, can write these files in a basic text editor.\
+Changes to initialize.py\
+	- Made all arguments different for directories, to reflect changes from local space to server space\
+	- Will need to test this to ensure proper functionality, expect changes to next version.\
+\
 v2.7 - May 28th 2018\
 \'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\
 Changes to clump_code_1.py\

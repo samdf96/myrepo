@@ -33,13 +33,51 @@ from definitions import angular_momentum_implied
 from definitions import angular_momentum_actual
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
 
-def analyzer(filename,l,cmin,step,beta):
+def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
+    '''
+    Takes in certain global parameters, and a simulation datafile and computes
+    all the relevant values for angular momentum, implied and actual.
+    
+    Arguments:
+    ---------- 
+    filename: string
+        must point to a data-simulation file (mostly .hdf5 files)
+        needs to be the full directory string of the filename
+    l: float
+        length of data simulation in pc along one side of cube
+    cmin: float
+        Minimum Density Threshold for Clump Finding
+    step: float
+        Step-size multiplier for Clump Finding
+    beta: float
+        For Implied Angular Momentum Calculation
+    clump_sizing: float
+        Minimum Value for Clump Finding
+    save_dir: string
+        Directory imput to save all FITS files
+        
+    Returns:
+    -------- 
+    FITS File contatining all the data computed.
+        - Will make an input where the save location can be changed on the fly.
+    
+    
+    '''
     #Loads data into File
     ds = yt.load(filename)
     
     #Creatingt Text Strings for Output here
-    out_string = filename.split("/")
-    out_string = out_string[-1].split(".")
+    
+    #Splitting the Whole Directory String by / 
+    main_string = filename.split("/")
+    #Finding where the list matches Fiducial
+    fid_string_true = ['Fiducial' in k for k in main_string]
+    #Grabbing that indice
+    fid_string_true = [i for i, x in enumerate(fid_string_true) if x]
+    #Making a string that is called the Directory found above ex. Fiducial00
+    fid_str = main_string[fid_string_true]
+    #Grabs last component of filename
+    out_string = main_string[-1].split(".") #Splits around periods
     time_stamp = out_string[1] #Ex. 0060
     master_dist_data = int(ds.domain_dimensions[0])
     
@@ -55,7 +93,7 @@ def analyzer(filename,l,cmin,step,beta):
         master_clump_main = master_clump_maker(octant[i])
         cmax = octant[i]["gas", "density"].max()
         print("Now Finding clumps for Octant:",i)
-        lc = clump_finder(master_clump_main,30,cmin,cmax,step)
+        lc = clump_finder(master_clump_main,clump_sizing,cmin,cmax,step)
         for j in range(0,len(lc)):
             clumps.append(lc[j])
     
@@ -345,7 +383,13 @@ def analyzer(filename,l,cmin,step,beta):
     
     # Creating HDU Object from ColDefs
     hdu = fits.BinTableHDU.from_columns(coldefs)
+    hdu.header['MINCLMP'] = clump_sizing
+    hdu.header['STEP'] = step
+    hdu.header['BETA'] = beta
+    hdu.header['LENGTH'] = l
+    hdu.header['CMIN'] = cmin
     
     #INSERT STRING CONNECTED TO DATAFILE INPUT FOR SCRIPT
-    hdu.writeto("/Users/sfielder/Documents/Astro_AngMom/FITS_Files/clump_data_"+time_stamp+".fits", overwrite=True)
+    hdu.writeto(save_dir_fits+"data_"+fid_str+'_'+time_stamp+".fits", overwrite=True)
+    #Can change the return statement for testing purposes, output anything above
     return()
