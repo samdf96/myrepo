@@ -79,6 +79,8 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
     #Grabs last component of filename
     out_string = main_string[-1].split(".") #Splits around periods
     time_stamp = out_string[1] #Ex. 0060
+    
+    
     master_dist_data = int(ds.domain_dimensions[0])
     
     #Creates a Data Object containing all the Simulation Data
@@ -140,6 +142,7 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
     dist_span_cm_y = np.zeros((len(clumps),1))
     dist_span_cm_z = np.zeros((len(clumps),1))
     for i in range(0,len(bregion)):
+        print('Creating Clump Number:',i)
         data_object_clump.append(clump_box(ds,bregion[i]))
         
         mass_clump_g.append(np.array(data_object_clump[i].quantities.total_mass())[0])
@@ -221,23 +224,69 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
     am_actual_partial_xz = []
     am_actual_partial_yz = []
     
+    print('All Clumps Created Successfully')
     
     for i in range(0,len(bregion)):
         clump = data_object_clump[i]
-        print('Working on Clump Number:',i)
+        print('Working on Analysis for Clump Number:',i)
 
         # =============================================================================
         # Computing Integrated Velocity Arrays
-        arr_z, vz = velocity_array(clump,'velocity_z','z',master_dist_data,l)
+        arr_z, vz = velocity_array(clump,'velocity_z','z',master_dist_data,l)            
         arr_x, vx = velocity_array(clump,'velocity_x','x',master_dist_data,l)
         arr_y, vy = velocity_array(clump,'velocity_y','y',master_dist_data,l)
         # =============================================================================
         
         # =============================================================================
         # Computing Reduced Velocity Arrays
-        arr_x_red, vx_py, vx_pz = velocity_array_reducer(arr_x,vx,'x',master_dist_data)
-        arr_y_red, vy_px, vy_pz = velocity_array_reducer(arr_y,vy,'y',master_dist_data)
-        arr_z_red, vz_px, vz_py = velocity_array_reducer(arr_z,vz,'z',master_dist_data)
+        arr_x_red, vx_py, vx_pz, broken = velocity_array_reducer(arr_x,
+                                                         vx,
+                                                         'x',
+                                                         master_dist_data)
+        if broken == True:
+            grad_x.append(np.nan)
+            grad_y.append(np.nan)
+            grad_z.append(np.nan)
+            am_implied_x.append(np.nan)
+            am_implied_y.append(np.nan)
+            am_implied_z.append(np.nan)
+            am_actual_total.append(np.nan)
+            am_actual_partial_xy.append(np.nan)
+            am_actual_partial_xz.append(np.nan)
+            am_actual_partial_yz.append(np.nan)
+            continue
+        arr_y_red, vy_px, vy_pz, broken = velocity_array_reducer(arr_y,
+                                                         vy,
+                                                         'y',
+                                                         master_dist_data)
+        if broken == True:
+            grad_x.append(np.nan)
+            grad_y.append(np.nan)
+            grad_z.append(np.nan)
+            am_implied_x.append(np.nan)
+            am_implied_y.append(np.nan)
+            am_implied_z.append(np.nan)
+            am_actual_total.append(np.nan)
+            am_actual_partial_xy.append(np.nan)
+            am_actual_partial_xz.append(np.nan)
+            am_actual_partial_yz.append(np.nan)
+            continue
+        arr_z_red, vz_px, vz_py, broken = velocity_array_reducer(arr_z,
+                                                         vz,
+                                                         'z',
+                                                         master_dist_data)
+        if broken == True:
+            grad_x.append(np.nan)
+            grad_y.append(np.nan)
+            grad_z.append(np.nan)
+            am_implied_x.append(np.nan)
+            am_implied_y.append(np.nan)
+            am_implied_z.append(np.nan)
+            am_actual_total.append(np.nan)
+            am_actual_partial_xy.append(np.nan)
+            am_actual_partial_xz.append(np.nan)
+            am_actual_partial_yz.append(np.nan)
+            continue
         # =============================================================================
         
         # =============================================================================
@@ -293,6 +342,7 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
         am_actual_partial_yz.append(ang_mom_actual_yz)
         # =========================================================================
     
+    print('Analysis Section Completed')
     # Turning all the data into numpy arrays to convert to Column objects
     clump_number = np.arange(1,len(bregion)+1)
     am_actual_total = np.array(am_actual_total)
@@ -380,7 +430,6 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
                             q_grad_x,
                             q_grad_y,
                             q_grad_z])
-        
     
     # Creating HDU Object from ColDefs
     hdu = fits.BinTableHDU.from_columns(coldefs)
@@ -390,7 +439,8 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
     hdu.header['LENGTH'] = l
     hdu.header['CMIN'] = cmin
     
+    print('ColDefs Object Created')
     #INSERT STRING CONNECTED TO DATAFILE INPUT FOR SCRIPT
     hdu.writeto(save_dir_fits+"data_"+fid_str+'_'+time_stamp+".fits", overwrite=True)
-    #Can change the return statement for testing purposes, output anything above
+    print('FITS FILE SAVED')
     return()

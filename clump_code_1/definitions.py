@@ -256,9 +256,20 @@ def velocity_array_reducer(velocity_int_array,
     object. The relationship is hard coded in this definition, as the data
     extracted from simulations will not be different in this case.
     '''
+    #Setting transferable quantity to exit loop if error occurs
+    broken=False
+    
     #Find where the data is non-nan valued
     v_positions = np.argwhere(~np.isnan(velocity_int_array))
     
+    #Exit loop with broken=True if v_positions is empty
+    if len(v_positions) == 0:
+        broken=True
+        arr = np.empty((1,1))
+        perp_coord_1 = np.empty((1,1))
+        perp_coord_2 = np.empty((1,1))
+        return(arr,perp_coord_1,perp_coord_2,broken)
+        
     v_positions_ij = []    #Creating list for array slicing
     v_positions_ij.append(v_positions[0,0]) #First Row Value
     v_positions_ij.append(v_positions[-1,0]) #Last Row Value
@@ -280,7 +291,7 @@ def velocity_array_reducer(velocity_int_array,
         velocity_int_array_reduced = velocity_int_array[v_positions_ij[0]:v_positions_ij[1]+1,
                                                         v_positions_ij[2]:v_positions_ij[3]+1]
        
-        return(velocity_int_array_reduced,vz_px,vz_py)
+        return(velocity_int_array_reduced,vz_px,vz_py,broken)
     
     if axis == 'y':
         # Finds appropriate px coordinates and py coordinates
@@ -296,7 +307,7 @@ def velocity_array_reducer(velocity_int_array,
                                v_positions_ij[2]:v_positions_ij[3]+1]
         velocity_int_array_reduced = velocity_int_array[v_positions_ij[0]:v_positions_ij[1]+1,
                                                         v_positions_ij[2]:v_positions_ij[3]+1]
-        return(velocity_int_array_reduced,vy_px,vy_pz)
+        return(velocity_int_array_reduced,vy_px,vy_pz,broken)
         
     if axis == 'x':
         # Finds appropriate px coordinates and py coordinates
@@ -312,7 +323,7 @@ def velocity_array_reducer(velocity_int_array,
                                v_positions_ij[2]:v_positions_ij[3]+1]
         velocity_int_array_reduced = velocity_int_array[v_positions_ij[0]:v_positions_ij[1]+1,
                                                         v_positions_ij[2]:v_positions_ij[3]+1]
-        return(velocity_int_array_reduced,vx_py,vx_pz)
+        return(velocity_int_array_reduced,vx_py,vx_pz,broken)
 
 def array_flattener(x):
     '''
