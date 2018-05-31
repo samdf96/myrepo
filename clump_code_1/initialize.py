@@ -23,8 +23,8 @@ import io
 
 #Finds all files with the .hdf5 extension in the bigdata directory
 flist = glob.glob('/home/sfielder/bigdata/**/*.hdf5')
-data_dir = '/home/sfielder/Documents/Clumps'
-out_dir = data_dir+'FITS_YAML'
+data_dir = '/home/sfielder/Documents/Clumps/'
+out_dir = data_dir+'FITS_YAML/'
 
 with io.open(data_dir+"config_1.yaml", 'r') as stream:
     data_loaded = yaml.load(stream)

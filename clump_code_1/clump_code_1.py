@@ -73,9 +73,9 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
     #Finding where the list matches Fiducial
     fid_string_true = ['Fiducial' in k for k in main_string]
     #Grabbing that indice
-    fid_string_true = [i for i, x in enumerate(fid_string_true) if x]
+    fid_string_id = [i for i, x in enumerate(fid_string_true) if x]
     #Making a string that is called the Directory found above ex. Fiducial00
-    fid_str = main_string[fid_string_true]
+    fid_str = main_string[fid_string_id[0]] #Should only have one entry
     #Grabs last component of filename
     out_string = main_string[-1].split(".") #Splits around periods
     time_stamp = out_string[1] #Ex. 0060
@@ -224,7 +224,8 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
     
     for i in range(0,len(bregion)):
         clump = data_object_clump[i]
-    
+        print('Working on Clump Number:',i)
+
         # =============================================================================
         # Computing Integrated Velocity Arrays
         arr_z, vz = velocity_array(clump,'velocity_z','z',master_dist_data,l)
