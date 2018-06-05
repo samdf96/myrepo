@@ -456,17 +456,21 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
     
     # Creating HDU Object from ColDefs
     hdu = fits.BinTableHDU.from_columns(coldefs)
+    print('ColDefs Object Created')
     hdu.header['MINCLMP'] = clump_sizing
     hdu.header['STEP'] = step
     hdu.header['BETA'] = beta
     hdu.header['LENGTH'] = l
     hdu.header['CMIN'] = cmin
     
-    print('ColDefs Object Created')
+    err_string_array = np.array(err_string)
+    
+    #For Loop for Adding in all the Error Statements for clumps (if any)
+    for i in range(0,len(err_string_array)):
+        hdu.header.add_comment(err_string_array[i])
+    
+    
     #INSERT STRING CONNECTED TO DATAFILE INPUT FOR SCRIPT
     hdu.writeto(save_dir_fits+"data_"+fid_str+'_'+time_stamp+".fits", overwrite=True)
     print('FITS FILE SAVED')
-    print('Summary of Error String: ',err_string)
-    np.savetxt(save_dir_fits+'Error_Summary_Test_'+time_stamp+'.txt',err_string,newline='\n')
-    print('Error File Saved')
     return()
