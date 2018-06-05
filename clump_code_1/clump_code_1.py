@@ -307,7 +307,9 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
                                   i+
                                   ' has v_positions empty for function: velocity_array_reducer')
                 continue
-            continue
+            
+        #Break out of loop here
+        break
         # =============================================================================
         
         # =============================================================================
