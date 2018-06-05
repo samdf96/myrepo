@@ -275,7 +275,60 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
                     raise YTErrorValue
                 if broken == 2:
                     raise YTErrorReshape
+                    
+                # =============================================================================
+                # Flattening Arrays for Plane Fitting Process
+                arr_x_red_flat = array_flattener(arr_x_red)
+                arr_y_red_flat = array_flattener(arr_y_red)
+                arr_z_red_flat = array_flattener(arr_z_red)
                 
+                vx_py_flat = array_flattener(vx_py)
+                vx_pz_flat = array_flattener(vx_pz)
+                vy_px_flat = array_flattener(vy_px)
+                vy_pz_flat = array_flattener(vy_pz)
+                vz_px_flat = array_flattener(vz_px)
+                vz_py_flat = array_flattener(vz_py)
+                # =============================================================================
+                
+                #Plane Fitting Process
+                result_x = plane_fit(vx_py_flat,vx_pz_flat,arr_x_red_flat)
+                result_y = plane_fit(vy_px_flat,vy_pz_flat,arr_y_red_flat)
+                result_z = plane_fit(vz_px_flat,vz_py_flat,arr_z_red_flat)
+                
+                #Computing Gradients from Results
+                gradient_x = gradient(result_x)
+                gradient_y = gradient(result_y)
+                gradient_z = gradient(result_z)
+            
+                #Computing Specific Angular Momentum
+                # BETA VALUE INPUT TO DEFINITION WILL DEFAULT TO ONE
+                ang_mom_implied_x = angular_momentum_implied(gradient_x,
+                                                              dist_span_cm[i,1,0],
+                                                              dist_span_cm[i,2,0])
+                ang_mom_implied_y = angular_momentum_implied(gradient_y,
+                                                              dist_span_cm[i,0,0],
+                                                              dist_span_cm[i,2,0])
+                ang_mom_implied_z = angular_momentum_implied(gradient_z,
+                                                              dist_span_cm[i,0,0],
+                                                              dist_span_cm[i,1,0])
+                
+                ang_mom_actual_total, ang_mom_actual_xy, ang_mom_actual_xz, ang_mom_actual_yz = angular_momentum_actual(clump,mass_clump_g[i])
+                
+                # =============================================================
+                #     STORAGE OF VALUES FOR LATER USE
+                grad_x.append(gradient_x)
+                grad_y.append(gradient_y)
+                grad_z.append(gradient_z)
+                am_implied_x.append(ang_mom_implied_x)
+                am_implied_y.append(ang_mom_implied_y)
+                am_implied_z.append(ang_mom_implied_z)
+                am_actual_total.append(ang_mom_actual_total)
+                am_actual_partial_xy.append(ang_mom_actual_xy)
+                am_actual_partial_xz.append(ang_mom_actual_xz)
+                am_actual_partial_yz.append(ang_mom_actual_yz)
+                # =============================================================
+                
+
             except YTErrorReshape:
                 grad_x.append(np.nan)
                 grad_y.append(np.nan)
@@ -290,7 +343,7 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
                 err_string.append('Clump Number '+
                                   str(i)+
                                   ' could notreshape coordinates to 256x256 array')
-                
+                break
             
             except YTErrorValue:
                 grad_x.append(np.nan)
@@ -307,63 +360,10 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
                                   str(i)+
                                   ' has v_positions empty for function: velocity_array_reducer')
                 
-            
-        #Break out of loop here
+                break
+            #Break out of loop here if no errors are triggered
             break
-        # =============================================================================
-        
-        # =============================================================================
-        # Flattening Arrays for Plane Fitting Process
-        arr_x_red_flat = array_flattener(arr_x_red)
-        arr_y_red_flat = array_flattener(arr_y_red)
-        arr_z_red_flat = array_flattener(arr_z_red)
-        
-        vx_py_flat = array_flattener(vx_py)
-        vx_pz_flat = array_flattener(vx_pz)
-        vy_px_flat = array_flattener(vy_px)
-        vy_pz_flat = array_flattener(vy_pz)
-        vz_px_flat = array_flattener(vz_px)
-        vz_py_flat = array_flattener(vz_py)
-        # =============================================================================
-        
-        #Plane Fitting Process
-        result_x = plane_fit(vx_py_flat,vx_pz_flat,arr_x_red_flat)
-        result_y = plane_fit(vy_px_flat,vy_pz_flat,arr_y_red_flat)
-        result_z = plane_fit(vz_px_flat,vz_py_flat,arr_z_red_flat)
-        
-        #Computing Gradients from Results
-        gradient_x = gradient(result_x)
-        gradient_y = gradient(result_y)
-        gradient_z = gradient(result_z)
-    
-        #Computing Specific Angular Momentum
-        # BETA VALUE INPUT TO DEFINITION WILL DEFAULT TO ONE
-        ang_mom_implied_x = angular_momentum_implied(gradient_x,
-                                                      dist_span_cm[i,1,0],
-                                                      dist_span_cm[i,2,0])
-        ang_mom_implied_y = angular_momentum_implied(gradient_y,
-                                                      dist_span_cm[i,0,0],
-                                                      dist_span_cm[i,2,0])
-        ang_mom_implied_z = angular_momentum_implied(gradient_z,
-                                                      dist_span_cm[i,0,0],
-                                                      dist_span_cm[i,1,0])
-        
-        ang_mom_actual_total, ang_mom_actual_xy, ang_mom_actual_xz, ang_mom_actual_yz = angular_momentum_actual(clump,mass_clump_g[i])
-        
-        
-        # =========================================================================
-        #     STORAGE OF VALUES FOR LATER USE
-        grad_x.append(gradient_x)
-        grad_y.append(gradient_y)
-        grad_z.append(gradient_z)
-        am_implied_x.append(ang_mom_implied_x)
-        am_implied_y.append(ang_mom_implied_y)
-        am_implied_z.append(ang_mom_implied_z)
-        am_actual_total.append(ang_mom_actual_total)
-        am_actual_partial_xy.append(ang_mom_actual_xy)
-        am_actual_partial_xz.append(ang_mom_actual_xz)
-        am_actual_partial_yz.append(ang_mom_actual_yz)
-        # =========================================================================
+
     
     print('Analysis Section Completed')
     # Turning all the data into numpy arrays to convert to Column objects
