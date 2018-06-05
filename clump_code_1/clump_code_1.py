@@ -288,7 +288,7 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
                 am_actual_partial_xz.append(np.nan)
                 am_actual_partial_yz.append(np.nan)
                 err_string.append('Clump Number '+
-                                  i+
+                                  str(i)+
                                   ' could notreshape coordinates to 256x256 array')
                 
             
@@ -304,7 +304,7 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
                 am_actual_partial_xz.append(np.nan)
                 am_actual_partial_yz.append(np.nan)
                 err_string.append('Clump Number '+
-                                  i+
+                                  str(i)+
                                   ' has v_positions empty for function: velocity_array_reducer')
                 
             
