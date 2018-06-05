@@ -62,7 +62,8 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
     Returns:
     -------- 
     FITS File contatining all the data computed.
-        - Will make an input where the save location can be changed on the fly.
+        - Has all clump data
+        - COMMENTS in the header for any clumps that returned errors
     
     
     '''
@@ -105,11 +106,11 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
         for j in range(0,len(lc)):
             clumps.append(lc[j])
     
-    # =============================================================================
+    # =========================================================================
     # Making empty arrays to store the data, variable to allow for different
     # size of clumps list. Actual array (1,3) and (3,2) will not change as
     # that is how they are written with no difference between clump objects.
-    # =============================================================================
+    # =========================================================================
     
     #Creating Arrays for later export (see bottom of script for this step)
     com = np.zeros((len(clumps),1,3))
@@ -128,12 +129,12 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
     
     
     
-    # =============================================================================
+    # =========================================================================
     # CHECK IN POINT: What we have so far here in the script
     #
     #     com: arrays that contain x,y,z center of mass values for clumps
     #     bregion: x,y,z min/max value to build the boxes for clumps
-    # =============================================================================
+    # =========================================================================
     
     
     data_object_clump = [] #Setting Empty list for loop
@@ -185,7 +186,8 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
     q_com_z = fits.Column(name='Center of Mass Coordinate (z)',
                           format='D',unit='cm',array=com_z)
     
-    q_mass_clump = fits.Column(name='Mass',format='D',unit='g',array=mass_clump_g)
+    q_mass_clump = fits.Column(name='Mass',format='D',unit='g',
+                               array=mass_clump_g)
     
     q_dist_span_x = fits.Column(name='Length (x axis)',
                                 format='D',
@@ -203,7 +205,7 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
     
     
     
-    # =============================================================================
+    # =========================================================================
     # CHECK IN POINT: What we have so far here in the script
     #
     #   data_object_clump: list
@@ -216,7 +218,7 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
     #       an array with just (x,y,z)-spanning distance for all clumps
     #   com_(x,y,z): array
     #       an array with just (x,y,z)-coordinates for all clumps
-    # =============================================================================
+    # =========================================================================
     
     #Defining Empty Lists to store data into, will convert into arrays later on
     grad_x = []
@@ -238,45 +240,51 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
         
         print('Working on Analysis for Clump Number:',i)
 
-        # =============================================================================
+        # =====================================================================
         # Computing Integrated Velocity Arrays
         arr_z, vz = velocity_array(clump,'velocity_z','z',master_dist_data,l)            
         arr_x, vx = velocity_array(clump,'velocity_x','x',master_dist_data,l)
         arr_y, vy = velocity_array(clump,'velocity_y','y',master_dist_data,l)
-        # =============================================================================
+        # =====================================================================
         
-        # =============================================================================
+        # =====================================================================
         # Computing Reduced Velocity Arrays
         
+        # This while loop raises errors if broken values from output of 
+        # definitions file is not zero.
         while True:
             try:
                 arr_x_red, vx_py, vx_pz, broken = velocity_array_reducer(arr_x,
                                                          vx,
                                                          'x',
                                                          master_dist_data)
+                #Check if broken statement is triggered
                 if broken == 1:
                     raise YTErrorValue
                 if broken == 2:
                     raise YTErrorReshape
+                # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
                 arr_y_red, vy_px, vy_pz, broken = velocity_array_reducer(arr_y,
                                                          vy,
                                                          'y',
                                                          master_dist_data)
+                #Check if broken statement is triggered
                 if broken == 1:
                     raise YTErrorValue
                 if broken == 2:
                     raise YTErrorReshape
-
+                # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
                 arr_z_red, vz_px, vz_py, broken = velocity_array_reducer(arr_z,
                                                          vz,
                                                          'z',
                                                          master_dist_data)
+                #Check if broken statement is triggered
                 if broken == 1:
                     raise YTErrorValue
                 if broken == 2:
                     raise YTErrorReshape
-                    
-                # =============================================================================
+                
+                # =============================================================
                 # Flattening Arrays for Plane Fitting Process
                 arr_x_red_flat = array_flattener(arr_x_red)
                 arr_y_red_flat = array_flattener(arr_y_red)
@@ -288,7 +296,7 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
                 vy_pz_flat = array_flattener(vy_pz)
                 vz_px_flat = array_flattener(vz_px)
                 vz_py_flat = array_flattener(vz_py)
-                # =============================================================================
+                # =============================================================
                 
                 #Plane Fitting Process
                 result_x = plane_fit(vx_py_flat,vx_pz_flat,arr_x_red_flat)
@@ -340,9 +348,9 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
                 am_actual_partial_xy.append(np.nan)
                 am_actual_partial_xz.append(np.nan)
                 am_actual_partial_yz.append(np.nan)
-                err_string.append('Clump Number '+
+                err_string.append('Clump Number: '+
                                   str(i)+
-                                  ' could not reshape coordinates to 256x256 array')
+                                  ' , could not reshape coordinates to 256x256 array')
                 break
             
             except YTErrorValue:
@@ -356,12 +364,14 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
                 am_actual_partial_xy.append(np.nan)
                 am_actual_partial_xz.append(np.nan)
                 am_actual_partial_yz.append(np.nan)
-                err_string.append('Clump Number '+
+                err_string.append('Clump Number: '+
                                   str(i)+
-                                  ' has v_positions empty for function: velocity_array_reducer')
+                                  ' , has v_positions empty')
                 
                 break
+            
             #Break out of loop here if no errors are triggered
+            # makes sure that the while loop doesn't get stuck at the end
             break
 
     
@@ -379,7 +389,7 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
     grad_y = np.array(grad_y)
     grad_z = np.array(grad_z)
     
-    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
     #Creation of Columns for Astropy FITS for all quantities computed above
     
     q_clump_number = fits.Column(name='Clump Number',
@@ -432,7 +442,7 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
                            format='D',
                            unit=str(per_sec_unit),
                            array=grad_z)
-    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
     
     #Creating ColDefs Object
     coldefs = fits.ColDefs([q_clump_number,
@@ -467,10 +477,10 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
     
     #For Loop for Adding in all the Error Statements for clumps (if any)
     for i in range(0,len(err_string_array)):
-        hdu.header.add_comment(err_string_array[i])
-    
+        hdu.header.add_comment(err_string_array[i])    
     
     #INSERT STRING CONNECTED TO DATAFILE INPUT FOR SCRIPT
-    hdu.writeto(save_dir_fits+"data_"+fid_str+'_'+time_stamp+".fits", overwrite=True)
+    hdu.writeto(save_dir_fits+"data_"+fid_str+'_'+time_stamp+".fits",
+                overwrite=True)
     print('FITS FILE SAVED')
     return()
