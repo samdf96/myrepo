@@ -248,6 +248,11 @@ def velocity_array_reducer(velocity_int_array,
         first perpendicular component for coordinate system
     vu_pw: array
         second perpendicular component for coordinate system
+    broken: int
+        signifies broken code:
+            value == 0: not broken - passes normally
+            value == 1: broken due to v_positions having length 0 (empty)
+            value == 2: broken due to failure to reshape
 
     Extra Notes:
     
@@ -257,14 +262,14 @@ def velocity_array_reducer(velocity_int_array,
     extracted from simulations will not be different in this case.
     '''
     #Setting transferable quantity to exit loop if error occurs
-    broken=False
+    broken=0
     
     #Find where the data is non-nan valued
     v_positions = np.argwhere(~np.isnan(velocity_int_array))
     
-    #Exit loop with broken=True if v_positions is empty
+    #Exit loop with broken=1 if v_positions is empty
     if len(v_positions) == 0:
-        broken=True
+        broken=1
         arr = np.empty((1,1))
         perp_coord_1 = np.empty((1,1))
         perp_coord_2 = np.empty((1,1))
@@ -275,55 +280,65 @@ def velocity_array_reducer(velocity_int_array,
     v_positions_ij.append(v_positions[-1,0]) #Last Row Value
     v_positions_ij.append(v_positions[0,1])    #First Column Value
     v_positions_ij.append(v_positions[-1,1])   #Last Column Value
-     
-    if axis == 'z':
-        # Finds appropriate px coordinates and py coordinates
-        vx_coordinates = np.array(velocity_int_data_object['py'])
-        vx_coordinates = np.reshape(vx_coordinates,
-                                    (master_dist_data,master_dist_data))
-        vz_px = vx_coordinates[v_positions_ij[0]:v_positions_ij[1]+1,
-                               v_positions_ij[2]:v_positions_ij[3]+1]
-        vy_coordinates = np.array(velocity_int_data_object['px'])
-        vy_coordinates = np.reshape(vy_coordinates,
-                                    (master_dist_data,master_dist_data))
-        vz_py = vy_coordinates[v_positions_ij[0]:v_positions_ij[1]+1,
-                               v_positions_ij[2]:v_positions_ij[3]+1]
-        velocity_int_array_reduced = velocity_int_array[v_positions_ij[0]:v_positions_ij[1]+1,
-                                                        v_positions_ij[2]:v_positions_ij[3]+1]
-       
-        return(velocity_int_array_reduced,vz_px,vz_py,broken)
     
-    if axis == 'y':
-        # Finds appropriate px coordinates and py coordinates
-        vx_coordinates = np.array(velocity_int_data_object['px'])
-        vx_coordinates = np.reshape(vx_coordinates,
-                                    (master_dist_data,master_dist_data))
-        vy_px = vx_coordinates[v_positions_ij[0]:v_positions_ij[1]+1,
-                               v_positions_ij[2]:v_positions_ij[3]+1]
-        vz_coordinates = np.array(velocity_int_data_object['py'])
-        vz_coordinates = np.reshape(vz_coordinates,
-                                    (master_dist_data,master_dist_data))
-        vy_pz = vz_coordinates[v_positions_ij[0]:v_positions_ij[1]+1,
-                               v_positions_ij[2]:v_positions_ij[3]+1]
-        velocity_int_array_reduced = velocity_int_array[v_positions_ij[0]:v_positions_ij[1]+1,
-                                                        v_positions_ij[2]:v_positions_ij[3]+1]
-        return(velocity_int_array_reduced,vy_px,vy_pz,broken)
+    while True:
+        try:
+            if axis == 'z':
+                # Finds appropriate px coordinates and py coordinates
+                vx_coordinates = np.array(velocity_int_data_object['py'])
+                vx_coordinates = np.reshape(vx_coordinates,
+                                            (master_dist_data,master_dist_data))
+                vz_px = vx_coordinates[v_positions_ij[0]:v_positions_ij[1]+1,
+                                       v_positions_ij[2]:v_positions_ij[3]+1]
+                vy_coordinates = np.array(velocity_int_data_object['px'])
+                vy_coordinates = np.reshape(vy_coordinates,
+                                            (master_dist_data,master_dist_data))
+                vz_py = vy_coordinates[v_positions_ij[0]:v_positions_ij[1]+1,
+                                       v_positions_ij[2]:v_positions_ij[3]+1]
+                velocity_int_array_reduced = velocity_int_array[v_positions_ij[0]:v_positions_ij[1]+1,
+                                                                v_positions_ij[2]:v_positions_ij[3]+1]
+               
+                return(velocity_int_array_reduced,vz_px,vz_py,broken)
+            
+            if axis == 'y':
+                # Finds appropriate px coordinates and py coordinates
+                vx_coordinates = np.array(velocity_int_data_object['px'])
+                vx_coordinates = np.reshape(vx_coordinates,
+                                            (master_dist_data,master_dist_data))
+                vy_px = vx_coordinates[v_positions_ij[0]:v_positions_ij[1]+1,
+                                       v_positions_ij[2]:v_positions_ij[3]+1]
+                vz_coordinates = np.array(velocity_int_data_object['py'])
+                vz_coordinates = np.reshape(vz_coordinates,
+                                            (master_dist_data,master_dist_data))
+                vy_pz = vz_coordinates[v_positions_ij[0]:v_positions_ij[1]+1,
+                                       v_positions_ij[2]:v_positions_ij[3]+1]
+                velocity_int_array_reduced = velocity_int_array[v_positions_ij[0]:v_positions_ij[1]+1,
+                                                                v_positions_ij[2]:v_positions_ij[3]+1]
+                return(velocity_int_array_reduced,vy_px,vy_pz,broken)
+                
+            if axis == 'x':
+                # Finds appropriate px coordinates and py coordinates
+                vy_coordinates = np.array(velocity_int_data_object['py'])
+                vy_coordinates = np.reshape(vy_coordinates,
+                                            (master_dist_data,master_dist_data))
+                vx_py = vy_coordinates[v_positions_ij[0]:v_positions_ij[1]+1,
+                                       v_positions_ij[2]:v_positions_ij[3]+1]
+                vz_coordinates = np.array(velocity_int_data_object['px'])
+                vz_coordinates = np.reshape(vz_coordinates,
+                                            (master_dist_data,master_dist_data))
+                vx_pz = vz_coordinates[v_positions_ij[0]:v_positions_ij[1]+1,
+                                       v_positions_ij[2]:v_positions_ij[3]+1]
+                velocity_int_array_reduced = velocity_int_array[v_positions_ij[0]:v_positions_ij[1]+1,
+                                                                v_positions_ij[2]:v_positions_ij[3]+1]
+            return(velocity_int_array_reduced,vx_py,vx_pz,broken)
         
-    if axis == 'x':
-        # Finds appropriate px coordinates and py coordinates
-        vy_coordinates = np.array(velocity_int_data_object['py'])
-        vy_coordinates = np.reshape(vy_coordinates,
-                                    (master_dist_data,master_dist_data))
-        vx_py = vy_coordinates[v_positions_ij[0]:v_positions_ij[1]+1,
-                               v_positions_ij[2]:v_positions_ij[3]+1]
-        vz_coordinates = np.array(velocity_int_data_object['px'])
-        vz_coordinates = np.reshape(vz_coordinates,
-                                    (master_dist_data,master_dist_data))
-        vx_pz = vz_coordinates[v_positions_ij[0]:v_positions_ij[1]+1,
-                               v_positions_ij[2]:v_positions_ij[3]+1]
-        velocity_int_array_reduced = velocity_int_array[v_positions_ij[0]:v_positions_ij[1]+1,
-                                                        v_positions_ij[2]:v_positions_ij[3]+1]
-        return(velocity_int_array_reduced,vx_py,vx_pz,broken)
+        except ValueError:
+            broken=2
+            arr = np.empty((1,1))
+            perp_coord_1 = np.empty((1,1))
+            perp_coord_2 = np.empty((1,1))
+            return(arr,perp_coord_1,perp_coord_2,broken)
+        
 
 def array_flattener(x):
     '''

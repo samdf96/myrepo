@@ -31,6 +31,9 @@ from definitions import plane_fit
 from definitions import gradient
 from definitions import angular_momentum_implied
 from definitions import angular_momentum_actual
+
+#Section for Importing Exceptions classes
+from exceptions import YTErrorValue, YTErrorReshape
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
 
 def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
@@ -63,6 +66,9 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
     
     
     '''
+    
+    print('Simluation File Currently Working On: ',filename)
+    
     #Loads data into File
     ds = yt.load(filename)
     
@@ -223,11 +229,13 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
     am_actual_partial_xy = []
     am_actual_partial_xz = []
     am_actual_partial_yz = []
+    err_string = [] #Used for tracking errors in functions
     
     print('All Clumps Created Successfully')
     
     for i in range(0,len(bregion)):
         clump = data_object_clump[i]
+        
         print('Working on Analysis for Clump Number:',i)
 
         # =============================================================================
@@ -239,54 +247,64 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
         
         # =============================================================================
         # Computing Reduced Velocity Arrays
-        arr_x_red, vx_py, vx_pz, broken = velocity_array_reducer(arr_x,
+        
+        while True:
+            try:
+                arr_x_red, vx_py, vx_pz, broken = velocity_array_reducer(arr_x,
                                                          vx,
                                                          'x',
                                                          master_dist_data)
-        if broken == True:
-            grad_x.append(np.nan)
-            grad_y.append(np.nan)
-            grad_z.append(np.nan)
-            am_implied_x.append(np.nan)
-            am_implied_y.append(np.nan)
-            am_implied_z.append(np.nan)
-            am_actual_total.append(np.nan)
-            am_actual_partial_xy.append(np.nan)
-            am_actual_partial_xz.append(np.nan)
-            am_actual_partial_yz.append(np.nan)
-            continue
-        arr_y_red, vy_px, vy_pz, broken = velocity_array_reducer(arr_y,
+                if broken == 1:
+                    raise YTErrorValue
+                if broken == 2:
+                    raise YTErrorReshape
+                arr_y_red, vy_px, vy_pz, broken = velocity_array_reducer(arr_y,
                                                          vy,
                                                          'y',
                                                          master_dist_data)
-        if broken == True:
-            grad_x.append(np.nan)
-            grad_y.append(np.nan)
-            grad_z.append(np.nan)
-            am_implied_x.append(np.nan)
-            am_implied_y.append(np.nan)
-            am_implied_z.append(np.nan)
-            am_actual_total.append(np.nan)
-            am_actual_partial_xy.append(np.nan)
-            am_actual_partial_xz.append(np.nan)
-            am_actual_partial_yz.append(np.nan)
-            continue
-        arr_z_red, vz_px, vz_py, broken = velocity_array_reducer(arr_z,
+                if broken == 1:
+                    raise YTErrorValue
+                if broken == 2:
+                    raise YTErrorReshape
+
+                arr_z_red, vz_px, vz_py, broken = velocity_array_reducer(arr_z,
                                                          vz,
                                                          'z',
                                                          master_dist_data)
-        if broken == True:
-            grad_x.append(np.nan)
-            grad_y.append(np.nan)
-            grad_z.append(np.nan)
-            am_implied_x.append(np.nan)
-            am_implied_y.append(np.nan)
-            am_implied_z.append(np.nan)
-            am_actual_total.append(np.nan)
-            am_actual_partial_xy.append(np.nan)
-            am_actual_partial_xz.append(np.nan)
-            am_actual_partial_yz.append(np.nan)
-            continue
+                if broken == 1:
+                    raise YTErrorValue
+                if broken == 2:
+                    raise YTErrorReshape
+                
+            except YTErrorReshape:
+                grad_x.append(np.nan)
+                grad_y.append(np.nan)
+                grad_z.append(np.nan)
+                am_implied_x.append(np.nan)
+                am_implied_y.append(np.nan)
+                am_implied_z.append(np.nan)
+                am_actual_total.append(np.nan)
+                am_actual_partial_xy.append(np.nan)
+                am_actual_partial_xz.append(np.nan)
+                am_actual_partial_yz.append(np.nan)
+                err_string.append('Clump Number '+
+                                  i+
+                                  ' could notreshape coordinates to 256x256 array')
+            
+            except YTErrorValue:
+                grad_x.append(np.nan)
+                grad_y.append(np.nan)
+                grad_z.append(np.nan)
+                am_implied_x.append(np.nan)
+                am_implied_y.append(np.nan)
+                am_implied_z.append(np.nan)
+                am_actual_total.append(np.nan)
+                am_actual_partial_xy.append(np.nan)
+                am_actual_partial_xz.append(np.nan)
+                am_actual_partial_yz.append(np.nan)
+                err_string.append('Clump Number '+
+                                  i+
+                                  ' has v_positions empty for function: velocity_array_reducer')
         # =============================================================================
         
         # =============================================================================
@@ -443,4 +461,5 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
     #INSERT STRING CONNECTED TO DATAFILE INPUT FOR SCRIPT
     hdu.writeto(save_dir_fits+"data_"+fid_str+'_'+time_stamp+".fits", overwrite=True)
     print('FITS FILE SAVED')
+    print('Summary of Error String: ',err_string)
     return()
