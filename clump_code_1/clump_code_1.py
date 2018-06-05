@@ -290,7 +290,7 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
                 err_string.append('Clump Number '+
                                   i+
                                   ' could notreshape coordinates to 256x256 array')
-                continue
+                
             
             except YTErrorValue:
                 grad_x.append(np.nan)
@@ -306,7 +306,7 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
                 err_string.append('Clump Number '+
                                   i+
                                   ' has v_positions empty for function: velocity_array_reducer')
-                continue
+                
             
         #Break out of loop here
         break
