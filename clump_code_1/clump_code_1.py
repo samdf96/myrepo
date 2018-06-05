@@ -467,6 +467,6 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
     hdu.writeto(save_dir_fits+"data_"+fid_str+'_'+time_stamp+".fits", overwrite=True)
     print('FITS FILE SAVED')
     print('Summary of Error String: ',err_string)
-    np.savetxt(save_dir_fits+'Error_Summary_Test.txt',err_string,newline='\n')
+    np.savetxt(save_dir_fits+'Error_Summary_Test_'+time_stamp+'.txt',err_string,newline='\n')
     print('Error File Saved')
     return()
