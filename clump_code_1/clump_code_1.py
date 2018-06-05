@@ -342,7 +342,7 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
                 am_actual_partial_yz.append(np.nan)
                 err_string.append('Clump Number '+
                                   str(i)+
-                                  ' could notreshape coordinates to 256x256 array')
+                                  ' could not reshape coordinates to 256x256 array')
                 break
             
             except YTErrorValue:
@@ -467,4 +467,6 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
     hdu.writeto(save_dir_fits+"data_"+fid_str+'_'+time_stamp+".fits", overwrite=True)
     print('FITS FILE SAVED')
     print('Summary of Error String: ',err_string)
+    np.savetxt(save_dir_fits+'Error_Summary_Test.txt',err_string,newline='\n')
+    print('Error File Saved')
     return()
