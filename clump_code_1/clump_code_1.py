@@ -309,7 +309,7 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
                 
             
         #Break out of loop here
-        break
+            break
         # =============================================================================
         
         # =============================================================================
