@@ -485,7 +485,12 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
         hdu.header.add_comment(err_string_array[i])    
     
     #Creating Directory to store picture files and FITS files in.
-    os.mkdir(save_dir_specific)
+    if os.path.isdir(save_dir_specific) == False:
+        os.mkdir(save_dir_specific)
+    else:
+        for f in save_dir_specific:
+            os.remove(f)
+    
     
     #INSERT STRING CONNECTED TO DATAFILE INPUT FOR SCRIPT
     hdu.writeto(save_dir_specific+"data_"+fid_str+"_"+time_stamp+".fits",
