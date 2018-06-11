@@ -89,7 +89,7 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
     
     #Creating Sub Directory for individual Data Simulation File Timestamp
     
-    time_stamp_speciic = save_dir_fits + "/" + time_stamp
+    save_dir_specific = save_dir_fits + "/" + time_stamp + "/"
     
     
     master_dist_data = int(ds.domain_dimensions[0])
@@ -484,7 +484,7 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
         hdu.header.add_comment(err_string_array[i])    
     
     #INSERT STRING CONNECTED TO DATAFILE INPUT FOR SCRIPT
-    hdu.writeto(save_dir_fits+"data_"+fid_str+"_"+time_stamp+".fits",
+    hdu.writeto(save_dir_specific+"data_"+fid_str+"_"+time_stamp+".fits",
                 overwrite=True)
     print('FITS FILE SAVED')
     return()
