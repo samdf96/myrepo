@@ -13,7 +13,6 @@ import numpy as np
 import astropy.units as u
 from astropy.io import fits
 import os
-import shutil
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
 # Section for importing all the definitions from defitions.py file
