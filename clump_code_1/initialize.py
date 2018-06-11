@@ -29,7 +29,6 @@ save_dir = data_dir+'FITS_YAML/'
 with io.open(data_dir+"config_1.yaml", 'r') as stream:
     data_loaded = yaml.load(stream)
 
-
 for i in range(0,len(flist)):
     cc.analyzer(flist[i],
                 data_loaded['l'],

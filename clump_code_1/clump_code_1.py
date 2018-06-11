@@ -12,6 +12,7 @@ import yt
 import numpy as np
 import astropy.units as u
 from astropy.io import fits
+import os
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
 # Section for importing all the definitions from defitions.py file
@@ -482,6 +483,9 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
     #For Loop for Adding in all the Error Statements for clumps (if any)
     for i in range(0,len(err_string_array)):
         hdu.header.add_comment(err_string_array[i])    
+    
+    #Creating Directory to store picture files and FITS files in.
+    os.mkdir(save_dir_specific)
     
     #INSERT STRING CONNECTED TO DATAFILE INPUT FOR SCRIPT
     hdu.writeto(save_dir_specific+"data_"+fid_str+"_"+time_stamp+".fits",
