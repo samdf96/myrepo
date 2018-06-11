@@ -13,6 +13,7 @@ import numpy as np
 import astropy.units as u
 from astropy.io import fits
 import os
+import shutil
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
 # Section for importing all the definitions from defitions.py file
@@ -485,11 +486,11 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
         hdu.header.add_comment(err_string_array[i])    
     
     #Creating Directory to store picture files and FITS files in.
-    if os.path.isdir(save_dir_specific) == False:
+    #First detects if directory is there, if so, it deletes and rebuilds that
+    #directory
+    if os.path.isdir(save_dir_specific) == True:
+        shutil.rmtree(save_dir_specific)
         os.mkdir(save_dir_specific)
-    else:
-        for f in save_dir_specific:
-            os.remove(f)
     
     
     #INSERT STRING CONNECTED TO DATAFILE INPUT FOR SCRIPT
