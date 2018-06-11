@@ -489,7 +489,11 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
     #First detects if directory is there, if so, it deletes and rebuilds that
     #directory
     if os.path.isdir(save_dir_specific) == True:
-        shutil.rmtree(save_dir_specific)
+        print("Warning!!! Directory: " +
+              save_dir_specific +
+              "is detected as a valid directory." +
+              "FITS Files will be overwritten.")
+    else:
         os.mkdir(save_dir_specific)
     
     
