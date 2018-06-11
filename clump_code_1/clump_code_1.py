@@ -89,7 +89,7 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
     
     #Creating Sub Directory for individual Data Simulation File Timestamp
     
-    save_dir_specific = save_dir_fits + "/" + time_stamp + "/"
+    save_dir_specific = save_dir_fits + time_stamp + "/"
     
     
     master_dist_data = int(ds.domain_dimensions[0])
