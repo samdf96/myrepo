@@ -480,7 +480,7 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
         hdu.header.add_comment(err_string_array[i])    
     
     #INSERT STRING CONNECTED TO DATAFILE INPUT FOR SCRIPT
-    hdu.writeto(save_dir_fits+"data_"+fid_str+'_'+time_stamp+".fits",
+    hdu.writeto(save_dir_fits+'/'+time_stamp+'/'+"data_"+fid_str+'_'+time_stamp+".fits",
                 overwrite=True)
     print('FITS FILE SAVED')
     return()
