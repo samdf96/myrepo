@@ -155,7 +155,7 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
     
     # =========================================================================
     # Creation of Plots will occur here, in a loop for all clumps
-    prj = proj_plot_creator(ds,'x',lc[0])
+    prj = proj_plot_creator(ds,'x',clumps[0])
     prj.save('test_plot.pdf')
     
     
