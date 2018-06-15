@@ -32,7 +32,7 @@ from definitions import plane_fit
 from definitions import gradient
 from definitions import angular_momentum_implied
 from definitions import angular_momentum_actual
-from definitions import proj_plot_creator
+#from definitions import proj_plot_creator
 
 #Section for Importing Exceptions classes
 from exceptions import YTErrorValue, YTErrorReshape
