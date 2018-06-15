@@ -32,6 +32,7 @@ from definitions import plane_fit
 from definitions import gradient
 from definitions import angular_momentum_implied
 from definitions import angular_momentum_actual
+from definitions import proj_plot_creator
 
 #Section for Importing Exceptions classes
 from exceptions import YTErrorValue, YTErrorReshape
@@ -132,14 +133,20 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
         
         bregion[i] = bounding_box(clumps[i])
     
-    
-    
     # =========================================================================
     # CHECK IN POINT: What we have so far here in the script
     #
     #     com: arrays that contain x,y,z center of mass values for clumps
     #     bregion: x,y,z min/max value to build the boxes for clumps
+    #     lc: Tree object of clump data extracted from clump_finder def
     # =========================================================================
+    
+    
+    # =========================================================================
+    # Creation of Plots will occur here
+    prj = proj_plot_creator(ds,'x')
+    prj.show()
+    
     
     
     data_object_clump = [] #Setting Empty list for loop

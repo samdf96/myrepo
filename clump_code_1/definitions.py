@@ -24,9 +24,11 @@ Returns:
 #Importing Modules used in the definitions
 #Importing packages here
 import numpy as np
+import yt as yt
 from yt.analysis_modules.level_sets.api import Clump
 from yt.analysis_modules.level_sets.api import find_clumps
 from yt.analysis_modules.level_sets.api import get_lowest_clumps
+
 
 
 import matplotlib.pyplot as plt
@@ -525,3 +527,7 @@ def angular_momentum_actual(data_object,mass):
            angular_momentum_xz,
            angular_momentum_yz)
 
+def proj_plot_creator(ds,axis):
+    prj = yt.ProjectionPlot(ds,axis,("gas","density"),
+                            center='c', width = (10,'pc'))
+    return(prj)
