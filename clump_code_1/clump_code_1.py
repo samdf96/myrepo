@@ -149,15 +149,13 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
     #
     #     com: arrays that contain x,y,z center of mass values for clumps
     #     bregion: x,y,z min/max value to build the boxes for clumps
-    #     lc: Tree object of clump data extracted from clump_finder def
     # =========================================================================
     
     
     # =========================================================================
-    # Creation of Plots will occur here, in a loop for all clumps
-    #prj = proj_plot_creator(ds,'x',lc)
+    # Creatin of projection plots with markers for clump center of masses
+    #prj = proj_clump_com(ds,'x',com)
     #prj.save('test_plot.pdf')
-    
     
     
     data_object_clump = [] #Setting Empty list for loop

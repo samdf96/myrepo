@@ -527,8 +527,7 @@ def angular_momentum_actual(data_object,mass):
            angular_momentum_xz,
            angular_momentum_yz)
 
-def proj_plot_creator(ds,axis,lc):
+def proj_clump_com(ds,axis,com):
     prj = yt.ProjectionPlot(ds,axis,("gas","density"),
                             center='c', width = (10,'pc'))
-    prj.annotate_clumps(lc)
     return(prj)
