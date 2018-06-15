@@ -115,7 +115,7 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
     
     #Grabs each of the octants and runs them through the Clump Finding algorithm
     clumps = [] #Defining Empty List for loop
-    for i in range(4,len(octant)):
+    for i in range(0,len(octant)):
         master_clump_main = master_clump_maker(octant[i])
         cmax = octant[i]["gas", "density"].max()
         print("Now Finding clumps for Octant:",i)
@@ -155,8 +155,8 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
     
     # =========================================================================
     # Creation of Plots will occur here, in a loop for all clumps
-    prj = proj_plot_creator(ds,'x',lc)
-    prj.save('test_plot.pdf')
+    #prj = proj_plot_creator(ds,'x',lc)
+    #prj.save('test_plot.pdf')
     
     
     
