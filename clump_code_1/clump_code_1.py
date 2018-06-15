@@ -96,6 +96,17 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
     
     master_dist_data = int(ds.domain_dimensions[0])
     
+    #Creating Directory to store picture files and FITS files in.
+    #First detects if directory is there, if so, it deletes and rebuilds that
+    #directory
+    if os.path.isdir(save_dir_specific) == True:
+        print("Warning!!! Directory: " +
+              save_dir_specific +
+              "is detected as a valid directory." +
+              "FITS Files will be overwritten.")
+    else:
+        os.mkdir(save_dir_specific)
+    
     #Creates a Data Object containing all the Simulation Data
     ad = ds.all_data()
     
@@ -143,8 +154,8 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
     
     
     # =========================================================================
-    # Creation of Plots will occur here
-    prj = proj_plot_creator(ds,'x')
+    # Creation of Plots will occur here, in a loop for all clumps
+    prj = proj_plot_creator(ds,'x',lc[0])
     prj.save('test_plot.pdf')
     
     
@@ -490,17 +501,6 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
     #For Loop for Adding in all the Error Statements for clumps (if any)
     for i in range(0,len(err_string_array)):
         hdu.header.add_comment(err_string_array[i])    
-    
-    #Creating Directory to store picture files and FITS files in.
-    #First detects if directory is there, if so, it deletes and rebuilds that
-    #directory
-    if os.path.isdir(save_dir_specific) == True:
-        print("Warning!!! Directory: " +
-              save_dir_specific +
-              "is detected as a valid directory." +
-              "FITS Files will be overwritten.")
-    else:
-        os.mkdir(save_dir_specific)
     
     
     #INSERT STRING CONNECTED TO DATAFILE INPUT FOR SCRIPT
