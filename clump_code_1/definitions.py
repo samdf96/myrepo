@@ -39,6 +39,9 @@ import scipy.linalg
 #from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.ticker as mtick
 
+#For Plotting Definition
+from astropy import units as u
+
 
 
 
@@ -553,6 +556,16 @@ def proj_creator(ds,data_object,com,com_x,com_y,com_z,save_directory):
     the plot into the correct directory
     """
     
+    #Defining centimetre unit for quantity
+    com_x = com_x * u.cm
+    com_y = com_y * u.cm
+    com_z = com_z * u.cm
+    
+    #Converting to Parsec for plot overlay
+    com_x_pc = com_x.to(u.parsec)
+    com_y_pc = com_y.to(u.parsec)
+    com_z_pc = com_z.to(u.parsec)
+    
     ## For x LOS
     prj = yt.ProjectionPlot(ds,
                             'x',
@@ -561,9 +574,9 @@ def proj_creator(ds,data_object,com,com_x,com_y,com_z,save_directory):
                             width = (10,'pc'),
                             data_source=data_object)
     for i in range(0,len(com_x)):
-        prj.annotate_marker(com[i],
-                            coord_system='data',
-                            plot_args={'color':'black','s':500})
+        prj.annotate_marker(com_x_pc[i],
+                            coord_system='plot',
+                            plot_args={'color':'blue','s':500})
     prj.save(save_directory+'x_los_clumps_positions.pdf')
     
     return()
