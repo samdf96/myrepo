@@ -7,7 +7,19 @@
 
 \f0\fs28 \cf0 Change Log - Clumping Code\
 \
-v.3.1 - June 11th 2018\
+v3.2 - June 18th 2018\
+Changes to clump_code_1.py\
+	- Added: from definitions import proj_creator (see below for definition)\
+	- added com arrays for the plotting overlay, concatenation needed to be used for 2D arrays\
+	- calling proj_creator to build plots for the visualization of clump center-of-masses\
+Changes to definitions:\
+	-Added: proj_creator:\
+		- Takes in data set, data_object, center of mass info, and string\
+		- Creates three plots, one for each axis\
+		- These are projection plots with center of mass points overlayed on top\
+		- Auto saves, using the input string argument\
+\
+v3.1 - June 11th 2018\
 Changes to clump_code_1.py\
 	- Added: import os\
 				- Allows the creation of directories at the end for storing data\
