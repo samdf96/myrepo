@@ -527,7 +527,7 @@ def angular_momentum_actual(data_object,mass):
            angular_momentum_xz,
            angular_momentum_yz)
 
-def proj_creator(ds,data_object,com,save_directory):
+def proj_creator(ds,data_object,com_x,com_y,com_z,save_directory):
     """
     Takes the center of mass coordinates, and overlays markers on the simulation
     projection plots to where those clumps are located.
@@ -538,8 +538,12 @@ def proj_creator(ds,data_object,com,save_directory):
         This is the original data set file object
     data_object: YTDataContainer
         This is the all_data() object created for the simulation file
-    com: array
-        This has the center of mass data for all clumps
+    com_x: array
+        This has the center of mass data for x LOS (y,z coodinates)
+    com_y: array
+        This has the center of mass data for y LOS (x,z coodinates)
+    com_z: array
+        This has the center of mass data for z LOS (x,y coodinates)
     save_directory: string
         Has the specific location which plots are to be saved to
     
@@ -556,9 +560,9 @@ def proj_creator(ds,data_object,com,save_directory):
                             center='c',
                             width = (10,'pc'),
                             data_source=data_object)
-    for i in range(0,len(com)):
-        prj.annotate_marker(com[i],
-                            coord_system='plot',
+    for i in range(0,len(com_x)):
+        prj.annotate_marker(com_x[i],
+                            coord_system='data',
                             plot_args={'color':'black','s':500})
     prj.save(save_directory+'x_los_clumps_positions.pdf')
     
