@@ -530,7 +530,15 @@ def angular_momentum_actual(data_object,mass):
            angular_momentum_xz,
            angular_momentum_yz)
 
-def proj_creator(ds,data_object,com,com_x,com_y,com_z,save_directory):
+def proj_creator(ds,
+                 data_object,
+                 com,
+                 com_x,
+                 com_y,
+                 com_z,
+                 save_directory,
+                 fid_str,
+                 time_stamp):
     """
     Takes the center of mass coordinates, and overlays markers on the simulation
     projection plots to where those clumps are located.
@@ -549,6 +557,10 @@ def proj_creator(ds,data_object,com,com_x,com_y,com_z,save_directory):
         This has the center of mass data for z LOS (x,y coodinates)
     save_directory: string
         Has the specific location which plots are to be saved to
+    fid_str: string
+        Fiducial Number for simulation number
+    time_stamp: string
+        Time Stamp for Data simulation
     
     Returns:
     --------
@@ -567,16 +579,42 @@ def proj_creator(ds,data_object,com,com_x,com_y,com_z,save_directory):
     com_z_pc = com_z.to(u.parsec)
     
     ## For x LOS
-    prj = yt.ProjectionPlot(ds,
+    prj_x = yt.ProjectionPlot(ds,
                             'x',
                             ("gas","density"),
                             center='c',
                             width = (10,'pc'),
                             data_source=data_object)
     for i in range(0,len(com_x)):
-        prj.annotate_marker(com_x_pc[i],
+        prj_x.annotate_marker(com_x_pc[i],
                             coord_system='plot',
-                            plot_args={'color':'blue','s':500})
-    prj.save(save_directory+'x_los_clumps_positions.pdf')
+                            plot_args={'color':'red','s':500})
+    prj_x.save(save_directory+"data_"+fid_str+"_"+time_stamp+"x_los_clump_marker.pdf")
+    
+    ## For x LOS
+    prj_y = yt.ProjectionPlot(ds,
+                            'y',
+                            ("gas","density"),
+                            center='c',
+                            width = (10,'pc'),
+                            data_source=data_object)
+    for i in range(0,len(com_y)):
+        prj_y.annotate_marker(com_y_pc[i],
+                            coord_system='plot',
+                            plot_args={'color':'red','s':500})
+    prj_y.save(save_directory+"data_"+fid_str+"_"+time_stamp+"y_los_clump_marker.pdf")
+    
+    ## For z LOS
+    prj_z = yt.ProjectionPlot(ds,
+                            'z',
+                            ("gas","density"),
+                            center='c',
+                            width = (10,'pc'),
+                            data_source=data_object)
+    for i in range(0,len(com_z)):
+        prj_z.annotate_marker(com_z_pc[i],
+                            coord_system='plot',
+                            plot_args={'color':'red','s':500})
+    prj_z.save(save_directory+"data_"+fid_str+"_"+time_stamp+"z_los_clump_marker.pdf")
     
     return()
