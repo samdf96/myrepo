@@ -32,7 +32,7 @@ from definitions import plane_fit
 from definitions import gradient
 from definitions import angular_momentum_implied
 from definitions import angular_momentum_actual
-#from definitions import proj_plot_creator
+from definitions import proj_creator
 
 #Section for Importing Exceptions classes
 from exceptions import YTErrorValue, YTErrorReshape
@@ -140,23 +140,16 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
     # Creates lists for center_of_mass of clump list -> stores in com
     # Creates list for bounding boxes of clump list -> stores in bregion
     for i in range(0,len(clumps)):
-        com[i] = center_of_mass(clumps[i])
-        
-        bregion[i] = bounding_box(clumps[i])
     
+        com[i] = center_of_mass(clumps[i])
+        bregion[i] = bounding_box(clumps[i])
+
     # =========================================================================
     # CHECK IN POINT: What we have so far here in the script
     #
     #     com: arrays that contain x,y,z center of mass values for clumps
     #     bregion: x,y,z min/max value to build the boxes for clumps
-    # =========================================================================
-    
-    
-    # =========================================================================
-    # Creatin of projection plots with markers for clump center of masses
-    #prj = proj_clump_com(ds,'x',com)
-    #prj.save('test_plot.pdf')
-    
+    # ========================================================================        
     
     data_object_clump = [] #Setting Empty list for loop
     mass_clump_g = []       #Setting Empty list for loop
@@ -169,6 +162,7 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
     dist_span_cm_x = np.zeros((len(clumps),1))
     dist_span_cm_y = np.zeros((len(clumps),1))
     dist_span_cm_z = np.zeros((len(clumps),1))
+        
     for i in range(0,len(bregion)):
         print('Creating Clump Number:',i)
         data_object_clump.append(clump_box(ds,bregion[i]))
@@ -194,6 +188,15 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
         dist_span_cm_y[i,0] = dist_tot[1,0]
         dist_span_cm_z[i,0] = dist_tot[2,0]
     
+    
+    
+    # =========================================================================
+    #Creating Tuples for Center of Mass along different LOS directions
+    com_plotting = np.concatenate((com_x,com_y,com_z), axis=1)
+    # Creatin of projection plots with markers for clump center of masses
+    proj_creator(ds,ad,com_plotting,save_dir_specific)
+    
+    print('PLOT SAVING COMPLETED')
     #Turn into Array for later export (see bottom of script for this step)
     mass_clump_g = np.array(mass_clump_g)
     

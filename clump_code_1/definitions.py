@@ -527,7 +527,39 @@ def angular_momentum_actual(data_object,mass):
            angular_momentum_xz,
            angular_momentum_yz)
 
-def proj_clump_com(ds,axis,com):
-    prj = yt.ProjectionPlot(ds,axis,("gas","density"),
-                            center='c', width = (10,'pc'))
-    return(prj)
+def proj_creator(ds,data_object,com,save_directory):
+    """
+    Takes the center of mass coordinates, and overlays markers on the simulation
+    projection plots to where those clumps are located.
+    
+    Arguments:
+    ----------
+    ds: data set
+        This is the original data set file object
+    data_object: YTDataContainer
+        This is the all_data() object created for the simulation file
+    com: array
+        This has the center of mass data for all clumps
+    save_directory: string
+        Has the specific location which plots are to be saved to
+    
+    Returns:
+    --------
+    For Testing, can return the prj object, but this definition will auto save
+    the plot into the correct directory
+    """
+    
+    ## For x LOS
+    prj = yt.ProjectionPlot(ds,
+                            'x',
+                            ("gas","density"),
+                            center='c',
+                            width = (10,'pc'),
+                            data_source=data_object)
+    for i in range(0,len(com)):
+        prj.annotate_marker(com[i],
+                            coord_system='plot',
+                            plot_args={'color':'black','s':500})
+    prj.save(save_directory+'x_los_clumps_positions.pdf')
+    
+    return()
