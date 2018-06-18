@@ -192,12 +192,13 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
     
     # =========================================================================
     #Creating Tuples for Center of Mass along different LOS directions
+    com_plotting = np.concatenate((com_x,com_y,com_z), axis=1)
     
     x_los_com = np.concatenate((com_y,com_z), axis=1)
     y_los_com = np.concatenate((com_x,com_z), axis=1)
     z_los_com = np.concatenate((com_x,com_y), axis=1)
     # Creatin of projection plots with markers for clump center of masses
-    proj_creator(ds,ad,x_los_com,y_los_com,z_los_com,save_dir_specific)
+    proj_creator(ds,ad,com_plotting,x_los_com,y_los_com,z_los_com,save_dir_specific)
     
     print('PLOT SAVING COMPLETED')
     #Turn into Array for later export (see bottom of script for this step)
