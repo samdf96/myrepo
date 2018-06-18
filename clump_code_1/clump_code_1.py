@@ -194,9 +194,9 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
     #Creating Tuples for Center of Mass along different LOS directions
     com_plotting = np.concatenate((com_x,com_y,com_z), axis=1)
     
-    x_los_com = np.concatenate((com_y,com_z), axis=1)
-    y_los_com = np.concatenate((com_x,com_z), axis=1)
-    z_los_com = np.concatenate((com_x,com_y), axis=1)
+    x_los_com = np.concatenate((com_y,com_z), axis=1) #(x,y) axis match (y,z)
+    y_los_com = np.concatenate((com_z,com_x), axis=1) #(x,y) axis match (z,x)
+    z_los_com = np.concatenate((com_x,com_y), axis=1) #(x,y) axis match (x,y)
     # Creatin of projection plots with markers for clump center of masses
     proj_creator(ds,
                  ad,
@@ -517,7 +517,7 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
     
     
     #INSERT STRING CONNECTED TO DATAFILE INPUT FOR SCRIPT
-    hdu.writeto(save_dir_specific+"data_"+fid_str+"_"+time_stamp+".fits",
+    hdu.writeto(save_dir_specific+fid_str+"_"+time_stamp+".fits",
                 overwrite=True)
     print('FITS FILE SAVED')
     return()

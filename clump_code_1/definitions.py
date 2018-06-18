@@ -588,8 +588,8 @@ def proj_creator(ds,
     for i in range(0,len(com_x)):
         prj_x.annotate_marker(com_x_pc[i],
                             coord_system='plot',
-                            plot_args={'color':'red','s':200})
-    prj_x.save(save_directory+"data_"+fid_str+"_"+time_stamp+"_x_los_clump_marker.pdf")
+                            plot_args={'color':'red','s':500})
+    prj_x.save(save_directory+fid_str+"_"+time_stamp+"_x_los_clump_marker.pdf")
     
     ## For x LOS
     prj_y = yt.ProjectionPlot(ds,
@@ -601,8 +601,8 @@ def proj_creator(ds,
     for i in range(0,len(com_y)):
         prj_y.annotate_marker(com_y_pc[i],
                             coord_system='plot',
-                            plot_args={'color':'red','s':200})
-    prj_y.save(save_directory+"data_"+fid_str+"_"+time_stamp+"_y_los_clump_marker.pdf")
+                            plot_args={'color':'red','s':500})
+    prj_y.save(save_directory+fid_str+"_"+time_stamp+"_y_los_clump_marker.pdf")
     
     ## For z LOS
     prj_z = yt.ProjectionPlot(ds,
@@ -614,7 +614,7 @@ def proj_creator(ds,
     for i in range(0,len(com_z)):
         prj_z.annotate_marker(com_z_pc[i],
                             coord_system='plot',
-                            plot_args={'color':'red','s':200})
-    prj_z.save(save_directory+"data_"+fid_str+"_"+time_stamp+"_z_los_clump_marker.pdf")
+                            plot_args={'color':'red','s':500})
+    prj_z.save(save_directory+fid_str+"_"+time_stamp+"_z_los_clump_marker.pdf")
     
     return()
