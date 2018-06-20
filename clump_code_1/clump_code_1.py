@@ -319,6 +319,9 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
             except YTRuntimeError:
                 runtime_error_detector = True
                 break #Break out of except statement
+                
+                #Used to set default value if it passes without error
+                runtime_error_detector = False
             break       # Break out of try statement for while loop
                     
         # =====================================================================
