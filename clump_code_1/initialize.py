@@ -6,13 +6,51 @@ Created on Mon May 28 15:26:55 2018
 @author: sfielder
 """
 
+"""
+This piece of code is run to data analyze simulation data
+
+Manual Inputs:
+    - Overwrite protection: boolean
+        - True or False for if data is overwritten when code runs
+    - flist argument: string
+        - This argument points to where the data is stored
+    - data_check_list: list of strings
+        - Decides what simulation time checks to use
+    - config_dir: string
+        - Points to where the config files are stored
+    - data_dir: string
+        - Points to where the data should be saved
+
+Returns:
+    Tree like directory structure matching different simulation input parameters
+    All input parameters are stored via directory naming in the Fiducialxx convention
+    
+    Directory Tree Output Structure:
+        
+        / data_dir / Config_x / Fiducialxx / Time Stamp / Output Files /
+        
+    data_dir - this is set at the highest level of the tree
+    config_x - this is to seperate different input parameters for the analyzer
+    Fiducialxx - this is for different simulation data sets
+    Time Stamp - this is for all the checkpoints in the simulation
+    Output Files: Generated Currently:
+        - FITS File
+            - Contains all the necessary clump information for the simulation
+            - Projection Plots for axial directions with overlayed center
+                of mass coordinates for all the clumps found
+"""
+
+
 import clump_code_1 as cc
 import glob
 import yaml
 import io
 import os
 
-
+# Overwrite Protection Here
+# Set to True - Will Overwrite Data already on disk
+# Set to False - Will NOT Overwrite Data already on disk
+overwrite = False
 
 
 #Creates a list of directories with the appropriate files for analysis
@@ -45,10 +83,29 @@ for i in range(0,len(flist_config)):
     #Creating String for Directory
     save_dir = data_dir + naming_string + '/'
     
-    #Checking if Directory Exists, if so, it skips analysis completely
-    #to avoid overwritting data.
+    #Checking if Directory Exists, if so overwrite is checked and either analysis
+    #is skipped or overwritten
     if os.path.isdir(save_dir) == True:
-            print("Warning!!! Directory: " +
+        if overwrite == True:
+            print("Warning!!! Overwrite has been set to True and Directory: " +
+                  save_dir +
+                  "is detected as a valid directory. Proceeding with Analysis.")
+            #Importing Config File settings here
+            with io.open(flist_config[i], 'r') as stream:
+                data_loaded = yaml.load(stream)
+        
+            #Call main code here
+            #Testing first file here
+            for j in range(0,len(flist)):
+                cc.analyzer(flist[j],
+                        data_loaded['l'],
+                        data_loaded['cmin'],
+                        data_loaded['step'],
+                        data_loaded['beta'],
+                        data_loaded['clump_sizing'],
+                        save_dir)
+        else:
+           print("Warning!!! Overwrite has been set to False and Directory: " +
                   save_dir +
                   "is detected as a valid directory. Skipping Analysis.")
     else:
@@ -62,7 +119,7 @@ for i in range(0,len(flist_config)):
         
         #Call main code here
         #Testing first file here
-        for j in range(0,1): # Actual: len(flist)
+        for j in range(0,len(flist)):
             cc.analyzer(flist[j],
                     data_loaded['l'],
                     data_loaded['cmin'],
@@ -70,34 +127,3 @@ for i in range(0,len(flist_config)):
                     data_loaded['beta'],
                     data_loaded['clump_sizing'],
                     save_dir)
-
-"""
-for i in range(0,len(flist)):
-    for j in range(0,len(flist_config)):
-        naming_string = str(j)
-        
-        #Text String for Output Directory
-        save_dir = data_dir+'Config_'+ naming_string + '/'
-        
-        if os.path.isdir(save_dir) == True:
-            print("Warning!!! Directory: " +
-                  save_dir +
-                  "is detected as a valid directory. Skipping Analysis.")
-        else:
-            #If Directory is not present, then it gets created here and the code
-            #is ran through the analyzer
-            os.mkdir(save_dir)
-            
-            #Importing Config File settings here
-            with io.open(flist_config[j], 'r') as stream:
-                data_loaded = yaml.load(stream)
-            
-            #Call main code here
-            cc.analyzer(flist[i],
-                    data_loaded['l'],
-                    data_loaded['cmin'],
-                    data_loaded['step'],
-                    data_loaded['beta'],
-                    data_loaded['clump_sizing'],
-                    save_dir)
-"""
