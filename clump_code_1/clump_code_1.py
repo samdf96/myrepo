@@ -93,6 +93,8 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
     
     save_dir_specific = save_dir_fits + time_stamp + "/"
     
+    err_string = [] #Used for tracking errors in functions
+    
     
     master_dist_data = int(ds.domain_dimensions[0])
     
@@ -167,8 +169,19 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
         print('Creating Clump Number:',i)
         data_object_clump.append(clump_box(ds,bregion[i]))
         
-        mass_clump_g.append(np.array(data_object_clump[i].quantities.total_mass())[0])
-        
+        while True:
+            try:
+                mass_clump_g.append(np.array(data_object_clump[i].quantities.total_mass())[0])
+            
+            except RuntimeError:
+                mass_clump_g.append(np.array(np.nan))
+                err_string.append('Clump Number: '+
+                                  str(i)+
+                                  ' , has no width in one axial direction.')
+                break
+            break
+            
+            
         dist_x = bregion[i,0,1] - bregion[i,0,0]
         dist_y = bregion[i,1,1] - bregion[i,1,0]
         dist_z = bregion[i,2,1] - bregion[i,2,0]
@@ -267,7 +280,7 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
     am_actual_partial_xy = []
     am_actual_partial_xz = []
     am_actual_partial_yz = []
-    err_string = [] #Used for tracking errors in functions
+
     
     print('All Clumps Created Successfully')
     
