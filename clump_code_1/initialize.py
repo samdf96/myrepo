@@ -19,11 +19,13 @@ import os
 flist = glob.glob('/mnt/bigdata/erosolow/Orion2/*/data.*.hdf5')
 #Creating empty list for data sorting
 flist_data = []
+data_check_list = ['0060','0070','0080','0090','0100']
 for i in range(0,len(flist)):
     main_string = flist[i].split("/")
     out_string = main_string[-1].split(".")
     time_stamp = out_string[1]
-    if time_stamp == '0060' or '0070' or '0080' or '0090' or '0100':
+    #This checks if timestamp
+    if any(x in time_stamp for x in data_check_list):
         flist_data.append(flist[i])
     print('Directory: ' + flist[i] + ' was filtered out.')
 
