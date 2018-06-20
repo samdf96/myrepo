@@ -22,7 +22,8 @@ import io
 
 
 #Finds all files with the .hdf5 extension in the bigdata directory
-flist = glob.glob('/home/sfielder/bigdata/**/*.hdf5')
+#flist = glob.glob('/home/sfielder/bigdata/**/*.hdf5')
+flist = ['/home/sfielder/bigdata/Fiducial00/data.0070.3d.hdf5']
 data_dir = '/home/sfielder/Documents/Clumps/'
 save_dir = data_dir+'Output/'
 
