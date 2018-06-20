@@ -59,7 +59,7 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
         For Implied Angular Momentum Calculation
     clump_sizing: float
         Minimum Value for Clump Finding
-    save_dir: string
+    save_dir_fits: string
         Directory imput to save all FITS files
         
     Returns:
@@ -75,7 +75,10 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
     
     #Loads data into File
     ds = yt.load(filename)
+    master_dist_data = int(ds.domain_dimensions[0])
+    err_string = [] #Used for tracking errors in functions
     
+    # =========================================================================
     #Creatingt Text Strings for Output here
     
     #Splitting the Whole Directory String by / 
@@ -89,19 +92,25 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
     #Grabs last component of filename
     out_string = main_string[-1].split(".") #Splits around periods
     time_stamp = out_string[1] #Ex. 0060
+    # =========================================================================
     
+    
+    # =========================================================================
     #Creating Sub Directory for individual Data Simulation File Timestamp
     
-    save_dir_specific = save_dir_fits + fid_str + '/' + time_stamp + "/"
+    #First Layer Here
+    save_dir = save_dir_fits + fid_str 
+    if os.path.isdir(save_dir) == True:
+        print("Warning!!! Directory: " +
+              save_dir +
+              "is detected as a valid directory." +
+              "FITS Files will be overwritten.")
+    else:
+        os.mkdir(save_dir)
     
-    err_string = [] #Used for tracking errors in functions
-    
-    
-    master_dist_data = int(ds.domain_dimensions[0])
-    
-    #Creating Directory to store picture files and FITS files in.
-    #First detects if directory is there, if so, it deletes and rebuilds that
-    #directory
+    #Second Layer Here
+    save_dir_specific = save_dir + '/' + time_stamp + "/"
+
     if os.path.isdir(save_dir_specific) == True:
         print("Warning!!! Directory: " +
               save_dir_specific +
@@ -109,6 +118,11 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
               "FITS Files will be overwritten.")
     else:
         os.mkdir(save_dir_specific)
+        
+    """
+    Directories have been built properly here, on to the anaysis section.
+    """
+    # =========================================================================
     
     #Creates a Data Object containing all the Simulation Data
     ad = ds.all_data()
