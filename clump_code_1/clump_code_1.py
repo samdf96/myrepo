@@ -92,7 +92,7 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
     
     #Creating Sub Directory for individual Data Simulation File Timestamp
     
-    save_dir_specific = save_dir_fits + fid_str + time_stamp + "/"
+    save_dir_specific = save_dir_fits + fid_str + '/' + time_stamp + "/"
     
     err_string = [] #Used for tracking errors in functions
     
