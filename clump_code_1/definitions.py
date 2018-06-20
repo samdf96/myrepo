@@ -217,12 +217,24 @@ def velocity_array(data_object,velocity,axis,master_dist_data,l):
         velocity integrated array, in the dimensions of the original dataset
     v_object: YTQuadTree
         velocity integrated data object
+    broken: float
+        used for error detection
     '''
-    v_object = data_object.integrate(velocity, weight='density', axis=axis)
-    v_reform = v_object.to_frb((l,'pc'),(master_dist_data,master_dist_data))
-    v_arr = np.array(v_reform[velocity])
-    v_arr = np.reshape(v_arr,(master_dist_data,master_dist_data))
-    return(v_arr,v_object)
+    broken=0    #Setting default value for error detection
+    
+    while True:
+        try:
+            v_object = data_object.integrate(velocity, weight='density', axis=axis)
+            v_reform = v_object.to_frb((l,'pc'),(master_dist_data,master_dist_data))
+            v_arr = np.array(v_reform[velocity])
+            v_arr = np.reshape(v_arr,(master_dist_data,master_dist_data))
+            return(v_arr,v_object,broken)
+        except RuntimeError:
+            broken=1
+            v_object = False
+            v_arr = np.zeros((master_dist_data,master_dist_data))
+            return(v_arr,v_object,broken)
+
     
 def velocity_array_reducer(velocity_int_array,
                            velocity_int_data_object,

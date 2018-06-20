@@ -23,3 +23,16 @@ class YTErrorValue(Error):
     on the v_positions variable, thus computations will break.
     """
     pass
+
+class YTRuntimeError(Error):
+    """
+    Signifies that the clump found has no dimensional length along one of its
+    edges. This is made clear in the FITS file itself.
+    """
+    pass
+    
+class YTPassThrough(Error):
+    """
+    Signifies we need to pass through code to not kick any more errors.
+    """
+    pass

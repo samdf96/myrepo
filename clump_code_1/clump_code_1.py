@@ -35,7 +35,8 @@ from definitions import angular_momentum_actual
 from definitions import proj_creator
 
 #Section for Importing Exceptions classes
-from exceptions import YTErrorValue, YTErrorReshape
+from exceptions import YTErrorValue, YTErrorReshape, YTRuntimeError
+from exceptions import YTPassThrough
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
 
 def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
@@ -291,9 +292,37 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
 
         # =====================================================================
         # Computing Integrated Velocity Arrays
-        arr_z, vz = velocity_array(clump,'velocity_z','z',master_dist_data,l)            
-        arr_x, vx = velocity_array(clump,'velocity_x','x',master_dist_data,l)
-        arr_y, vy = velocity_array(clump,'velocity_y','y',master_dist_data,l)
+        while True:
+            try:
+                arr_z, vz, broken = velocity_array(clump,
+                                                   'velocity_z',
+                                                   'z',
+                                                   master_dist_data,
+                                                   l)  
+                if broken==1:
+                    raise YTRuntimeError
+                arr_x, vx, broken = velocity_array(clump,
+                                                   'velocity_x',
+                                                   'x',
+                                                   master_dist_data,
+                                                   l)
+                if broken==1:
+                    raise YTRuntimeError
+                arr_y, vy, broken = velocity_array(clump,
+                                                   'velocity_y',
+                                                   'y',
+                                                   master_dist_data,
+                                                   l)
+                if broken==1:
+                    raise YTRuntimeError
+            
+            except YTRuntimeError:
+                arr_x = False
+                arr_y = False
+                arr_z = False
+                break #Break out of except statement
+            break       # Break out of try statement for while loop
+                    
         # =====================================================================
         
         # =====================================================================
@@ -303,6 +332,9 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
         # definitions file is not zero.
         while True:
             try:
+                if arr_x or arr_y or arr_z == False:
+                    raise YTPassThrough
+                
                 arr_x_red, vx_py, vx_pz, broken = velocity_array_reducer(arr_x,
                                                          vx,
                                                          'x',
@@ -416,12 +448,21 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
                 err_string.append('Clump Number: '+
                                   str(i)+
                                   ' , has v_positions empty')
-                
                 break
             
-            #Break out of loop here if no errors are triggered
-            # makes sure that the while loop doesn't get stuck at the end
-            break
+            except YTPassThrough:
+                grad_x.append(np.nan)
+                grad_y.append(np.nan)
+                grad_z.append(np.nan)
+                am_implied_x.append(np.nan)
+                am_implied_y.append(np.nan)
+                am_implied_z.append(np.nan)
+                am_actual_total.append(np.nan)
+                am_actual_partial_xy.append(np.nan)
+                am_actual_partial_xz.append(np.nan)
+                am_actual_partial_yz.append(np.nan)
+                break
+            break #Break out of while loop
 
     
     print('Analysis Section Completed')
