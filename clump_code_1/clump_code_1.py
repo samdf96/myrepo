@@ -104,7 +104,7 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
         print("Warning!!! Directory: " +
               save_dir +
               "is detected as a valid directory." +
-              "FITS Files will be overwritten.")
+              "Files will be overwritten.")
     else:
         os.mkdir(save_dir)
     

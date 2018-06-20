@@ -7,6 +7,22 @@
 
 \f0\fs28 \cf0 Change Log - Clumping Code\
 \
+v3.4 - June 20th 2018\
+\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\
+Changes to clump_code_1.py\
+	- Changed Directory Tree structure for output (see changes to initialize.py for more details)\
+	- Needed to add two layers of directory creation to avoid errors\
+	- Changed Clump Numbers in comments to header to match the numbers in the FITS table for comparisons later\
+	- Commented new lines with explanations appropriately\
+\
+Changes to initialize.py:\
+	- flist now searches the correct directory where all the Fiducial Data is\
+	- Code now filters out any time stamps that are not between 0060 and 0100. Only need 0060 and onwards for simulation study\
+	- added overwrite protection. If the config directory in the tree structure is detected, analysis will be aborted and printed message will say so\
+	- flist now gets sorted at the start, this is to help future code for plotting\
+	- Large commented section at the start explains manual inputted values and returns, with directory tree structure in the output data directory\
+\
+\
 v3.3 - June 20th 2018\
 \'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\
 Changes to clump_code_1.py\

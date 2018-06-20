@@ -127,3 +127,4 @@ for i in range(0,len(flist_config)):
                     data_loaded['beta'],
                     data_loaded['clump_sizing'],
                     save_dir)
+            
