@@ -170,10 +170,13 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
         print('Creating Clump Number:',i)
         data_object_clump.append(clump_box(ds,bregion[i]))
         
+        #This loop runs to detect whether RuntimeError is triggered
         while True:
             try:
                 mass_clump_g.append(np.array(data_object_clump[i].quantities.total_mass())[0])
             
+            #If triggered, nan is written to mass array and 
+            #error string is written with description of what happened
             except RuntimeError:
                 mass_clump_g.append(np.array(np.nan))
                 err_string.append('Clump Number: '+
@@ -318,7 +321,9 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
             
             #Setting Default value for detector variable
                 runtime_error_detector = False
+                
             except YTRuntimeError:
+                #Used below for pass through of values
                 runtime_error_detector = True
                 break #Break out of except statement
             break       # Break out of try statement for while loop
@@ -333,6 +338,8 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
         
         while True:
             try:
+                #This checks error value from above, if triggered, passes through
+                #the code and writes nan values to the arrays
                 if runtime_error_detector == True:
                     raise YTPassThrough
                 
@@ -402,7 +409,8 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
                                                               dist_span_cm[i,0,0],
                                                               dist_span_cm[i,1,0])
                 
-                ang_mom_actual_total, ang_mom_actual_xy, ang_mom_actual_xz, ang_mom_actual_yz = angular_momentum_actual(clump,mass_clump_g[i])
+                ang_mom_actual_total, ang_mom_actual_xy, ang_mom_actual_xz, ang_mom_actual_yz = angular_momentum_actual(clump,
+                                                                                                                        mass_clump_g[i])
                 
                 # =============================================================
                 #     STORAGE OF VALUES FOR LATER USE
@@ -419,7 +427,7 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
                 # =============================================================
                 
 
-            except YTErrorReshape:
+            except YTErrorReshape: #Reshape Error - writes to error string
                 grad_x.append(np.nan)
                 grad_y.append(np.nan)
                 grad_z.append(np.nan)
@@ -435,7 +443,7 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
                                   ' , could not reshape coordinates to 256x256 array')
                 break
             
-            except YTErrorValue:
+            except YTErrorValue:    #V_positions error - writes to error string
                 grad_x.append(np.nan)
                 grad_y.append(np.nan)
                 grad_z.append(np.nan)
