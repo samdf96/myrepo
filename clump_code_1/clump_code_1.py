@@ -316,12 +316,11 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
                 if broken==1:
                     raise YTRuntimeError
             
+            #Setting Default value for detector variable
+                runtime_error_detector = False
             except YTRuntimeError:
                 runtime_error_detector = True
                 break #Break out of except statement
-                
-                #Used to set default value if it passes without error
-                runtime_error_detector = False
             break       # Break out of try statement for while loop
                     
         # =====================================================================
@@ -331,6 +330,7 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
         
         # This while loop raises errors if broken values from output of 
         # definitions file is not zero.
+        
         while True:
             try:
                 if runtime_error_detector == True:
