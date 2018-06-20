@@ -317,9 +317,9 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
                     raise YTRuntimeError
             
             except YTRuntimeError:
-                arr_x = False
-                arr_y = False
-                arr_z = False
+                arr_x = [False]
+                arr_y = [False]
+                arr_z = [False]
                 break #Break out of except statement
             break       # Break out of try statement for while loop
                     
@@ -332,7 +332,7 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
         # definitions file is not zero.
         while True:
             try:
-                if arr_x or arr_y or arr_z == any(False):
+                if arr_x or arr_y or arr_z == np.any(False):
                     raise YTPassThrough
                 
                 arr_x_red, vx_py, vx_pz, broken = velocity_array_reducer(arr_x,
