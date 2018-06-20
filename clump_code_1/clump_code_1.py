@@ -177,7 +177,7 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
             except RuntimeError:
                 mass_clump_g.append(np.array(np.nan))
                 err_string.append('Clump Number: '+
-                                  str(i)+
+                                  str(i+1)+
                                   ' , has no width in one axial direction.')
                 break
             break
@@ -431,7 +431,7 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
                 am_actual_partial_xz.append(np.nan)
                 am_actual_partial_yz.append(np.nan)
                 err_string.append('Clump Number: '+
-                                  str(i)+
+                                  str(i+1)+
                                   ' , could not reshape coordinates to 256x256 array')
                 break
             
@@ -447,7 +447,7 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
                 am_actual_partial_xz.append(np.nan)
                 am_actual_partial_yz.append(np.nan)
                 err_string.append('Clump Number: '+
-                                  str(i)+
+                                  str(i+1)+
                                   ' , has v_positions empty')
                 break
             
