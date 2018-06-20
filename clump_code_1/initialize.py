@@ -55,13 +55,14 @@ for i in range(0,len(flist_config)):
         #If Directory is not present, then it gets created here and the code
         #is ran through the analyzer
         os.mkdir(save_dir)
-        """
+
         #Importing Config File settings here
         with io.open(flist_config[i], 'r') as stream:
             data_loaded = yaml.load(stream)
         
         #Call main code here
-        for j in range(0,len(flist)):
+        #Testing first file here
+        for j in range(0,1): # Actual: len(flist)
             cc.analyzer(flist[j],
                     data_loaded['l'],
                     data_loaded['cmin'],
@@ -69,7 +70,7 @@ for i in range(0,len(flist_config)):
                     data_loaded['beta'],
                     data_loaded['clump_sizing'],
                     save_dir)
-        """
+
 """
 for i in range(0,len(flist)):
     for j in range(0,len(flist_config)):
