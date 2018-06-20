@@ -10,31 +10,56 @@ import clump_code_1 as cc
 import glob
 import yaml
 import io
-
-# =============================================================================
-# OLD CODE FOR LOCAL MACBOOK AIR DIRECTORIES
-# #Directory to save all data and config files
-# data_dir = '/Users/sfielder/Documents/Astro_Data/'
-# flist = glob.glob(data_dir+'*.hdf5')
-# save_dir_fits = data_dir+'FITS_Files/'
-# config_dir = data_dir+'configs/'
-# =============================================================================
+import os
 
 
-#Finds all files with the .hdf5 extension in the bigdata directory
-#flist = glob.glob('/home/sfielder/bigdata/**/*.hdf5')
-flist = ['/home/sfielder/bigdata/Fiducial00/data.0070.3d.hdf5']
-data_dir = '/home/sfielder/Documents/Clumps/'
-save_dir = data_dir+'Output/'
 
-with io.open(data_dir+"config_1.yaml", 'r') as stream:
-    data_loaded = yaml.load(stream)
 
+#Creates a list of directories with the appropriate files for analysis
+flist = glob.glob('/mnt/bigdata/erosolow/Orion2/*/data.*.hdf5')
+#Creating empty list for data sorting
+flist_data = []
 for i in range(0,len(flist)):
-    cc.analyzer(flist[i],
+    main_string = flist[i].split("/")
+    out_string = main_string[-1].split(".")
+    time_stamp = out_string[1]
+    if time_stamp == '0060' or '0070' or '0080' or '0090' or '0100':
+        flist_data.append(flist[i])
+    print('Directory: ' + flist[i] + ' was filtered out.')
+
+#This is where the config files are
+data_dir = '/home/sfielder/Documents/Clumps/'
+
+#Make a list of all the config files found in  data_dir
+flist_config = glob.glob(data_dir+'*.yaml')
+
+"""
+for i in range(0,len(flist)):
+    for j in range(0,len(flist_config)):
+        naming_string = str(j)
+        
+        #Text String for Output Directory
+        save_dir = data_dir+'Output'+ naming_string +'/'
+        
+        if os.path.isdir(save_dir) == True:
+            print("Warning!!! Directory: " +
+                  save_dir +
+                  "is detected as a valid directory. Skipping Analysis.")
+    else:
+        #If Directory is not present, then it gets created here and the code
+        #is ran through the analyzer
+        os.mkdir(save_dir)
+        
+        #Importing Config File settings here
+        with io.open(flist_config[j], 'r') as stream:
+            data_loaded = yaml.load(stream)
+        
+        #Call main code here
+        cc.analyzer(flist[i],
                 data_loaded['l'],
                 data_loaded['cmin'],
                 data_loaded['step'],
                 data_loaded['beta'],
                 data_loaded['clump_sizing'],
                 save_dir)
+"""
