@@ -76,6 +76,7 @@ data_dir = '/home/sfielder/Documents/Clumps/Output/'
 
 #Make a list of all the config files found in  data_dir
 flist_config = glob.glob(config_dir+'*.yaml')
+flist_config.sort()
 
 for i in range(0,len(flist_config)):
     #Grabs the config file name here
@@ -96,8 +97,8 @@ for i in range(0,len(flist_config)):
         
             #Call main code here
             #Testing first file here
-            for j in range(0,len(flist)):
-                cc.analyzer(flist[j],
+            for j in range(0,len(flist_data)):
+                cc.analyzer(flist_data[j],
                         data_loaded['l'],
                         data_loaded['cmin'],
                         data_loaded['step'],
@@ -119,8 +120,8 @@ for i in range(0,len(flist_config)):
         
         #Call main code here
         #Testing first file here
-        for j in range(0,len(flist)):
-            cc.analyzer(flist[j],
+        for j in range(0,len(flist_data)):
+            cc.analyzer(flist_data[j],
                     data_loaded['l'],
                     data_loaded['cmin'],
                     data_loaded['step'],
