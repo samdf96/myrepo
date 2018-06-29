@@ -52,8 +52,7 @@ def Header_Printer(input_dir, config_file_string):
     #Creating text file name here
     print("Config Dir Set as: ", config_dir)
     config_string = config_dir.split("/")[-1]
-    print("Config String set as: ", config_string)
-    text_filename = config_dir + '/' + config_string + '_Header_Info.txt'
+    text_filename = config_dir + 'Header_Info.txt'
     
 #    #This loop detects if a file is present, if not then it creates one
 #    #according to the text_filename above
@@ -67,7 +66,7 @@ def Header_Printer(input_dir, config_file_string):
         #Generic Print Statements for TXT File
         print('Below presents the Simulation Input parameters ' +
               'and COMMENT(S) for the FITS Files from the Directory: '+
-              config_string, file=txt)
+              config_dir, file=txt)
         print('', file=txt)
     
         for i in range(0,len(flist)):    #Loops over all fits files here
@@ -82,7 +81,7 @@ def Header_Printer(input_dir, config_file_string):
                 param_header = param_hdu.header
                 print('##############################', file=txt)
                 print('The following are input parameters for the data in directory: ' +
-                      config_string, file=txt)
+                      config_dir, file=txt)
                 print('Minimum Clump Number = ',
                       param_header['MINCLMP'],
                       file=txt)
