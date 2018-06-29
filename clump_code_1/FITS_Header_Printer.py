@@ -53,14 +53,14 @@ def Header_Printer(input_dir, config_file_string):
     config_string = config_dir.split("/")[-1]
     text_filename = config_dir + '/' + config_string + '_Header_Info.txt'
     
-    #This loop detects if a file is present, if not then it creates one
-    #according to the text_filename above
-    if os.path.isdir(text_filename) == True:
-        pass
-    else:
-        os.mkdir(text_filename)
+#    #This loop detects if a file is present, if not then it creates one
+#    #according to the text_filename above
+#    if os.path.isdir(text_filename) == True:
+#        pass
+#    else:
+#        
         
-    with open(text_filename, 'w') as txt:   #Opens the file to write
+    with open(text_filename, 'w+') as txt:   #Opens the file to write
         
         #Generic Print Statements for TXT File
         print('Below presents the Simulation Input parameters ' +
