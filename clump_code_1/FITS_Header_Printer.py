@@ -41,7 +41,7 @@ def Header_Printer(input_dir, config_file_string):
     '''
     
     
-    config_dir = input_dir + config_file_string[:-1]
+    config_dir = input_dir + config_file_string
     
     #Here is where we define the specific config folder which houses the config files
     flist = glob.glob(input_dir + config_file_string + '**/**/*.fits')
