@@ -630,3 +630,88 @@ def proj_creator(ds,
     prj_z.save(save_directory+fid_str+"_"+time_stamp+"_z_los_clump_marker.pdf")
     
     return()
+
+def data_grabber(data):
+    """
+    Function that takes in the hdu_table.data object, and makes a dictionary
+    with all the data pertaining to the plotting that will be done
+    
+    Inputs:
+        data: hdu_table.data object
+    
+    Outputs:
+        dict: dictionary
+            Has all the relevant quantities inside
+    
+    Notes: Can expand this to include all the data inside the object if needed
+    """
+    
+    clump_number = data['Clump Number']
+    mass = data['Mass'] 
+    
+    actual_tot = data['Actual Total Angular Momentum']
+    actual_par_xy = data['Actual Partial Angular Momentum (x+y components)']
+    actual_par_xz = data['Actual Partial Angular Momentum (x+z components)']
+    actual_par_yz = data['Actual Partial Angular Momentum (y+z components)']
+    
+    imp_x_los = data['Implied Total Angular Momentum (x LOS)']
+    imp_y_los = data['Implied Total Angular Momentum (y LOS)']
+    imp_z_los = data['Implied Total Angular Momentum (z LOS)']
+    
+    dict = {'clump_number': clump_number,
+            'mass': mass,
+            'actual_tot': actual_tot,
+            'actual_par_xy': actual_par_xy,
+            'actual_par_xz': actual_par_xz,
+            'actual_par_yz': actual_par_yz,
+            'imp_x_los': imp_x_los,
+            'imp_y_los': imp_y_los,
+            'imp_z_los': imp_z_los}
+
+    return(dict)
+    
+def j_comp_plotter(x, y1, y2, x_str, y_str, tit_str):
+    #Insert Actual and Partial Data Here in LOGLOG style
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    ax.loglog(x, y1, 'b.', label='Full')
+    ax.loglog(x, y2, 'r.', label='Partial')
+    
+    #Grabs Min and Max for x-axis
+    x_min = min(x)
+    x_max = max(x)
+    unity_x = np.linspace(x_min,x_max,1000) #Makes line of unity values
+    ax.loglog(unity_x,unity_x, 'k--', label='Line of Unity') #Adds to plot here
+    
+    #Best Fit Calculations here
+    slope_1, intercept_1 = np.polyfit(x, y1, 1)
+    slope_2, intercept_2 = np.polyfit(x, y2, 1)
+    
+    fit_1 = [slope_1 * i + intercept_1 for i in unity_x]
+    fit_2 = [slope_2 * i + intercept_2 for i in unity_x]
+    
+    #Insert on Plot Here
+    ax.loglog(unity_x,
+                            fit_1,
+                            'b--',
+                            label='Line of Best Fit - Full')
+    ax.loglog(unity_x,
+                            fit_2,
+                            'r--',
+                            label='Line of Best Fit - Partial')
+    
+    
+    #Setting Aspect Ratios to equal
+    ax.set_aspect('equal', adjustable='box')
+    ax.set_facecolor('#f2f2f2')
+    ax.grid()
+    
+    #Labelling and Legend
+    ax.legend(bbox_to_anchor=(0.8, 1),
+               bbox_transform=plt.gcf().transFigure)
+    
+    ax.set_xlabel(x_str)
+    ax.set_ylabel(y_str)
+    ax.set_title(tit_str)
+    
+    return(fig)

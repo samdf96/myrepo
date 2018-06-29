@@ -27,9 +27,10 @@ Returns:
     
     Directory Tree Output Structure:
         
-        / data_dir / Config_x / Fiducialxx / Time Stamp / Output Files /
-        
-    data_dir - this is set at the highest level of the tree
+        tree_top / data_dir / Config_x / Fiducialxx / Time Stamp / Output Files /
+    
+    tree_top - this is where the config files are stored for input
+    data_dir - this is set at the highest level of the tree for output
     config_x - this is to seperate different input parameters for the analyzer
     Fiducialxx - this is for different simulation data sets
     Time Stamp - this is for all the checkpoints in the simulation
@@ -38,10 +39,13 @@ Returns:
             - Contains all the necessary clump information for the simulation
             - Projection Plots for axial directions with overlayed center
                 of mass coordinates for all the clumps found
+        - Header.txt
+            - Contains information about all the 
 """
 
 
 import clump_code_1 as cc
+import FITS_Header_Printer as hp
 import glob
 import yaml
 import io
@@ -53,11 +57,14 @@ import os
 overwrite = True
 
 
+
 #Creates a list of directories with the appropriate files for analysis
 flist = glob.glob('/mnt/bigdata/erosolow/Orion2/*/data.*.hdf5')
 #Creating empty list for data sorting
 flist_data = []
+#This is to filter out the timestamps that we want to analyze over
 data_check_list = ['0060','0070','0080','0090','0100']
+
 for i in range(0,len(flist)):
     main_string = flist[i].split("/")
     out_string = main_string[-1].split(".")
@@ -71,16 +78,16 @@ for i in range(0,len(flist)):
 flist_data.sort()
 
 #This is where the config files are
-config_dir = '/home/sfielder/Documents/Clumps/'
+tree_top_dir = '/home/sfielder/Documents/Clumps/'
 data_dir = '/home/sfielder/Documents/Clumps/Output/'
 
 #Make a list of all the config files found in  data_dir
-flist_config = glob.glob(config_dir+'*.yaml')
-flist_config.sort()
+flist_config_files = glob.glob(tree_top_dir+'*.yaml')
+flist_config_files.sort()
 
-for i in range(0,len(flist_config)):
+for i in range(0,len(flist_config_files)):
     #Grabs the config file name here
-    naming_string = flist_config[i].split("/")[-1].split(".")[0]
+    naming_string = flist_config_files[i].split("/")[-1].split(".")[0]
     #Creating String for Directory
     save_dir = data_dir + naming_string + '/'
     
@@ -92,7 +99,7 @@ for i in range(0,len(flist_config)):
                   save_dir +
                   "is detected as a valid directory. Proceeding with Analysis.")
             #Importing Config File settings here
-            with io.open(flist_config[i], 'r') as stream:
+            with io.open(flist_config_files[i], 'r') as stream:
                 data_loaded = yaml.load(stream)
         
             #Call main code here
@@ -115,7 +122,7 @@ for i in range(0,len(flist_config)):
         os.mkdir(save_dir)
 
         #Importing Config File settings here
-        with io.open(flist_config[i], 'r') as stream:
+        with io.open(flist_config_files[i], 'r') as stream:
             data_loaded = yaml.load(stream)
         
         #Call main code here
@@ -128,4 +135,9 @@ for i in range(0,len(flist_config)):
                     data_loaded['beta'],
                     data_loaded['clump_sizing'],
                     save_dir)
-            
+
+# Call Header Printer Script to compute the .txt file needed for summary of analysis
+flist_config_dir = glob.glob(data_dir + 'config_*')
+for i in range(0,len(flist_config_dir)):
+    hp.Header_Printer(data_dir,flist_config_dir[i])
+        

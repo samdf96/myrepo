@@ -529,15 +529,15 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
                                          array=am_actual_partial_yz)
     
     # Implied Data for Angular Momentum
-    q_am_implied_x = fits.Column(name='Implied Total Angular momentum (x LOS)',
+    q_am_implied_x = fits.Column(name='Implied Total Angular Momentum (x LOS)',
                                  format='D',
                                  unit=str(ang_mom_unit),
                                  array=am_implied_x)
-    q_am_implied_y = fits.Column(name='Implied Total Angular momentum (y LOS)',
+    q_am_implied_y = fits.Column(name='Implied Total Angular Momentum (y LOS)',
                                  format='D',
                                  unit=str(ang_mom_unit),
                                  array=am_implied_y)
-    q_am_implied_z = fits.Column(name='Implied Total Angular momentum (z LOS)',
+    q_am_implied_z = fits.Column(name='Implied Total Angular Momentum (z LOS)',
                                  format='D',
                                  unit=str(ang_mom_unit),
                                  array=am_implied_z)
