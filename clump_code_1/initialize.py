@@ -27,7 +27,7 @@ Returns:
     
     Directory Tree Output Structure:
         
-        tree_top / data_dir / Config_x / Fiducialxx / Time Stamp / Output Files /
+        tree_top / data_dir / config_x / Fiducialxx / Time Stamp / Output Files /
     
     tree_top - this is where the config files are stored for input
     data_dir - this is set at the highest level of the tree for output
@@ -151,11 +151,11 @@ flist_config_dir = glob.glob(data_dir + 'config_*')
 print("Debug: flist_config_dir set as: ", flist_config_dir)
 
 #Run Loop over all the config_x directories found that are in the list
-#for i in range(0,len(flist_config_dir)):
-#    print("Processing Summary File for directory: ", flist_config_dir[i])
-#    hp.Header_Printer(flist_config_dir[i])
-#
-#print("Initialize.py file completed.")    
+for i in range(0,len(flist_config_dir)):
+    print("Processing Summary File for directory: ", flist_config_dir[i])
+    hp.Header_Printer(flist_config_dir[i])
+
+print("Initialize.py file completed.")    
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 
         

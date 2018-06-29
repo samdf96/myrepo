@@ -16,27 +16,27 @@ input parameters for the analyzer, and then grab all the comments for each fits
 file and output them into the txt file that this file generates
 
 Inputs:
-    - input_dir : string
-        - Top level of the tree where the config files are
-    - config_file_string : string
-        - Config file name (with slash -> points to directory name)
+    - config_list: string
+        - path to config_x file found in initilize.py (see file for details)
 
 Returns:
     - txt file with all the comments about the fits files that are in the 
-        config_dir directory
+        config_x directory (see initialize.py file for tree structure)
 """
 
 from astropy.io import fits
 import glob
 
-def Header_Printer(input_dir, config_file_string):
+def Header_Printer(config_input):
     """
     See Above for details about this function.
     """    
-    config_dir = input_dir + config_file_string
+
+    #Making input string into valid directory with slash ending
+    config_dir = config_input + '/'
     
     #Here is where we define the specific config folder which houses the config files
-    flist = glob.glob(input_dir + config_file_string + '**/**/*.fits')
+    flist = glob.glob(config_dir + '**/**/*.fits')
     flist.sort() #Sorts the Config files by name for easier readability
     
     #Creating text file name here
