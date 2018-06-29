@@ -137,7 +137,11 @@ for i in range(0,len(flist_config_files)):
                     save_dir)
 
 # Call Header Printer Script to compute the .txt file needed for summary of analysis
+#Grab the config_x directories, and puts them in a list
 flist_config_dir = glob.glob(data_dir + 'config_*')
+
+#Run Loop over all the config_x directories found that are in the list
 for i in range(0,len(flist_config_dir)):
-    hp.Header_Printer(data_dir,flist_config_dir[i])
+    config_string = flist_config_dir[i].split("/")[-1]
+    hp.Header_Printer(data_dir,config_string)
         
