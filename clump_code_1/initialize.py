@@ -39,8 +39,14 @@ Returns:
             - Contains all the necessary clump information for the simulation
             - Projection Plots for axial directions with overlayed center
                 of mass coordinates for all the clumps found
-        - Header.txt
-            - Contains information about all the 
+        - Header_info.txt
+            - Contains information about all the clumps found in each config
+            directory found by glob.glob
+
+Notes:
+    - Both functions being called below are seperated out thus;
+    If overwrite for data_analysis is turned off, then script prints a statement
+    out and then moves forward onto the header_printer function
 """
 
 
@@ -54,6 +60,7 @@ import os
 # Overwrite Protection Here
 # Set to True - Will Overwrite Data already on disk
 # Set to False - Will NOT Overwrite Data already on disk
+# This is specific to the data analysis portion
 overwrite = False
 
 
@@ -136,6 +143,8 @@ for i in range(0,len(flist_config_files)):
                     data_loaded['clump_sizing'],
                     save_dir)
 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+
 # Call Header Printer Script to compute the .txt file needed for summary of analysis
 #Grab the config_x directories, and puts them in a list
 flist_config_dir = glob.glob(data_dir + 'config_*')
@@ -145,4 +154,7 @@ for i in range(0,len(flist_config_dir)):
     config_string = flist_config_dir[i].split("/")[-1]
     config_string += "/"
     hp.Header_Printer(data_dir,config_string)
+    
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+
         

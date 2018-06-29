@@ -19,7 +19,7 @@ Inputs:
     - input_dir : string
         - Top level of the tree where the config files are
     - config_file_string : string
-        - Config file name
+        - Config file name (with slash -> points to directory name)
 
 Returns:
     - txt file with all the comments about the fits files that are in the 
@@ -29,39 +29,21 @@ Returns:
 from astropy.io import fits
 import glob
 
-
 def Header_Printer(input_dir, config_file_string):
-    
-    '''
-    FOR LOCAL TESTING ONLY: DELETE AFTER TESTING
-    #Main Tree Start
-    input_dir = '/Users/sfielder/Documents/Astro_Data/'
-    config_file_string = 'config_1/' #Add slash after file name
-    '''
-    
-    
+    """
+    See Above for details about this function.
+    """    
     config_dir = input_dir + config_file_string
     
     #Here is where we define the specific config folder which houses the config files
     flist = glob.glob(input_dir + config_file_string + '**/**/*.fits')
     flist.sort() #Sorts the Config files by name for easier readability
-
-    
-    #File Writing Here - Not using conventional ending with slash for next line
     
     #Creating text file name here
-    print("Config Dir Set as: ", config_dir)
-    config_string = config_dir.split("/")[-1]
-    text_filename = config_dir + 'Header_Info.txt'
+    text_filename = config_dir + 'Header_Info.txt'  
     
-#    #This loop detects if a file is present, if not then it creates one
-#    #according to the text_filename above
-#    if os.path.isdir(text_filename) == True:
-#        pass
-#    else:
-#        
-        
-    with open(text_filename, 'w+') as txt:   #Opens the file to write
+    #Opens the file to write - Will always overwrite data due to '+' argument
+    with open(text_filename, 'w+') as txt:
         
         #Generic Print Statements for TXT File
         print('Below presents the Simulation Input parameters ' +
@@ -104,15 +86,8 @@ def Header_Printer(input_dir, config_file_string):
     
             with fits.open(current_file) as hdu:
                 hdu_table = hdu[1]
-                
-#                file_string = current_file.split()
-#                fits_string_true = ['fits' in k for k in file_string]
-#                fits_string_id = [j for j, x in enumerate(fits_string_true) if x]
-#                fits_string = file_string[fits_string_id[0]]
-                
+                #Extracting header here                
                 header = hdu_table.header
-                #header_keys = list(header.keys())
-                #print(header_keys)
                 print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~', file=txt)
                 print('Comments for FITS File: ', current_file, file=txt)
                 while True:
