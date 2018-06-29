@@ -143,6 +143,6 @@ flist_config_dir = glob.glob(data_dir + 'config_*')
 #Run Loop over all the config_x directories found that are in the list
 for i in range(0,len(flist_config_dir)):
     config_string = flist_config_dir[i].split("/")[-1]
-    config_string.append("/")
+    config_string += "/"
     hp.Header_Printer(data_dir,config_string)
         
