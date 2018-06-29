@@ -28,7 +28,6 @@ Returns:
 
 from astropy.io import fits
 import glob
-import os
 
 
 def Header_Printer(input_dir, config_file_string):
@@ -45,6 +44,7 @@ def Header_Printer(input_dir, config_file_string):
     
     #Here is where we define the specific config folder which houses the config files
     flist = glob.glob(input_dir + config_file_string + '**/**/*.fits')
+    print("Here are the fits files to be processed: ", flist)
     flist.sort() #Sorts the Config files by name for easier readability
     
     #File Writing Here - Not using conventional ending with slash for next line
