@@ -44,12 +44,13 @@ def Header_Printer(input_dir, config_file_string):
     
     #Here is where we define the specific config folder which houses the config files
     flist = glob.glob(input_dir + config_file_string + '**/**/*.fits')
-    print("Here are the fits files to be processed: ", flist)
     flist.sort() #Sorts the Config files by name for easier readability
+
     
     #File Writing Here - Not using conventional ending with slash for next line
     
     #Creating text file name here
+    print("Config Dir Set as: ", config_dir)
     config_string = config_dir.split("/")[-1]
     text_filename = config_dir + '/' + config_string + '_Header_Info.txt'
     
