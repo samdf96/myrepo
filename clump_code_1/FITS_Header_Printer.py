@@ -52,6 +52,7 @@ def Header_Printer(input_dir, config_file_string):
     #Creating text file name here
     print("Config Dir Set as: ", config_dir)
     config_string = config_dir.split("/")[-1]
+    print("Config String set as: ", config_string)
     text_filename = config_dir + '/' + config_string + '_Header_Info.txt'
     
 #    #This loop detects if a file is present, if not then it creates one
