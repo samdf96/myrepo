@@ -18,14 +18,18 @@ from definitions import data_grabber
 from definitions import j_comp_plotter
 
 
-#Main Tree Start
-input_dir = '/Users/sfielder/Documents/Astro_Data/'
-config_file_string = 'config_1/' #Add slash after file name
+#Main Tree Start - LOCAL TESTING PARAMETERS HERE
+
+data_dir = '/Users/sfielder/Documents/Astro_Data/'
+flist_config_dir = glob.glob(data_dir + 'config_*')
+
+config_string = flist_config_dir[0].split("/")[-1]
+config_string += "/"
 
 
 
 #Here is where we define the specific config folder which houses the config files
-flist = glob.glob(input_dir + config_file_string + '**/**/*.fits')
+flist = glob.glob(data_dir + config_string + '**/**/*.fits')
 flist.sort() #Sorts the Config files by name for easier readability
 
 ## Now we have all the fits files in a list: flist

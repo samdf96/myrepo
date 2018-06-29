@@ -148,15 +148,14 @@ for i in range(0,len(flist_config_files)):
 # Call Header Printer Script to compute the .txt file needed for summary of analysis
 #Grab the config_x directories, and puts them in a list
 flist_config_dir = glob.glob(data_dir + 'config_*')
+print("Debug: flist_config_dir set as: ", flist_config_dir)
 
 #Run Loop over all the config_x directories found that are in the list
-for i in range(0,len(flist_config_dir)):
-    print("Processing Summary File for directory: ", flist_config_dir[i])
-    config_string = flist_config_dir[i].split("/")[-1]
-    config_string += "/"
-    hp.Header_Printer(data_dir,config_string)
-
-print("Initialize.py file completed.")    
+#for i in range(0,len(flist_config_dir)):
+#    print("Processing Summary File for directory: ", flist_config_dir[i])
+#    hp.Header_Printer(flist_config_dir[i])
+#
+#print("Initialize.py file completed.")    
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 
         
