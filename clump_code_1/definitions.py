@@ -670,8 +670,12 @@ def data_grabber(data):
 
     return(dict)
     
-def j_comp_plotter(x, y1, y2, x_str, y_str, tit_str):
+def j_comp_plotter(x, y1, y2, axis_str, equal_axis=True):
     #Insert Actual and Partial Data Here in LOGLOG style
+    
+    x_str = 'Implied Specific Angular Momentum [$kg \ m^2 \ s^{-1}$]'
+    y_str = 'Actual Specific Angular Momentum [$kg \ m^2 \ s^{-1}$]'
+    title_str = 'Comparison for ' + axis_str + ' Line-of-Sight'
     fig = plt.figure()
     ax = fig.add_subplot(111)
     ax.loglog(x, y1, 'b.', label='Full')
@@ -700,18 +704,98 @@ def j_comp_plotter(x, y1, y2, x_str, y_str, tit_str):
                             'r--',
                             label='Line of Best Fit - Partial')
     
-    
     #Setting Aspect Ratios to equal
-    ax.set_aspect('equal', adjustable='box')
+    if equal_axis == True:
+        ax.set_aspect('equal')
+        
     ax.set_facecolor('#f2f2f2')
     ax.grid()
     
     #Labelling and Legend
-    ax.legend(bbox_to_anchor=(0.8, 1),
+    ax.legend(bbox_to_anchor=(1.02, 1))
+    
+    ax.set_xlabel(x_str)
+    ax.set_ylabel(y_str)
+    ax.set_title(title_str)
+    
+    return(fig)
+
+def j_comp_plotter_colormap(x, y1, y2, mass, axis_str, equal_axis=True):
+    #Insert Actual and Partial Data Here in LOGLOG style
+    
+    x_str = 'Implied Specific Angular Momentum [$kg \ m^2 \ s^{-1}$]'
+    y_str = 'Actual Specific Angular Momentum [$kg \ m^2 \ s^{-1}$]'
+    title_str = 'Comparison for ' + axis_str + ' Line-of-Sight'
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    data1 = ax.scatter(x,
+                       y1,
+                       c=np.log10(mass),
+                       s=40,
+                       marker='.',
+                       cmap='viridis',
+                       linewidth=0,
+                       alpha=0.5,
+                       label='Full')
+    ax.scatter(x,
+               y2,
+               c=np.log10(mass),
+               s=30,
+               marker='v',
+               cmap='viridis',
+               linewidth=0,
+               alpha=0.5,
+               label='Partial')
+    
+    #Grabs Min and Max for x-axis
+    x_min = min(x)
+    x_max = max(x)
+    unity_x = np.linspace(x_min,x_max,1000) #Makes line of unity values
+    ax.plot(unity_x,
+            unity_x,
+            linestyle='--',
+            linewidth=1,
+            c='k',
+            label='Line of Unity') #Adds to plot here
+    
+    #Best Fit Calculations here
+    slope_1, intercept_1 = np.polyfit(x, y1, 1)
+    slope_2, intercept_2 = np.polyfit(x, y2, 1)
+    
+    fit_1 = [slope_1 * i + intercept_1 for i in unity_x]
+    fit_2 = [slope_2 * i + intercept_2 for i in unity_x]
+    
+    #Insert on Plot Here
+    ax.plot(unity_x,
+            fit_1,
+            linestyle='--',
+            linewidth=1,
+            c='b',
+            label='Line of Best Fit - Full')
+    ax.plot(unity_x,
+            fit_2,
+            linestyle='--',
+            linewidth=1,
+            c='r',
+            label='Line of Best Fit - Partial')
+    
+    #Setting LOG LOG Scale for Scatter Plots
+    ax.set_yscale('log')
+    ax.set_xscale('log')
+    #Setting Aspect Ratios to Equal if True
+    if equal_axis == True:
+        ax.set_aspect('equal')
+    
+    ax.set_facecolor('#f2f2f2')
+    ax.grid()
+    
+    #Labelling and Legend
+    ax.legend(bbox_to_anchor=(1.02, 1),
                bbox_transform=plt.gcf().transFigure)
     
     ax.set_xlabel(x_str)
     ax.set_ylabel(y_str)
-    ax.set_title(tit_str)
+    ax.set_title(title_str)
+    fig.colorbar(data1,label=r'$\log_{10}$(mass) [g]')
     
     return(fig)

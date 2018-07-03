@@ -4,8 +4,6 @@
 Created on Mon Jun 25 10:57:36 2018
 
 @author: sfielder
-
-This will take an input fits file, and compute the appropriate j/j plots
 """
 
 
@@ -16,60 +14,153 @@ import matplotlib.pyplot as plt
 ## Import Definitions from definitions.py here:
 from definitions import data_grabber
 from definitions import j_comp_plotter
+from definitions import j_comp_plotter_colormap
 
 
-#Main Tree Start - LOCAL TESTING PARAMETERS HERE
+#Main Tree Start - LOCAL TESTING PARAMETERS HERE WILL USE FOR INPUT
 
+## THIS WILL APPEAR IN THE INITIALIZE.PY FILE WHERE TESTING IS COMPLETE
 data_dir = '/Users/sfielder/Documents/Astro_Data/'
-flist_config_dir = glob.glob(data_dir + 'config_*')
+flist = glob.glob(data_dir + '**/*.fits', recursive=True)
+flist.sort()
+current_file = flist[1]
 
-config_string = flist_config_dir[0].split("/")[-1]
-config_string += "/"
-
-
-
-#Here is where we define the specific config folder which houses the config files
-flist = glob.glob(data_dir + config_string + '**/**/*.fits')
-flist.sort() #Sorts the Config files by name for easier readability
-
-## Now we have all the fits files in a list: flist
+# Here will start the actual definition process:
+    
+#def Plotter(current_file):
 
 
-for i in range(0,1):
+hdu = fits.open(current_file)
     
-    current_file = flist[i]
-    
-    
-    hdu = fits.open(current_file)
-        
-    #Grabbing BinHDUTable object here, should always be second object
-    hdu_table = hdu[1]
-    data = hdu_table.data
-    
-    #Grabbing All the Data from the hdu_table here, makes dictionary    
-    data_dict = data_grabber(data)
-    
-   
-    ## Making First Figure Here for x-LOS
-    
-    x = data_dict['imp_x_los']
-    y1 = data_dict['actual_tot']
-    y2 = data_dict['actual_par_yz']
-    
-    x_str = 'Implied Specific Angular Momentum [$kg \ m^2 \ s^{-1}$]'
-    y_str = 'Actual Specific Angular Momentum [$kg \ m^2 \ s^{-1}$]'
-    title_str = 'Comparison for X Line-of-Sight'
-    
-    #Calling Function Here for Plotting
-    fig = j_comp_plotter(x,
-                         y1,
-                         y2,
-                         x_str,
-                         y_str,
-                         title_str) 
-    plt.tight_layout()
-    fig.savefig('Test_Fig.pdf', bbox_inches='tight')
-    
-    
+#Grabbing BinHDUTable object here, should always be second object
+hdu_table = hdu[1]
+data = hdu_table.data #Grabs data stored in the table -> FITS REC   
+data_dict = data_grabber(data)
 
-    
+## Sort the data here:
+
+header = hdu_table.header
+comment_string = str(header['COMMENT'])
+comments = comment_string.split(".")
+hdu.close()
+
+#%%
+
+#Making the Output Directory for current file:
+save_dir_list = current_file.split("/")[:-1]
+save_dir = '/'.join(save_dir_list)
+
+# Seperating out Data to be used for plotting
+imp_x_los = data_dict['imp_x_los']
+imp_y_los = data_dict['imp_y_los']
+imp_z_los = data_dict['imp_z_los']
+act_tot = data_dict['actual_tot']
+act_par_xy = data_dict['actual_par_xy']
+act_par_xz = data_dict['actual_par_xz']
+act_par_yz = data_dict['actual_par_yz']
+mass = data_dict['mass']
+
+## Want Equal Axes?
+equal_axis=False
+# =============================================================================
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~    X LOS    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+axis_str = 'X'
+filename = 'j_comp_X_los.pdf'
+savefig_dir = save_dir + '/' + filename
+
+#Calling Function Here for Plotting
+fig = j_comp_plotter(imp_x_los,
+                     act_tot,
+                     act_par_yz,
+                     axis_str,
+                     equal_axis)
+plt.tight_layout()
+fig.savefig(savefig_dir, bbox_inches='tight')
+plt.close(fig)
+
+#Colormap Variant Here
+filename = 'j_comp_X_los_colormapped.pdf'
+savefig_dir = save_dir + '/' + filename
+
+#Calling Function Here for Plotting
+fig = j_comp_plotter_colormap(imp_x_los,
+                     act_tot,
+                     act_par_yz,
+                     mass,
+                     axis_str,
+                     equal_axis)
+plt.tight_layout()
+fig.canvas.draw()
+fig.savefig(savefig_dir, bbox_inches='tight')
+plt.close(fig)
+# =============================================================================
+
+# =============================================================================
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~    Y LOS    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+axis_str = 'Y'
+filename = 'j_comp_Y_los.pdf'
+savefig_dir = save_dir + '/' + filename
+
+#Calling Function Here for Plotting
+fig = j_comp_plotter(imp_y_los,
+                     act_tot,
+                     act_par_xz,
+                     axis_str,
+                     equal_axis)
+plt.tight_layout()
+fig.savefig(savefig_dir, bbox_inches='tight')
+plt.close(fig)
+
+#Colormap Variant Here
+filename = 'j_comp_Y_los_colormapped.pdf'
+savefig_dir = save_dir + '/' + filename
+
+#Calling Function Here for Plotting
+fig = j_comp_plotter_colormap(imp_y_los,
+                     act_tot,
+                     act_par_xz,
+                     mass,
+                     axis_str,
+                     equal_axis)
+plt.tight_layout()
+fig.canvas.draw()
+fig.savefig(savefig_dir, bbox_inches='tight')
+plt.close(fig)
+# =============================================================================
+
+# =============================================================================
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~    Z LOS    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+axis_str = 'Z'
+filename = 'j_comp_Z_los.pdf'
+savefig_dir = save_dir + '/' + filename
+
+#Calling Function Here for Plotting
+fig = j_comp_plotter(imp_z_los,
+                     act_tot,
+                     act_par_xy,
+                     axis_str,
+                     equal_axis)
+plt.tight_layout()
+fig.savefig(savefig_dir, bbox_inches='tight')
+plt.close(fig)
+
+#Colormap Variant Here
+filename = 'j_comp_Z_los_colormapped.pdf'
+savefig_dir = save_dir + '/' + filename
+
+#Calling Function Here for Plotting
+fig = j_comp_plotter_colormap(imp_z_los,
+                     act_tot,
+                     act_par_xy,
+                     mass,
+                     axis_str,
+                     equal_axis)
+plt.tight_layout()
+fig.canvas.draw()
+fig.savefig(savefig_dir, bbox_inches='tight')
+plt.close(fig)
+# =============================================================================
+
+
+#    return()
+

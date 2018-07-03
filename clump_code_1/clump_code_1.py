@@ -454,7 +454,7 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
                 am_actual_partial_yz.append(np.nan)
                 err_string.append('Clump Number: '+
                                   str(i+1)+
-                                  ' , could not reshape coordinates to 256x256 array')
+                                  ' , could not reshape coordinates to 256x256 array.')
                 break
             
             except YTErrorValue:    #V_positions error - writes to error string
@@ -470,7 +470,7 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
                 am_actual_partial_yz.append(np.nan)
                 err_string.append('Clump Number: '+
                                   str(i+1)+
-                                  ' , has v_positions empty')
+                                  ' , has v_positions empty.')
                 break
             
             except YTPassThrough:
