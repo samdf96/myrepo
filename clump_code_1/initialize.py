@@ -61,7 +61,7 @@ import os
 # Set to True - Will Overwrite Data already on disk
 # Set to False - Will NOT Overwrite Data already on disk
 # This is specific to the data analysis portion
-overwrite = False
+overwrite = True
 
 
 
