@@ -166,15 +166,15 @@ print("Initialize.py file completed.")
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 
 # Plot making happens here:
-flist = glob.glob(data_dir + '**/*.fits', recursive=True)
-flist.sort()
+flist_plots = glob.glob(data_dir + '**/*.fits', recursive=True)
+flist_plots.sort()
 
 #Parameters for Plotting
 equal_axis=False
 percentage = 0.2
 
-for i in range(0,1):
-    current_file = flist[i]
+for i in range(0,len(flist_plots)):
+    current_file = flist_plots[i]
     jp.plotter(current_file,equal_axis,percentage)
     
 
