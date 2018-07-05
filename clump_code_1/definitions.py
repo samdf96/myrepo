@@ -670,7 +670,7 @@ def data_grabber(data):
 
     return(dict)
     
-def j_comp_plotter(x, y1, y2, axis_str, equal_axis=True):
+def j_comp_plotter(x, y1, y2, axis_str, equal_axis, percentage):
     #Insert Actual and Partial Data Here in LOGLOG style
     
     x_str = 'Implied Specific Angular Momentum [$kg \ m^2 \ s^{-1}$]'
@@ -704,9 +704,25 @@ def j_comp_plotter(x, y1, y2, axis_str, equal_axis=True):
                             'r--',
                             label='Line of Best Fit - Partial')
     
-    #Setting Aspect Ratios to equal
+    #Setting Aspect Ratios to Equal if True
     if equal_axis == True:
         ax.set_aspect('equal')
+    
+    #Setting Axis Limits Here
+    else:
+        x_axis_min = np.min(x)
+        x_axis_max = np.max(x)
+        y_axis_min = min(np.amin(y1),np.amin(y2))
+        y_axis_max = max(np.amax(y1),np.amax(y2))
+        
+        p = percentage
+        x_axis_min -= p*x_axis_min
+        x_axis_max += p*x_axis_max
+        y_axis_min -= p*y_axis_min
+        y_axis_max += p*y_axis_max
+        
+        ax.set_xlim(left=x_axis_min, right=x_axis_max)
+        ax.set_ylim(bottom=y_axis_min,top=y_axis_max)
         
     ax.set_facecolor('#f2f2f2')
     ax.grid()
@@ -720,7 +736,7 @@ def j_comp_plotter(x, y1, y2, axis_str, equal_axis=True):
     
     return(fig)
 
-def j_comp_plotter_colormap(x, y1, y2, mass, axis_str, equal_axis=True):
+def j_comp_plotter_colormap(x, y1, y2, mass, axis_str, equal_axis,percentage):
     #Insert Actual and Partial Data Here in LOGLOG style
     
     x_str = 'Implied Specific Angular Momentum [$kg \ m^2 \ s^{-1}$]'
@@ -731,20 +747,20 @@ def j_comp_plotter_colormap(x, y1, y2, mass, axis_str, equal_axis=True):
     data1 = ax.scatter(x,
                        y1,
                        c=np.log10(mass),
-                       s=40,
+                       s=100,
                        marker='.',
-                       cmap='viridis',
+                       cmap='cool',
                        linewidth=0,
-                       alpha=0.5,
+                       alpha=1,
                        label='Full')
     ax.scatter(x,
                y2,
                c=np.log10(mass),
-               s=30,
+               s=40,
                marker='v',
-               cmap='viridis',
+               cmap='cool',
                linewidth=0,
-               alpha=0.5,
+               alpha=1,
                label='Partial')
     
     #Grabs Min and Max for x-axis
@@ -755,6 +771,7 @@ def j_comp_plotter_colormap(x, y1, y2, mass, axis_str, equal_axis=True):
             unity_x,
             linestyle='--',
             linewidth=1,
+            alpha=0.75,
             c='k',
             label='Line of Unity') #Adds to plot here
     
@@ -770,21 +787,40 @@ def j_comp_plotter_colormap(x, y1, y2, mass, axis_str, equal_axis=True):
             fit_1,
             linestyle='--',
             linewidth=1,
+            alpha=0.75,
             c='b',
             label='Line of Best Fit - Full')
     ax.plot(unity_x,
             fit_2,
             linestyle='--',
             linewidth=1,
+            alpha=0.75,
             c='r',
             label='Line of Best Fit - Partial')
     
     #Setting LOG LOG Scale for Scatter Plots
     ax.set_yscale('log')
     ax.set_xscale('log')
-    #Setting Aspect Ratios to Equal if True
+    
+#Setting Aspect Ratios to Equal if True
     if equal_axis == True:
         ax.set_aspect('equal')
+    
+    #Setting Axis Limits Here
+    else:
+        x_axis_min = np.min(x)
+        x_axis_max = np.max(x)
+        y_axis_min = min(np.amin(y1),np.amin(y2))
+        y_axis_max = max(np.amax(y1),np.amax(y2))
+        
+        p = percentage
+        x_axis_min -= p*x_axis_min
+        x_axis_max += p*x_axis_max
+        y_axis_min -= p*y_axis_min
+        y_axis_max += p*y_axis_max
+        
+        ax.set_xlim(left=x_axis_min, right=x_axis_max)
+        ax.set_ylim(bottom=y_axis_min,top=y_axis_max)
     
     ax.set_facecolor('#f2f2f2')
     ax.grid()

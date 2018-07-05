@@ -2,10 +2,21 @@
 {\fonttbl\f0\fswiss\fcharset0 Helvetica;}
 {\colortbl;\red255\green255\blue255;}
 {\*\expandedcolortbl;;}
-\margl1440\margr1440\vieww27620\viewh16580\viewkind0
+\margl1440\margr1440\vieww27500\viewh16580\viewkind0
 \pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 
 \f0\fs28 \cf0 Change Log - Clumping Code\
+\
+v3.5 - July 5th 2018\
+\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\
+Changes to Initialize.py:\
+	- Now implements the plotter function with correct calling with references to the definitions.py file accordingly. ( see definitions below)\
+Added: Plotter.py\
+	- This takes in the current fits file being called, along with a couple parameters, and creates j/j plots for the data (6 total plots - 3 regular and 3 colormapped)\
+Changes to Definitions.py:\
+	- Introduced data_grabber function\
+	- Introduced j_comp_plotter: plots j/j plots according to incoming data\
+	- introduced j_comp_plotter_colormapped: plots colormapped j/j plots with respect to mass\
 \
 v3.4 - June 20th 2018\
 \'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\

@@ -42,11 +42,17 @@ Returns:
         - Header_info.txt
             - Contains information about all the clumps found in each config
             directory found by glob.glob
+        - PDF Plots
+            - A regular j/j plot
+            - A colormapped j/j plot with reference to log_10(mass)
+            Notes:
+                - Both of these are auto saved within the directory of where
+                the fits files are located: /time stamp/
 
 Notes:
     - Both functions being called below are seperated out thus;
-    If overwrite for data_analysis is turned off, then script prints a statement
-    out and then moves forward onto the header_printer function
+    If overwrite for data_analysis is turned **False**, then script prints a 
+    statement out and then moves forward onto the header_printer function
 """
 
 
@@ -56,12 +62,13 @@ import glob
 import yaml
 import io
 import os
+import Plotter as plotter
 
 # Overwrite Protection Here
 # Set to True - Will Overwrite Data already on disk
 # Set to False - Will NOT Overwrite Data already on disk
 # This is specific to the data analysis portion
-overwrite = True
+overwrite = False
 
 
 
@@ -157,5 +164,20 @@ for i in range(0,len(flist_config_dir)):
 
 print("Initialize.py file completed.")    
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+
+# Plot making happens here:
+flist = glob.glob(data_dir + '**/*.fits', recursive=True)
+flist.sort()
+
+#Parameters for Plotting
+equal_axis=False
+percentage = 0.2
+
+for i in range(0,1):
+    current_file = flist[i]
+    plotter(current_file,equal_axis,percentage)
+    
+
+
 
         
