@@ -749,7 +749,7 @@ def j_comp_plotter_colormap(x, y1, y2, mass, axis_str, equal_axis,percentage):
                        c=np.log10(mass),
                        s=100,
                        marker='.',
-                       cmap='cool',
+                       cmap='viridis',
                        linewidth=0,
                        alpha=1,
                        label='Full')
@@ -758,7 +758,7 @@ def j_comp_plotter_colormap(x, y1, y2, mass, axis_str, equal_axis,percentage):
                c=np.log10(mass),
                s=40,
                marker='v',
-               cmap='cool',
+               cmap='viridis',
                linewidth=0,
                alpha=1,
                label='Partial')
