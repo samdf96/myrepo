@@ -17,7 +17,7 @@ from definitions import j_comp_plotter
 from definitions import j_comp_plotter_colormap
 
 
-def Plotter(current_file, equal_axis, percentage):
+def plotter(current_file, equal_axis, percentage):
 
     hdu = fits.open(current_file)
     #Print Statements for File being worked on:

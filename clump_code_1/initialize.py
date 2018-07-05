@@ -62,7 +62,7 @@ import glob
 import yaml
 import io
 import os
-import j_plotter as plotter
+import j_plotter as jp
 
 # Overwrite Protection Here
 # Set to True - Will Overwrite Data already on disk
@@ -175,7 +175,7 @@ percentage = 0.2
 
 for i in range(0,1):
     current_file = flist[i]
-    plotter(current_file,equal_axis,percentage)
+    jp.plotter(current_file,equal_axis,percentage)
     
 
 
