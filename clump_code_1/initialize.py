@@ -57,12 +57,12 @@ Notes:
 
 
 import clump_code_1 as cc
-import FITS_Header_Printer as hp
+import header_printer as hp
 import glob
 import yaml
 import io
 import os
-import Plotter as plotter
+import j_plotter as plotter
 
 # Overwrite Protection Here
 # Set to True - Will Overwrite Data already on disk
