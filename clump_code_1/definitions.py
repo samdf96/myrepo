@@ -691,16 +691,13 @@ def j_comp_plotter(x, y1, y2, axis_str, equal_axis, percentage):
     log_x = np.log10(x)
     log_y1 = np.log10(y1)
     log_y2 = np.log10(y2)
-    coeffs1 = np.polyfit(log_x, log_y1, 1)
-    print('Coefficients for Fit1:', coeffs1)
-    coeffs2 = np.polyfit(log_x, log_y2, 1)
-    print('Coefficients for Fit2:', coeffs2)
+    slope_1, intercept_1 = np.polyfit(log_x, log_y1, 1)
+    slope_2, intercept_2 = np.polyfit(log_x, log_y2, 1)
 
     
-    poly1 = np.poly1d(coeffs1)
-    poly2 = np.poly1d(coeffs2)
-    fit_1 = poly1(np.log10(x))
-    fit_2 = poly2(np.log10(x))
+    
+    fit_1 = [slope_1 * i + intercept_1 for i in log_x]
+    fit_2 = [slope_2 * i + intercept_2 for i in log_x]
     
     #Insert on Plot Here
     ax.plot(x,
