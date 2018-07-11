@@ -688,21 +688,24 @@ def j_comp_plotter(x, y1, y2, axis_str, equal_axis, percentage):
     ax.loglog(unity_x,unity_x, 'k--', label='Line of Unity') #Adds to plot here
     
     #Best Fit Calculations here
-    slope_1, intercept_1 = np.polyfit(x, y1, 1)
-    slope_2, intercept_2 = np.polyfit(x, y2, 1)
+    log_x = np.log10(x)
+    log_y1 = np.log10(y1)
+    log_y2 = np.log10(y2)
+    slope_1, intercept_1 = np.polyfit(log_x, log_y1, 1)
+    slope_2, intercept_2 = np.polyfit(log_x, log_y2, 1)
     
     fit_1 = [slope_1 * i + intercept_1 for i in unity_x]
     fit_2 = [slope_2 * i + intercept_2 for i in unity_x]
     
     #Insert on Plot Here
     ax.loglog(unity_x,
-                            fit_1,
-                            'b--',
-                            label='Line of Best Fit - Full')
+              fit_1,
+              'b--',
+              label='Line of Best Fit - Full')
     ax.loglog(unity_x,
-                            fit_2,
-                            'r--',
-                            label='Line of Best Fit - Partial')
+              fit_2,
+              'r--',
+              label='Line of Best Fit - Partial')
     
     #Setting Aspect Ratios to Equal if True
     if equal_axis == True:
@@ -835,3 +838,5 @@ def j_comp_plotter_colormap(x, y1, y2, mass, axis_str, equal_axis,percentage):
     fig.colorbar(data1,label=r'$\log_{10}$(mass) [g]')
     
     return(fig)
+
+
