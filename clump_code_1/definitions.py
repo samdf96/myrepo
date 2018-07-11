@@ -696,8 +696,8 @@ def j_comp_plotter(x, y1, y2, axis_str, equal_axis, percentage):
     
     poly1 = np.poly1d(coeffs1)
     poly2 = np.poly1d(coeffs2)
-    fit_1 = lambda x: np.exp(poly1(np.log10(x)))
-    fit_2 = lambda x: np.exp(poly2(np.log10(x)))
+    fit_1 = poly1(np.log10(x))
+    fit_2 = poly2(np.log10(x))
     
     #Insert on Plot Here
     ax.loglog(unity_x,
