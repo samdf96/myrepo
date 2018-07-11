@@ -692,7 +692,10 @@ def j_comp_plotter(x, y1, y2, axis_str, equal_axis, percentage):
     log_y1 = np.log10(y1)
     log_y2 = np.log10(y2)
     coeffs1 = np.polyfit(log_x, log_y1, 1)
+    print('Coefficients for Fit1:', coeffs1)
     coeffs2 = np.polyfit(log_x, log_y2, 1)
+    print('Coefficients for Fit2:', coeffs2)
+
     
     poly1 = np.poly1d(coeffs1)
     poly2 = np.poly1d(coeffs2)
