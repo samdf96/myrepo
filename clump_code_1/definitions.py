@@ -696,8 +696,8 @@ def j_comp_plotter(x, y1, y2, axis_str, equal_axis, percentage):
 
     
     
-    fit_1 = [intercept_1 * np.exp(i * slope_1) for i in x]
-    fit_2 = [intercept_2 * np.exp(i * slope_2) for i in x]
+    fit_1 = [intercept_1 * np.power(10,i * slope_1) for i in x]
+    fit_2 = [intercept_2 * np.power(10,i * slope_2) for i in x]
     
     #Insert on Plot Here
     ax.plot(x,
