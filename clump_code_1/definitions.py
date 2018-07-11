@@ -678,14 +678,14 @@ def j_comp_plotter(x, y1, y2, axis_str, equal_axis, percentage):
     title_str = 'Comparison for ' + axis_str + ' Line-of-Sight'
     fig = plt.figure()
     ax = fig.add_subplot(111)
-    ax.loglog(x, y1, 'b.', label='Full')
-    ax.loglog(x, y2, 'r.', label='Partial')
+    ax.plot(x, y1, 'b.', label='Full')
+    ax.plot(x, y2, 'r.', label='Partial')
     
     #Grabs Min and Max for x-axis
     x_min = min(x)
     x_max = max(x)
     unity_x = np.linspace(x_min,x_max,1000) #Makes line of unity values
-    ax.loglog(unity_x,unity_x, 'k--', label='Line of Unity') #Adds to plot here
+    ax.plot(unity_x,unity_x, 'k--', label='Line of Unity') #Adds to plot here
     
     #Best Fit Calculations here
     log_x = np.log10(x)
@@ -738,6 +738,8 @@ def j_comp_plotter(x, y1, y2, axis_str, equal_axis, percentage):
     ax.set_xlabel(x_str)
     ax.set_ylabel(y_str)
     ax.set_title(title_str)
+    ax.set_xscale('log')
+    ax.set_yscale('log')
     
     return(fig)
 
