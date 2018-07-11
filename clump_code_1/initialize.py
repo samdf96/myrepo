@@ -86,7 +86,7 @@ for i in range(0,len(flist)):
     #This checks if timestamp
     if any(x in time_stamp for x in data_check_list):
         flist_data.append(flist[i])
-        print('Directory: ' + flist[i] + ' was grabbed for analysis.')
+        print('Directory: ' + flist[i] + ' was detected for analysis.')
 
 #Sorting the Data by filename
 flist_data.sort()
