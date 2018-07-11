@@ -696,18 +696,18 @@ def j_comp_plotter(x, y1, y2, axis_str, equal_axis, percentage):
 
     
     
-    fit_1 = [slope_1 * i + intercept_1 for i in log_x]
-    fit_2 = [slope_2 * i + intercept_2 for i in log_x]
+    fit_1 = [intercept_1 * np.exp(i * slope_1) for i in x]
+    fit_2 = [intercept_2 * np.exp(i * slope_2) for i in x]
     
     #Insert on Plot Here
     ax.plot(x,
-              fit_1,
-              'b--',
-              label='Line of Best Fit - Full')
+            fit_1,
+            'b--',
+            label='Line of Best Fit - Full')
     ax.plot(x,
-              fit_2,
-              'r--',
-              label='Line of Best Fit - Partial')
+            fit_2,
+            'r--',
+            label='Line of Best Fit - Partial')
     
     #Setting Aspect Ratios to Equal if True
     if equal_axis == True:
