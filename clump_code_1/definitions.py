@@ -700,11 +700,11 @@ def j_comp_plotter(x, y1, y2, axis_str, equal_axis, percentage):
     fit_2 = poly2(np.log10(x))
     
     #Insert on Plot Here
-    ax.loglog(x,
+    ax.plot(x,
               fit_1,
               'b--',
               label='Line of Best Fit - Full')
-    ax.loglog(x,
+    ax.plot(x,
               fit_2,
               'r--',
               label='Line of Best Fit - Partial')
