@@ -38,9 +38,11 @@ from scipy.optimize import least_squares as lsq
 import scipy.linalg
 #from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.ticker as mtick
+import itertools
 
 #For Plotting Definition
 from astropy import units as u
+from astropy.io import fits
 
 
 
@@ -670,22 +672,50 @@ def data_grabber(data):
 
     return(dict)
     
-def j_comp_plotter(x, y1, y2, axis_str, equal_axis, percentage):
+def j_comp_plotter(x, y1, y2, axis_str, tit_str):
+    """
+    Function that plots j/j for a specific in a time step in a specific Fiducial
+    Run.
+    
+    Inputs:
+        - x: array
+            specific angular momentum corresponding to axis given
+        - y1: array
+            Full component data set for actual specific angular momentum
+        - y2: array
+            Partial component data set for actual specific angular momentum
+        - axis_str: string
+            line of sight argument: 'X' , 'Y' , 'Z' .
+        - tit_str: string
+            Either 'Regular' or 'Colormapped' - sets title, and savename
+    Outputs:
+        - fig: matplotlib object
+            This is directed back out into previously tree file, and saved
+            approprately to a save location pre-defined in the code.
+    """
     #Insert Actual and Partial Data Here in LOGLOG style
     
     x_str = 'Implied Specific Angular Momentum [$kg \ m^2 \ s^{-1}$]'
     y_str = 'Actual Specific Angular Momentum [$kg \ m^2 \ s^{-1}$]'
-    title_str = 'Comparison for ' + axis_str + ' Line-of-Sight'
+    title = 'j Comparison - '+axis_str+ ' LOS'
+    
     fig = plt.figure()
     ax = fig.add_subplot(111)
-    ax.plot(x, y1, 'b.', label='Full')
-    ax.plot(x, y2, 'r.', label='Partial')
+    ax.loglog(x, y1, 'b.', label='Full')
+    ax.loglog(x, y2, 'r.', label='Partial')
     
-    #Grabs Min and Max for x-axis
+    #Grabs Min and Max for x-axis (searches all imputted data however)
     x_min = min(x)
     x_max = max(x)
+# Legacy Code for finding correct min/max values for graph.
+#    y1_min = min(y1)
+#    y1_max = max(y1)
+#    y2_min = min(y2)
+#    y2_max = max(y2)
+#    x_master_min = min(x_min, y1_min,y2_min)
+#    x_master_max = min(x_max, y1_max,y2_max)
     unity_x = np.linspace(x_min,x_max,1000) #Makes line of unity values
-    ax.plot(unity_x,unity_x, 'k--', label='Line of Unity') #Adds to plot here
+    ax.loglog(unity_x,unity_x, 'k--', label='Line of Unity') #Adds to plot here
     
     #Best Fit Calculations here
     log_x = np.log10(x)
@@ -694,61 +724,76 @@ def j_comp_plotter(x, y1, y2, axis_str, equal_axis, percentage):
     slope_1, intercept_1 = np.polyfit(log_x, log_y1, 1)
     slope_2, intercept_2 = np.polyfit(log_x, log_y2, 1)
 
-    
-    
-    fit_1 = [intercept_1 * (10**(i * slope_1)) for i in x]
-    fit_2 = [intercept_2 * (10**(i * slope_2)) for i in x]
+    fit_1 = 1e1**(slope_1 * log_x + intercept_1)
+    fit_2 = 1e1**(slope_2 * log_x + intercept_2)
     
     #Insert on Plot Here
-    ax.plot(x,
+    ax.loglog(x,
             fit_1,
-            'b--',
+            'b-',
+            alpha=0.5,
             label='Line of Best Fit - Full')
-    ax.plot(x,
+    ax.loglog(x,
             fit_2,
-            'r--',
+            'r-',
+            alpha=0.5,
             label='Line of Best Fit - Partial')
     
-    #Setting Aspect Ratios to Equal if True
-    if equal_axis == True:
-        ax.set_aspect('equal')
+#Legacy Code to set axis limits based on min/max values - use equal aspect above
+#        x_axis_min = np.min(x)
+#        x_axis_max = np.max(x)
+#        y_axis_min = min(np.amin(y1),np.amin(y2))
+#        y_axis_max = max(np.amax(y1),np.amax(y2))
+#        
+#        p = percentage
+#        x_axis_min -= p*x_axis_min
+#        x_axis_max += p*x_axis_max
+#        y_axis_min -= p*y_axis_min
+#        y_axis_max += p*y_axis_max
+#        
+#        ax.set_xlim(left=x_axis_min, right=x_axis_max)
+#        ax.set_ylim(bottom=y_axis_min,top=y_axis_max)
     
-    #Setting Axis Limits Here
-    else:
-        x_axis_min = np.min(x)
-        x_axis_max = np.max(x)
-        y_axis_min = min(np.amin(y1),np.amin(y2))
-        y_axis_max = max(np.amax(y1),np.amax(y2))
-        
-        p = percentage
-        x_axis_min -= p*x_axis_min
-        x_axis_max += p*x_axis_max
-        y_axis_min -= p*y_axis_min
-        y_axis_max += p*y_axis_max
-        
-        ax.set_xlim(left=x_axis_min, right=x_axis_max)
-        ax.set_ylim(bottom=y_axis_min,top=y_axis_max)
-        
+    ax.set_aspect('equal')   
     ax.set_facecolor('#f2f2f2')
     ax.grid()
     
     #Labelling and Legend
-    ax.legend(bbox_to_anchor=(1.02, 1))
-    
+    ax.legend(bbox_to_anchor=(1.02, 1)) 
     ax.set_xlabel(x_str)
     ax.set_ylabel(y_str)
-    ax.set_title(title_str)
-    ax.set_xscale('log')
-    ax.set_yscale('log')
-    
+    ax.set_title(title)
+
     return(fig)
 
-def j_comp_plotter_colormap(x, y1, y2, mass, axis_str, equal_axis,percentage):
-    #Insert Actual and Partial Data Here in LOGLOG style
+def j_comp_plotter_colormap(x, y1, y2, mass, axis_str, tit_str):
+    """
+    Function that plots j/j for a specific in a time step in a specific Fiducial
+    Run - colormapped by mass argument given.
+    
+    Inputs:
+        - x: array
+            specific angular momentum corresponding to axis given
+        - y1: array
+            Full component data set for actual specific angular momentum
+        - y2: array
+            Partial component data set for actual specific angular momentum
+        - mass: array
+            Corresponding mass terms for the inputted data set.
+        - axis_str: string
+            line of sight argument: 'X' , 'Y' , 'Z' .
+        - tit_str: string
+            Either 'Regular' or 'Colormapped' - sets title, and savename
+    Outputs:
+        - fig: matplotlib object
+            This is directed back out into previously tree file, and saved
+            approprately to a save location pre-defined in the code.
+    """
     
     x_str = 'Implied Specific Angular Momentum [$kg \ m^2 \ s^{-1}$]'
     y_str = 'Actual Specific Angular Momentum [$kg \ m^2 \ s^{-1}$]'
-    title_str = 'Comparison for ' + axis_str + ' Line-of-Sight'
+    title = 'j Comparison - '+axis_str+ ' LOS - Colormapped'
+    
     fig = plt.figure()
     ax = fig.add_subplot(111)
     data1 = ax.scatter(x,
@@ -782,65 +827,381 @@ def j_comp_plotter_colormap(x, y1, y2, mass, axis_str, equal_axis,percentage):
             c='k',
             label='Line of Unity') #Adds to plot here
     
-    #Best Fit Calculations here
-    slope_1, intercept_1 = np.polyfit(x, y1, 1)
-    slope_2, intercept_2 = np.polyfit(x, y2, 1)
-    
-    fit_1 = [slope_1 * i + intercept_1 for i in unity_x]
-    fit_2 = [slope_2 * i + intercept_2 for i in unity_x]
+    #Line Fitting Linear in Loglog Scaling
+    log_x = np.log10(x)
+    log_y1 = np.log10(y1)
+    log_y2 = np.log10(y2)
+    slope_1, intercept_1 = np.polyfit(log_x, log_y1, 1)
+    slope_2, intercept_2 = np.polyfit(log_x, log_y2, 1)
+    #Debug Print Statement Here
+    """
+    print('Slope for Full Data: ', slope_1)
+    print('Intercept for Full Data: ', intercept_1)
+    print('Slope for Partial Data: ', slope_2)
+    print('Intercept for Partial Data: ', intercept_2)
+    """
+
+    fit_1 = 1e1**(slope_1 * log_x + intercept_1)
+    fit_2 = 1e1**(slope_2 * log_x + intercept_2)
     
     #Insert on Plot Here
-    ax.plot(unity_x,
+    ax.plot(x,
             fit_1,
-            linestyle='--',
+            linestyle='-',
             linewidth=1,
             alpha=0.75,
             c='b',
             label='Line of Best Fit - Full')
-    ax.plot(unity_x,
+    ax.plot(x,
             fit_2,
-            linestyle='--',
+            linestyle='-',
             linewidth=1,
             alpha=0.75,
             c='r',
             label='Line of Best Fit - Partial')
     
     #Setting LOG LOG Scale for Scatter Plots
+    ax.set_aspect('equal')
     ax.set_yscale('log')
     ax.set_xscale('log')
-    
-#Setting Aspect Ratios to Equal if True
-    if equal_axis == True:
-        ax.set_aspect('equal')
-    
-    #Setting Axis Limits Here
-    else:
-        x_axis_min = np.min(x)
-        x_axis_max = np.max(x)
-        y_axis_min = min(np.amin(y1),np.amin(y2))
-        y_axis_max = max(np.amax(y1),np.amax(y2))
-        
-        p = percentage
-        x_axis_min -= p*x_axis_min
-        x_axis_max += p*x_axis_max
-        y_axis_min -= p*y_axis_min
-        y_axis_max += p*y_axis_max
-        
-        ax.set_xlim(left=x_axis_min, right=x_axis_max)
-        ax.set_ylim(bottom=y_axis_min,top=y_axis_max)
-    
-    ax.set_facecolor('#f2f2f2')
+    ax.set_facecolor('#f2f2f2') # Grey Background
     ax.grid()
     
     #Labelling and Legend
     ax.legend(bbox_to_anchor=(1.02, 1),
-               bbox_transform=plt.gcf().transFigure)
-    
+               bbox_transform=plt.gcf().transFigure) 
     ax.set_xlabel(x_str)
     ax.set_ylabel(y_str)
-    ax.set_title(title_str)
+    ax.set_title(title)
     fig.colorbar(data1,label=r'$\log_{10}$(mass) [g]')
     
     return(fig)
 
+def DictionarySifter(d):
+    """
+    Takes in a dictionary of values corresponding to clump analysis data
+    and sifts through the act_tot data set, and finds nan values. Once found,
+    all other data in the dictionary is filtered through that, and nan rows
+    are taken out to ensure proper plotting. This does not affect the fits file
+    and the fits file remains with all comments and nan values for safekeeping.
+    
+    Inputs:
+        - d: dictionary
+            This is the dictionary with all the values in the fits file
+    
+    Outputs:
+        - sifted_dict: dictionary
+            See above, non-nan valued dictionary.
+    """
+    
+    imp_x_los_mask = np.ma.masked_where(np.isnan(d['actual_tot']) == True,
+                                        d['imp_x_los'])
+    imp_y_los_mask = np.ma.masked_where(np.isnan(d['actual_tot']) == True,
+                                        d['imp_y_los'])
+    imp_z_los_mask = np.ma.masked_where(np.isnan(d['actual_tot']) == True,
+                                        d['imp_z_los'])
+    act_tot_mask = np.ma.masked_where(np.isnan(d['actual_tot']) == True,
+                                      d['actual_tot'])
+    act_par_xy_mask = np.ma.masked_where(np.isnan(d['actual_tot']) == True,
+                                         d['actual_par_xy'])
+    act_par_xz_mask = np.ma.masked_where(np.isnan(d['actual_tot']) == True,
+                                         d['actual_par_xz'])
+    act_par_yz_mask = np.ma.masked_where(np.isnan(d['actual_tot']) == True,
+                                         d['actual_par_yz'])
+    mass_mask = np.ma.masked_where(np.isnan(d['actual_tot']) == True,
+                                   d['mass'])
+    
+    #Compress all the masked array to array with correct data
+    imp_x_los_mask_compressed = np.ma.compressed(imp_x_los_mask)
+    imp_y_los_mask_compressed = np.ma.compressed(imp_y_los_mask)
+    imp_z_los_mask_compressed = np.ma.compressed(imp_z_los_mask)
+    act_tot_mask_compressed = np.ma.compressed(act_tot_mask)
+    act_par_xy_mask_compressed = np.ma.compressed(act_par_xy_mask)
+    act_par_xz_mask_compressed = np.ma.compressed(act_par_xz_mask)
+    act_par_yz_mask_compressed = np.ma.compressed(act_par_yz_mask)
+    mass_mask_compressed = np.ma.compressed(mass_mask)
+    
+    sifted_dict = {}
+    sifted_dict['imp_x_los'] = imp_x_los_mask_compressed
+    sifted_dict['imp_y_los'] = imp_y_los_mask_compressed
+    sifted_dict['imp_z_los'] = imp_z_los_mask_compressed
+    sifted_dict['act_tot'] = act_tot_mask_compressed
+    sifted_dict['act_par_xy'] = act_par_xy_mask_compressed
+    sifted_dict['act_par_xz'] = act_par_xz_mask_compressed
+    sifted_dict['act_par_yz'] = act_par_yz_mask_compressed
+    sifted_dict['mass'] = mass_mask_compressed
+    
+    return(sifted_dict)
 
+def jComparisonPlotter(current_file):
+    """
+    Master Function for the Comparison Plotter by specific timestep
+    
+    Inputs:
+        - current_file: string
+            Corresponds to the .fits file being plotted
+    
+    Output:
+        - No Outputs, self contained.
+    """
+    hdu = fits.open(current_file)
+    #Print Statements for File being worked on:
+    filename_printing = current_file.split("/")[-1]
+    
+    print("Current File being worked on: {}".format(filename_printing))
+    
+    #Grabbing BinHDUTable object here, should always be second object
+    hdu_table = hdu[1]
+    data = hdu_table.data #Grabs data stored in the table -> FITS REC   
+    d = data_grabber(data)
+    hdu.close()
+    
+    #Making the Output Directory for current file:
+    save_dir_list = current_file.split("/")[:-1]
+    save_dir = '/'.join(save_dir_list)
+    
+    #Make Masked arrays for data that is nan valued
+    """
+    Will use the act_tot_mask array for master mask condition
+    Below creates masked data from the dictionary entries using the condition 
+    stated above to parse through the data and extract non-nan values
+    """
+    #Call the Data Sifter Function from definitions. See Note Above
+    data_sifted = DictionarySifter(d)  
+    
+    #Call Function Here
+    tit_str = ['Regular','Colormapped']    #Loop over these two values
+    axis_str = ['X','Y','Z']        #Loop over these LOS axes
+    for i in range(0,len(tit_str)): #Loop over full and partial data sets for actual sim
+        for j in range(0,len(axis_str)): #Loop over all the LOS axes
+            #Looping to set the correct data for the los axis
+            if axis_str[j] == 'X':
+                x_string = 'imp_x_los'
+                y_string1 = 'act_tot'
+                y_string2 = 'act_par_yz'
+            if axis_str[j] == 'Y':
+                x_string = 'imp_y_los'
+                y_string1 = 'act_tot'
+                y_string2 = 'act_par_xz'
+            if axis_str[j] == 'Z':
+                x_string = 'imp_z_los'
+                y_string1 = 'act_tot'
+                y_string2 = 'act_par_xy'
+            
+            # Setting the proper title string and axis los string
+            title_string = tit_str[i]
+            axis_string = axis_str[j]
+
+            #Calling Function Here for Plotting - detects which function to call
+            if tit_str[i] == 'Regular':
+                fig = j_comp_plotter(data_sifted[x_string],
+                                     data_sifted[y_string1],
+                                     data_sifted[y_string2],
+                                     axis_string,
+                                     title_string)
+                plt.tight_layout()
+                save_fig_dir = save_dir + '/' + axis_string + '_LOS_' + title_string + '.pdf'
+                fig.savefig(save_fig_dir, bbox_inches='tight')
+                plt.close(fig)
+            else:
+                fig = j_comp_plotter_colormap(data_sifted[x_string],
+                                              data_sifted[y_string1],
+                                              data_sifted[y_string2],
+                                              data_sifted['mass'], #CALLS MASS HERE
+                                              axis_string,
+                                              title_string)
+                plt.tight_layout()
+                save_fig_dir = save_dir + '/' + axis_string + '_LOS_' + title_string + '.pdf'
+                fig.savefig(save_fig_dir, bbox_inches='tight')
+                plt.close(fig)
+
+    return()
+    
+
+def j_fiducial_plotter(dict_list,
+                       fid_list,
+                       save_dir,
+                       x_data_key,
+                       y_data_key,
+                       axis_str,
+                       tit_str): 
+    """
+    Plots the Fiducial Comparison Plots for each timestep in all of the data 
+    acquired by the analyzer function.
+    
+    Inputs:
+        - dict_list: list of dictionaries
+            Has all the data sorted by fiducial run for each timestep (one at 
+            a time however)
+        - fid_list: list of strings
+            Fiducial strings corresponding directly to the dict_list items
+        - save_dir: string
+            Save directory for plot
+        - x_data_key: string
+            Used to call the proper dataset in the dict_list
+        - y_data_key: string
+            Used to call the proper dataset in the dict_list
+        - axis_str: string
+            Used to set the LOS value: Options: 'X', 'Y', 'Z'.
+        - tit_str: Either 'Full' or 'Partial' - Sets the title and datasets used
+    
+    Outputs:
+        - fig: matplotlib object
+            - Used to step back in the directory tree and save later.
+    """
+    x_str = 'Implied Specific Angular Momentum [$kg \ m^2 \ s^{-1}$]'
+    y_str = 'Actual Specific Angular Momentum [$kg \ m^2 \ s^{-1}$]'
+    if tit_str == 'Full':
+        title = 'j Comparison (x+y+z components) '+axis_str+ ' LOS'
+    else:
+        if axis_str == 'X':
+            title = 'j Comparison (y+z components) '+axis_str+ ' LOS'
+        if axis_str == 'Y':
+            title = 'j Comparison (x+z components) '+axis_str+ ' LOS'
+        if axis_str == 'Z':
+            title = 'j Comparison (x+y components) '+axis_str+ ' LOS'
+
+    #Starting Plotting Here
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    #Setting Empty Lists for unity line measurements
+    x_min = []
+    x_max = []
+    y_min = []
+    y_max = []
+    
+    #Setting Combination Tuples for marker and line style calling
+    tuples_max = 12
+    tuples_max_list = np.arange(0,tuples_max,1)
+    marker_color = itertools.cycle(['r','k','b'])
+    marker_style = itertools.cycle(['>','.','^','*'])
+    marker_tuples = zip(tuples_max_list,marker_style,marker_color)
+    marker_tuples_list = list(marker_tuples)
+
+    line_color = itertools.cycle(['r','k','b'])
+    line_style = itertools.cycle(['-','--','-.',':'])
+    line_tuples = zip(tuples_max_list,line_style,line_color)
+    line_tuples_list = list(line_tuples)
+
+    #Here will start the Plotting of the data
+# =============================================================================        
+    for i in range(0,len(dict_list)):
+        x = dict_list[i][x_data_key]
+        y = dict_list[i][y_data_key]
+        label_str = fid_list[i]
+        ax.loglog(x,y,
+                  marker = marker_tuples_list[i][1],
+                  markerfacecolor = marker_tuples_list[i][2],
+                  markeredgewidth = 0,
+                  linestyle='',
+                  label=label_str)
+        x_min.append(min(x))
+        x_max.append(max(x))
+        y_min.append(min(y))
+        y_max.append(max(y))
+        
+        #Fitting Here
+        log_x = np.log10(x)
+        log_y = np.log10(y)
+        slope, intercept = np.polyfit(log_x, log_y, 1)
+        fit_y = 1e1**(slope * log_x + intercept) #Creating Fit Line
+        label_fit = 'Line of Best Fit: ' + fid_list[i]
+        ax.plot(x,fit_y,
+                linestyle = line_tuples_list[i][1],
+                color = line_tuples_list[i][2],
+                alpha=0.5,
+                label = label_fit)
+
+# =============================================================================
+
+    #Doing Unity Line after to avoid overwrite by function above
+    #Grabs Min and Max for x-axis
+    x_min = min(x_min)
+    x_max = max(x_max)
+    unity_x = np.linspace(x_min,x_max,1000) #Makes line of unity values
+    ax.loglog(unity_x,unity_x, 'k--', label='Line of Unity')
+        
+    #Axes Specifications
+    ax.set_aspect('equal')
+    #ax.set_facecolor('#f2f2f2')
+    ax.grid()
+    
+    #Labelling and Legend
+    ax.legend(bbox_to_anchor=(1.02, 1)) #Sets Legend off to the side of the plot
+    ax.set_xlabel(x_str)
+    ax.set_ylabel(y_str)
+    ax.set_title(title)
+    
+    return(fig)
+
+def FiducialPlotter(flist, save_dir, timestamp):
+    """
+    Master Function for starting the Fiducial Plotting
+    
+    Input:
+        - flist: list of strings
+            Corresponds to a list of fits files that share the same timestamp
+        - save_dir: string
+            Top level save directory for this step
+        - timestamp: string
+            Used to keep track of which timestamp we are working on, used for 
+            filename for saving also.
+    
+    Output:
+        - No Outputs, self contained.
+    """
+
+    #Set empty lists for append statements
+    dict_list = []
+    fid_list = []
+    for i in range(0,len(flist)):
+        current_file = flist[i]
+        hdu = fits.open(current_file)
+        fiducial_stamp = current_file.split("/")[-3]
+        #Grabbing BinHDUTable object here, should always be second object
+        hdu_table = hdu[1]
+        data = hdu_table.data #Grabs data stored in the table -> FITS REC   
+        d = data_grabber(data)
+        hdu.close()
+        #Append the sifted dictionaries into the dict_list for computation.
+        dict_list.append(DictionarySifter(d))
+        fid_list.append(fiducial_stamp)
+    #Call Function Here
+    tit_str = ['Full','Partial']    #Loop over these two values
+    axis_str = ['X','Y','Z']        #Loop over these LOS axes
+    for i in range(0,len(tit_str)): #Loop over full and partial data sets for actual sim
+        for j in range(0,len(axis_str)): #Loop over all the LOS axes
+            if tit_str == 'Full':
+                #Setting actual data to be the full amount
+                y_string = 'act_tot'
+            else:
+                #Looping for partial data sets for actual data
+                if axis_str[j] == 'X':
+                    y_string = 'act_par_yz'
+                if axis_str[j] == 'Y':
+                    y_string = 'act_par_xz'
+                if axis_str[j] == 'Z':
+                    y_string = 'act_par_xy'
+            #Looping to set the correct data for the los axis
+            if axis_str[j] == 'X':
+                x_string = 'imp_x_los'
+            if axis_str[j] == 'Y':
+                x_string = 'imp_y_los'
+            if axis_str[j] == 'Z':
+                x_string = 'imp_z_los'
+            # Setting the proper title string and axis los string
+            title_string = tit_str[i]
+            axis_string = axis_str[j]
+            #Call Main Function Here with all included inputs.
+            j_fiducial_plotter(dict_list,
+                                     fid_list,
+                                     save_dir,
+                                     x_string,
+                                     y_string,
+                                     axis_string,
+                                     title_string)
+            #Make the filename for the pdf saved
+            save_string = save_dir + timestamp + '_'+title_string+'_fid_j_comp_'+axis_string+'_LOS.pdf'
+            plt.savefig(save_string, bbox_inches='tight')
+            plt.close()
+    return()

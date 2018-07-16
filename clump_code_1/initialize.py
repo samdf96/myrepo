@@ -48,13 +48,13 @@ Returns:
             Notes:
                 - Both of these are auto saved within the directory of where
                 the fits files are located: /time stamp/
+            - j Comparison Plots by Fiducial run per time step
+                - These are saved in a created directory in the / Fiducialxx/
+                level.
 
 Notes:
-    - Both functions being called below are seperated out thus;
-    If overwrite for data_analysis is turned **False**, then script prints a 
-    statement out and then moves forward onto the header_printer function
+    - SEE OVERWRITE PROTECTION BELOW.
 """
-
 
 import clump_code_1 as cc
 import header_printer as hp
@@ -62,23 +62,41 @@ import glob
 import yaml
 import io
 import os
-import j_plotter as jp
+from definitinos import jComparisonPlotter
+from definitions import FiducialPlotter
 
-# Overwrite Protection Here
-# Set to True - Will Overwrite Data already on disk
-# Set to False - Will NOT Overwrite Data already on disk
-# This is specific to the data analysis portion
-overwrite = False
-
-
+"""
+Overwrite Protection Here:
+    - header and timestep_plots have absolute status and will not even
+      start looking for files if value below is set to FALSE.
+    
+    - analyzer and fiducial_plots have conditional status, and will look for
+      for already created directories and will skip those that are found
+      if the value below is set to FALSE.
+    
+    - Setting any of the following values to TRUE will overwrite files
+      even if files and directories are found by the code to exist.
+"""
+overwrite_analyzer = False
+overwrite_header = False
+overwrite_timestep_plots = True
+overwrite_fiducial_plots = True
+# =============================================================================
+#INPUTS HERE
 
 #Creates a list of directories with the appropriate files for analysis
 flist = glob.glob('/mnt/bigdata/erosolow/Orion2/*/data.*.hdf5')
-#Creating empty list for data sorting
-flist_data = []
+
 #This is to filter out the timestamps that we want to analyze over
 data_check_list = ['0060','0070','0080','0090','0100']
 
+#This is where the config files are
+tree_top_dir = '/home/sfielder/Documents/Clumps/'
+data_dir = '/home/sfielder/Documents/Clumps/Output/'
+
+# =============================================================================
+#Creating empty list for data sorting
+flist_data = []
 for i in range(0,len(flist)):
     main_string = flist[i].split("/")
     out_string = main_string[-1].split(".")
@@ -91,52 +109,37 @@ for i in range(0,len(flist)):
 #Sorting the Data by filename
 flist_data.sort()
 
-#This is where the config files are
-tree_top_dir = '/home/sfielder/Documents/Clumps/'
-data_dir = '/home/sfielder/Documents/Clumps/Output/'
+#Make a list of all the yaml files found in data_dir
+flist_config_yaml = glob.glob(tree_top_dir+'*.yaml')
+flist_config_yaml.sort()
 
-#Make a list of all the config files found in  data_dir
-flist_config_files = glob.glob(tree_top_dir+'*.yaml')
-flist_config_files.sort()
-
-for i in range(0,len(flist_config_files)):
+carry_on_analyzer = False #Initialization Value - this is the default
+for i in range(0,len(flist_config_yaml)):
     #Grabs the config file name here
-    naming_string = flist_config_files[i].split("/")[-1].split(".")[0]
+    naming_string = flist_config_yaml[i].split("/")[-1].split(".")[0]
     #Creating String for Directory
     save_dir = data_dir + naming_string + '/'
     
-    #Checking if Directory Exists, if so overwrite is checked and either analysis
-    #is skipped or overwritten
+    #Checking if Directory Exists
     if os.path.isdir(save_dir) == True:
-        if overwrite == True:
+        if overwrite_analyzer == True:
             print("Warning!!! Overwrite has been set to True and Directory: " +
                   save_dir +
                   "is detected as a valid directory. Proceeding with Analysis.")
-            #Importing Config File settings here
-            with io.open(flist_config_files[i], 'r') as stream:
-                data_loaded = yaml.load(stream)
-        
-            #Call main code here
-            #Testing first file here
-            for j in range(0,len(flist_data)):
-                cc.analyzer(flist_data[j],
-                        data_loaded['l'],
-                        data_loaded['cmin'],
-                        data_loaded['step'],
-                        data_loaded['beta'],
-                        data_loaded['clump_sizing'],
-                        save_dir)
+            carry_on_analyzer = True
+            
         else:
            print("Warning!!! Overwrite has been set to False and Directory: " +
                   save_dir +
                   "is detected as a valid directory. Skipping Analysis.")
     else:
-        #If Directory is not present, then it gets created here and the code
-        #is ran through the analyzer
         os.mkdir(save_dir)
-
+        carry_on_analyzer = True
+        
+    #If Carry_on_Analyzer has been set to true, then run the analysis.    
+    if carry_on_analyzer == True:
         #Importing Config File settings here
-        with io.open(flist_config_files[i], 'r') as stream:
+        with io.open(flist_config_yaml[i], 'r') as stream:
             data_loaded = yaml.load(stream)
         
         #Call main code here
@@ -149,34 +152,75 @@ for i in range(0,len(flist_config_files)):
                     data_loaded['beta'],
                     data_loaded['clump_sizing'],
                     save_dir)
+print('~~~~~~~~~~~~~~~~~~~~~~~~~')            
+print('Analysis Section Complete')
+print('~~~~~~~~~~~~~~~~~~~~~~~~~')  
+# =============================================================================
+if overwrite_header == True:
 
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-
-# Call Header Printer Script to compute the .txt file needed for summary of analysis
-#Grab the config_x directories, and puts them in a list
-flist_config_dir = glob.glob(data_dir + 'config_*')
-print("Debug: flist_config_dir set as: ", flist_config_dir)
-
-#Run Loop over all the config_x directories found that are in the list
-for i in range(0,len(flist_config_dir)):
-    print("Processing Summary File for directory: ", flist_config_dir[i])
-    hp.Header_Printer(flist_config_dir[i])
-
-print("Initialize.py file completed.")    
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-
-# Plot making happens here:
-flist_plots = glob.glob(data_dir + '**/*.fits', recursive=True)
-flist_plots.sort()
-
-#Parameters for Plotting
-equal_axis=False
-percentage = 0.2
-
-for i in range(0,len(flist_plots)):
-    current_file = flist_plots[i]
-    jp.plotter(current_file,equal_axis,percentage)
+    # Call Header Printer Script to compute the .txt file needed for
+    # summary of analysis
+    # Grab the config_x directories, and puts them in a list
+    flist_config_dir = glob.glob(data_dir + 'config_*')
     
+    #Run Loop over all the config_x directories found that are in the list
+    
+    for i in range(0,len(flist_config_dir)):
+        print("Processing Summary File for directory: ", flist_config_dir[i])
+        hp.Header_Printer(flist_config_dir[i])
+
+    print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')  
+    print("Initialize.py file completed.")   
+    print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')  
+# =============================================================================
+if overwrite_timestep_plots == True:
+
+    # Comparison Plots by specific timestep happens here:
+    flist_plots = glob.glob(data_dir + '**/*.fits', recursive=True)
+    flist_plots.sort()
+    
+    for i in range(0,len(flist_plots)):
+        current_file = flist_plots[i]
+        jComparisonPlotter(current_file)
+
+    print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')  
+    print("j Comparison Plots by Timestep (Specific) completed.")    
+    print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
+# =============================================================================
+# Comparison Plots over Fiducial Runs (by timestep) happens here:
+carry_on_fiducial_plots = False #Initialize value - this is the default
+flist_config = glob.glob(data_dir+'config_*')
+flist_config.sort()
+
+for k in range(0,len(flist_config)): #Adding Loop for config directories
+    #Write in os function to create appropiate directory for Fiducial Plots
+    fid_dir = flist_config[k]+'/Fiducial_Plots/'
+    if os.path.isdir(fid_dir) == True:
+        print('Fiducial Directory Detected.\n')
+        if overwrite_fiducial_plots==False:
+            print('Overwrite set to False. Plots will not be made.\n')
+        else:
+            carry_on_fiducial_plots = True
+            print('Overwrite set to True. Continuing with plot making.\n')
+    else:
+        os.mkdir(fid_dir)
+        carry_on_fiducial_plots = True
+
+    #If Carry On Value is True then continue with plotting
+    if carry_on_fiducial_plots == True:
+        for i in range(0,len(data_check_list)): #len(data_check_list)
+            flist = glob.glob(flist_config[k]+'/**/*'+data_check_list[i]+'*.fits',
+                          recursive=True)
+            flist.sort()
+            data_check_list_print = data_check_list[i]
+            #Calling Main Function Here
+            print("Current Timestep being worked on: {}".format(data_check_list_print))
+            FiducialPlotter(flist,fid_dir,data_check_list_print)
+
+print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')  
+print("j Comparison Plots by Timestep (for all Fiducials) completed.")  
+print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')    
+# =============================================================================
 
 
 
