@@ -62,7 +62,7 @@ import glob
 import yaml
 import io
 import os
-from definitinos import jComparisonPlotter
+from definitions import jComparisonPlotter
 from definitions import FiducialPlotter
 
 """
