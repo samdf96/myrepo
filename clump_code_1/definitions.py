@@ -44,11 +44,13 @@ import itertools
 from astropy import units as u
 from astropy.io import fits
 
+import logging
+ 
+module_logger = logging.getLogger("initialize.definitions")
 
 
 
-
-def octant_split(data_object,ds,l):
+def OctantSplit(data_object,ds,l):
     """
     Splits cubic data object into a sub-set of 8 data objects, i.e. octants.
     	
@@ -65,6 +67,7 @@ def octant_split(data_object,ds,l):
     -------- 
     dbox_array: list of YTRegion 
     """
+    logger = logging.getLogger("initialize.definitions.OctantSplit")
     dbox_array = [] #Creating Empty List to Store Data Objects
     #Creating Boundaries for Octants Here
     x1 = np.array((-l/2,0,-l/2,0,-l/2,0,-l/2,0))
@@ -77,9 +80,10 @@ def octant_split(data_object,ds,l):
         dbox_array.append(ds.r[(x1[i],'pc'):(x2[i],'pc'),
                                (y1[i],'pc'):(y2[i],'pc'),
                                (z1[i],'pc'):(z2[i],'pc')])	
+    logger.info("OctantSplit has been run successfully.")
     return(dbox_array)
 
-def master_clump_maker(data_object):
+def MasterClumpMaker(data_object):
     '''
     Creates master clump for imputted data object.
     
@@ -91,12 +95,14 @@ def master_clump_maker(data_object):
     -------- 
     master_clump: object in yt
     '''
+    logger = logging.getLogger("initialize.definitions.MasterClumpMaker")
     #Defining Field for Contouring
     field = ("gas", "density")
     master_clump = Clump(data_object, field)
+    logger.info("MasterClumpMaker has been run successfully.")
     return(master_clump)
 
-def clump_finder(master_clump,clump_sizing,cmin,cmax,step):
+def ClumpFinder(master_clump,clump_sizing,cmin,cmax,step):
     '''
     Finds clumps that match certain criteria.
     
@@ -118,6 +124,7 @@ def clump_finder(master_clump,clump_sizing,cmin,cmax,step):
     leaf_clumps: yt Clump object
         Lowest Tree Values (leaves) of the clump data
     '''
+    logger = logging.getLogger("initialize.definitions.ClumpFinder")
     #Setting Parameters for Clump Finding
     master_clump.add_validator("min_cells", clump_sizing)
     #Adds Center of Mass info for Clumps
@@ -125,9 +132,10 @@ def clump_finder(master_clump,clump_sizing,cmin,cmax,step):
     #Finding Clumps Here
     find_clumps(master_clump, cmin, cmax, step)
     leaf_clumps = get_lowest_clumps(master_clump)
+    logger.info("ClumpFinder has been run successfully.")
     return(leaf_clumps)
 
-def center_of_mass(lc):
+def CenterOfMass(lc):
     '''
     Computes the center of mass of a imputted data object
     
@@ -141,10 +149,13 @@ def center_of_mass(lc):
     com: float
         3-list of x,y,z coordinates of center of mass
     '''
+    logger = logging.getLogger("initialize.definitions.CenterOfMass")
     com = np.array(lc.quantities.center_of_mass())
+    logger.debug("Center Of Mass found to be: ", com)
+    logger.info("CenterOfMass has run successfully.")
     return(com)
 
-def bounding_box(lc):
+def BoundingBox(lc):
     '''
     Writes the lower and upper bounds for each axis of a box, given a data
     clump object
@@ -159,12 +170,15 @@ def bounding_box(lc):
     bounding_box: float
         (3,2)-list of x,y,z min/max values
     '''
+    logger = logging.getLogger("initialize.definitions.BoundingBox")
     bounding_box = np.array(lc.quantities.extrema([('gas','x'),
                                                    ('gas','y'),
                                                    ('gas','z')]))
+    logger.debug("Bounding Box found to be: ", bounding_box)
+    logger.info("BoundingBox has run successfully.")
     return(bounding_box)
     
-def clump_box(data_object_original,br):
+def ClumpBox(data_object_original,br):
     '''
     Takes original data set, and constructs a data object according to
     the bounding box given.
@@ -181,12 +195,14 @@ def clump_box(data_object_original,br):
         Data object which is constructed according to bounding box,
         represents a data object around a clump region.
     '''
+    logger = logging.getLogger("initialize.definitions.ClumpBox")
     dbox_clump = data_object_original.r[(br[0,0],'cm'):(br[0,1],'cm'),
                                         (br[1,0],'cm'):(br[1,1],'cm'),
                                         (br[2,0],'cm'):(br[2,1],'cm')]
+    logger.info("ClumpBox has been run successfully.")
     return(dbox_clump)
     
-def velocity_array(data_object,velocity,axis,master_dist_data,l):
+def VelocityArray(data_object,velocity,axis,master_dist_data,l):
     '''
     Takes Data object and integrates velocity along chosen line of sight
     and returns an array that matches data structure of original data set
@@ -222,26 +238,33 @@ def velocity_array(data_object,velocity,axis,master_dist_data,l):
     broken: float
         used for error detection
     '''
+    logger = logging.getLogger("initialize.definitions.VelocityArray")
     broken=0    #Setting default value for error detection
-    
+    logger.debug("Broken Export Value has initialized to: ", broken)
     while True:
         try:
             v_object = data_object.integrate(velocity, weight='density', axis=axis)
             v_reform = v_object.to_frb((l,'pc'),(master_dist_data,master_dist_data))
             v_arr = np.array(v_reform[velocity])
             v_arr = np.reshape(v_arr,(master_dist_data,master_dist_data))
+            logger.info("VelocityArray has been run successfully.")
             return(v_arr,v_object,broken)
         except RuntimeError:
+            logging.exception("RunTimeError has been caught.")
             broken=1
+            logging.warning("Broken Export Value has been overwritten to: ",
+                            broken)
+            logging.info("Setting v_object to False, and v_arr to zeros.")
             v_object = False
             v_arr = np.zeros((master_dist_data,master_dist_data))
+            logger.info("VelocityArray has not been run successfully.")
             return(v_arr,v_object,broken)
 
     
-def velocity_array_reducer(velocity_int_array,
-                           velocity_int_data_object,
-                           axis,
-                           master_dist_data):
+def VelocityArrayReducer(velocity_int_array,
+                         velocity_int_data_object,
+                         axis,
+                         master_dist_data):
     '''
     Takes velocity integrated array that is in the original dimension size
     with imbedded data values surrounded by nan values
@@ -280,29 +303,37 @@ def velocity_array_reducer(velocity_int_array,
     object. The relationship is hard coded in this definition, as the data
     extracted from simulations will not be different in this case.
     '''
+    logger = logging.getLogger("initialize.definitions.VelocityArrayReducer")
     #Setting transferable quantity to exit loop if error occurs
     broken=0
+    logger.debug("Broken Export Value has initialized to: ", broken)
     
     #Find where the data is non-nan valued
     v_positions = np.argwhere(~np.isnan(velocity_int_array))
     
     #Exit loop with broken=1 if v_positions is empty
     if len(v_positions) == 0:
+        logger.debug("v_positions check has returned that it's length is zero.")
         broken=1
+        logger.warning("Broken Export Value is being overwritten to: ", broken)
+        logger.info("Setting all export values of this function to empty.")
         arr = np.empty((1,1))
         perp_coord_1 = np.empty((1,1))
         perp_coord_2 = np.empty((1,1))
+        logger.info("VelocityArrayReducer has not been run successfully.")
         return(arr,perp_coord_1,perp_coord_2,broken)
-        
-    v_positions_ij = []    #Creating list for array slicing
-    v_positions_ij.append(v_positions[0,0]) #First Row Value
-    v_positions_ij.append(v_positions[-1,0]) #Last Row Value
-    v_positions_ij.append(v_positions[0,1])    #First Column Value
-    v_positions_ij.append(v_positions[-1,1])   #Last Column Value
     
+    logger.debug("Setting v_positions.")
+    v_positions_ij = []                         #Creating list for array slicing
+    v_positions_ij.append(v_positions[0,0])     #First Row Value
+    v_positions_ij.append(v_positions[-1,0])    #Last Row Value
+    v_positions_ij.append(v_positions[0,1])     #First Column Value
+    v_positions_ij.append(v_positions[-1,1])    #Last Column Value
+    logger.debug("v_positions set to: ", v_positions)
     while True:
         try:
             if axis == 'z':
+                logger.debug("axis string input detected as: ", axis)
                 # Finds appropriate px coordinates and py coordinates
                 vx_coordinates = np.array(velocity_int_data_object['py'])
                 vx_coordinates = np.reshape(vx_coordinates,
@@ -316,10 +347,12 @@ def velocity_array_reducer(velocity_int_array,
                                        v_positions_ij[2]:v_positions_ij[3]+1]
                 velocity_int_array_reduced = velocity_int_array[v_positions_ij[0]:v_positions_ij[1]+1,
                                                                 v_positions_ij[2]:v_positions_ij[3]+1]
-               
+                logger.info("VelocityArrayReducer has been run successfully on axis: ",
+                            axis)
                 return(velocity_int_array_reduced,vz_px,vz_py,broken)
             
             if axis == 'y':
+                logger.debug("axis string input detected as: ", axis)
                 # Finds appropriate px coordinates and py coordinates
                 vx_coordinates = np.array(velocity_int_data_object['px'])
                 vx_coordinates = np.reshape(vx_coordinates,
@@ -333,9 +366,12 @@ def velocity_array_reducer(velocity_int_array,
                                        v_positions_ij[2]:v_positions_ij[3]+1]
                 velocity_int_array_reduced = velocity_int_array[v_positions_ij[0]:v_positions_ij[1]+1,
                                                                 v_positions_ij[2]:v_positions_ij[3]+1]
+                logger.info("VelocityArrayReducer has been run successfully on axis: ",
+                            axis)
                 return(velocity_int_array_reduced,vy_px,vy_pz,broken)
                 
             if axis == 'x':
+                logger.debug("axis string input detected as: ", axis)
                 # Finds appropriate px coordinates and py coordinates
                 vy_coordinates = np.array(velocity_int_data_object['py'])
                 vy_coordinates = np.reshape(vy_coordinates,
@@ -349,17 +385,24 @@ def velocity_array_reducer(velocity_int_array,
                                        v_positions_ij[2]:v_positions_ij[3]+1]
                 velocity_int_array_reduced = velocity_int_array[v_positions_ij[0]:v_positions_ij[1]+1,
                                                                 v_positions_ij[2]:v_positions_ij[3]+1]
+                logger.info("VelocityArrayReducer has been run successfully on axis: ",
+                            axis)
             return(velocity_int_array_reduced,vx_py,vx_pz,broken)
         
         except ValueError:
+            logger.exception("ValueError has been caught.")
             broken=2
+            logging.warning("Broken Export Value has been overwritten to: ",
+                            broken)
+            logging.info("Setting arr, perp_coord1a and perp_coord2 to zeros.")
             arr = np.empty((1,1))
             perp_coord_1 = np.empty((1,1))
             perp_coord_2 = np.empty((1,1))
+            logging.info("VelocityArrayReducer has not been run successfully.")
             return(arr,perp_coord_1,perp_coord_2,broken)
         
 
-def array_flattener(x):
+def ArrayFlattener(x):
     '''
     Flattens arrays using .ndarray.flatten command
     
@@ -372,17 +415,21 @@ def array_flattener(x):
     arr_flat: array
         flattened array
     '''
+    logger = logging.getLogger("initialize.definitions.ArrayFlattener")
     arr_flat = np.ndarray.flatten(x)
+    logger.info("ArrayFlattener has been run successfully.")
     return(arr_flat)
         
-def myplane(p, x, y, z):
+def MyPlane(p, x, y, z):
     '''
     Imported from Erik Rosolowsky. Creates data that encompases a plane
     fitted from data
     '''
+    logger = logging.getLogger("initialize.definitions.MyPlane")
+    logger.debug("Returning Flattened plane array.")
     return(p[0] + p[1] * x + p[2] * y - z)
 
-def plane_fit_visualization(x,y,z,k):
+def PlaneFitVisualization(x,y,z,k):
     '''
     Takes flattened data, plane fits in, and visualizes it in 3d.
     
@@ -407,34 +454,46 @@ def plane_fit_visualization(x,y,z,k):
     a rough indication of how the plane fitting process works, only use for 
     visualization of the data if it is needed at all.
     '''
+    logger = logging.getLogger("initialize.definitions.PlaneFitVisualization")
     data = np.c_[x,y,z]
+    logger.debug("data has been set to: ", data)
     mn = np.min(data, axis=0)
+    logger.debug("Minimum Value for Data found to be: ", mn)
     mx = np.max(data, axis=0)
+    logger.debug("Maximum Value for Data found to be: ", mn)
     X,Y = np.meshgrid(np.linspace(mn[0], mx[0], 20), np.linspace(mn[1], mx[1], 20))
-    
+    logger.debug("Meshgrid Created.")
     A = np.c_[data[:,0], data[:,1], np.ones(data.shape[0])]
     C,_,_,_ = scipy.linalg.lstsq(A, data[:,2])    # coefficients
-
+    logger.debug("Results Coefficients from linalg.lstsq: ", C)
+    
     # evaluate it on grid
     Z = C[0]*X + C[1]*Y + C[2]
+    logger.debug("Z values grid set as: ", Z)
     
+    logger.debug("Creating Figure Object.")
     fig = plt.figure()
+    logger.debug("Setting ax object to 3D axes.")
     ax = fig.gca(projection='3d')
     ax.plot_surface(X, Y, Z, rstride=1, cstride=1, alpha=0.2)
     ax.scatter(data[:,0], data[:,1], data[:,2], c='r', s=1)
+    logger.debug("Setting Labels")
     plt.xlabel('X')
     plt.ylabel('Y')
     ax.zaxis.set_major_formatter(mtick.FormatStrFormatter('%.0e'))
     ax.set_zlabel('Z')
+    logger.debug("Setting Axes Properties.")
     ax.axis('equal')
     ax.axis('tight')
+    logger.debug("Saving Figure Object to PDF and PNG.")
     plt.savefig("Plane_Fitting_Clump_{k}.pdf".format(k=k), bbox_inches='tight')
     plt.savefig("Plane_Fitting_Clump_{k}.png".format(k=k), bbox_inches='tight')        
     plt.show()
+    logger.info("PlaneFitVisualization has been run successfully.")
     return()
 
 
-def plane_fit(x, y, z, robust=False):
+def PlaneFit(x, y, z, robust=False):
     """
     Imported from Erik Rosolowsky
     Fits a plane to data without any given uncertainties or weighting.
@@ -450,22 +509,27 @@ def plane_fit(x, y, z, robust=False):
        3-element vector with components[ z0 (constant offset) , grad_x, grad_y]
     
     """
-
+    logger = logging.getLogger("initialization.definitions.PlaneFit")
+    logger.debug("Setting Median Values.")
     x0, y0 = np.median(x), np.median(y)
+    logger.debug("x median value found to be: ", x0)
+    logger.debug("y median value found to be: ", y0)
     dataz = np.c_[np.ones(x.size), 
                   x-x0, 
                   y-y0]
-
+    logger.debug("dataz to fit set as: ", dataz)
     lsqcoeffs, _, _, _ = np.linalg.lstsq(dataz,z)
+    logger.debug("Coefficients from fit found to be: ", lsqcoeffs)
     if robust:
-        outputs = lsq(myplane, np.r_[lsqcoeffs],
+        outputs = lsq(MyPlane, np.r_[lsqcoeffs],
                       args=([x-x0,
                              y-y0, z]),
                       loss = 'soft_l1')
         lsqcoeffs = outputs.x
+    logger.info("PlaneFit has been run successfully.")
     return(lsqcoeffs)
     
-def gradient(results):
+def Gradient(results):
     '''
     Takes output from lsqcoeffs and creates a gradient value from it.
     
@@ -479,11 +543,13 @@ def gradient(results):
     --------
     gradient: float
     '''
+    logger = logging.getLogger("initialize.definitions.Gradient")
     gradient = ((results[1]**2) + (results[2]**2))**(1/2)
+    logger.info("Gradient has been run successfully.")
     return(gradient)
 
 
-def angular_momentum_implied(gradient,dist_perp_1,dist_perp_2,beta=1):
+def AngularMomentumImplied(gradient,dist_perp_1,dist_perp_2,beta=1):
     '''
     Computes the specific angular momentum given input parameters
     
@@ -504,10 +570,13 @@ def angular_momentum_implied(gradient,dist_perp_1,dist_perp_2,beta=1):
     ang_mom_implied: float
         implied specific angular momentum
     '''
+    logger = logging.getLogger("initialize.definitions.AngularMomentumImplied")
     ang_mom_implied = beta * gradient * dist_perp_1 * dist_perp_2
+    logger.debug("ang_mom_implied found to be: ", ang_mom_implied)
+    logger.info("AngularMomentumImplied has been run successfully.")
     return(ang_mom_implied)
 
-def angular_momentum_actual(data_object,mass):
+def AngularMomentumActual(data_object,mass):
     '''
     Takes input data object and computes specific actual angular 
     momentum values.
@@ -527,9 +596,15 @@ def angular_momentum_actual(data_object,mass):
     angular_momentum_yz: float
         total specific angular momemtum (only two components, (y,z))
     '''
+    logger = logging.getLogger("initialize.definitions.AngularMomentumActual")
+    logger.debug("Computing the Sum of all components of angular momentum.")
     angular_momentum_x = data_object.sum('angular_momentum_x')
     angular_momentum_y = data_object.sum('angular_momentum_y') 
     angular_momentum_z = data_object.sum('angular_momentum_z')
+    logger.debug("X component found to be: ", angular_momentum_x)
+    logger.debug("Y component found to be: ", angular_momentum_y)
+    logger.debug("Z component found to be: ", angular_momentum_z)
+    logger.debug("Combining Sums on: xy, xz, yz, and total.")
     angular_momentum_xy = (((angular_momentum_x**2)+
                            (angular_momentum_y**2))**(1/2))/mass
     angular_momentum_xz = (((angular_momentum_x**2)+
@@ -539,12 +614,17 @@ def angular_momentum_actual(data_object,mass):
     angular_momentum_total = (((angular_momentum_x**2)+
                               (angular_momentum_y**2)+
                               (angular_momentum_z**2))**(1/2))/mass
+    logger.debug("xy sum found to be: ", angular_momentum_xy)
+    logger.debug("xz sum found to be: ", angular_momentum_xz)
+    logger.debug("yz sum found to be: ", angular_momentum_yz)
+    logger.debug("total found to be: ", angular_momentum_total)
+    logger.info("AngularMomentumActual has been run successfully.")
     return(angular_momentum_total,
            angular_momentum_xy,
            angular_momentum_xz,
            angular_momentum_yz)
 
-def proj_creator(ds,
+def ProjCreator(ds,
                  data_object,
                  com,
                  com_x,
@@ -581,59 +661,82 @@ def proj_creator(ds,
     For Testing, can return the prj object, but this definition will auto save
     the plot into the correct directory
     """
+    logger = logging.getLogger("initialize.definitions.ProjCreator")
     
     #Defining centimetre unit for quantity
+    logger.debug("Creating Quantities out of com_x/y/z values: set to u.cm")
     com_x = com_x * u.cm
     com_y = com_y * u.cm
     com_z = com_z * u.cm
+    logger.debug("com_x set to: ", com_x)
+    logger.debug("com_y set to: ", com_y)
+    logger.debug("com_z set to: ", com_z)
     
     #Converting to Parsec for plot overlay
+    logger.debug("Converting Quantities to parsec units.")
     com_x_pc = com_x.to(u.parsec)
     com_y_pc = com_y.to(u.parsec)
     com_z_pc = com_z.to(u.parsec)
+    logger.debug("com_x reset to: ", com_x_pc)
+    logger.debug("com_y reset to: ", com_y_pc)
+    logger.debug("com_z reset to: ", com_z_pc)
     
     ## For x LOS
+    logger.debug("Working on X LOS.")
     prj_x = yt.ProjectionPlot(ds,
                             'x',
                             ("gas","density"),
                             center='c',
                             width = (10,'pc'),
                             data_source=data_object)
+    logger.debug("Projection Plot created.")
     for i in range(0,len(com_x)):
         prj_x.annotate_marker(com_x_pc[i],
                             coord_system='plot',
                             plot_args={'color':'red','s':500})
+    logger.debug("COM markers have been overlayed.")
     prj_x.save(save_directory+fid_str+"_"+time_stamp+"_x_los_clump_marker.pdf")
+    logger.debug("Projection Plot has been saved.")
     
-    ## For x LOS
+    ## For y LOS
+    logger.debug("Working on Y LOS.")
     prj_y = yt.ProjectionPlot(ds,
                             'y',
                             ("gas","density"),
                             center='c',
                             width = (10,'pc'),
                             data_source=data_object)
+    logger.debug("Projection Plot created.")
     for i in range(0,len(com_y)):
         prj_y.annotate_marker(com_y_pc[i],
                             coord_system='plot',
                             plot_args={'color':'red','s':500})
+    logger.debug("COM markers have been overlayed.")
     prj_y.save(save_directory+fid_str+"_"+time_stamp+"_y_los_clump_marker.pdf")
+    logger.debug("Projection Plot has been saved.")
     
     ## For z LOS
+    logger.debug("Working on Z LOS.")
     prj_z = yt.ProjectionPlot(ds,
                             'z',
                             ("gas","density"),
                             center='c',
                             width = (10,'pc'),
                             data_source=data_object)
+    logger.debug("Projection Plot created.")
     for i in range(0,len(com_z)):
         prj_z.annotate_marker(com_z_pc[i],
                             coord_system='plot',
                             plot_args={'color':'red','s':500})
+        logger.debug("COM markers have been overlayed.")
     prj_z.save(save_directory+fid_str+"_"+time_stamp+"_z_los_clump_marker.pdf")
+    logger.debug("Projection Plot has been saved.")
     
+    logger.info("All Figures have been saved.")
+    logger.info("ProjCreator has been run successfully.")
     return()
 
-def data_grabber(data):
+def DataGrabber(data):
     """
     Function that takes in the hdu_table.data object, and makes a dictionary
     with all the data pertaining to the plotting that will be done
@@ -647,6 +750,8 @@ def data_grabber(data):
     
     Notes: Can expand this to include all the data inside the object if needed
     """
+    logger = logging.getLogger("initialize.definitions.DataGrabber")
+    
     
     clump_number = data['Clump Number']
     mass = data['Mass'] 
@@ -660,6 +765,8 @@ def data_grabber(data):
     imp_y_los = data['Implied Total Angular Momentum (y LOS)']
     imp_z_los = data['Implied Total Angular Momentum (z LOS)']
     
+    logger.debug("All the Data extracted.")
+    logger.debug("Making Dictionary with all key/value pairs.")
     dict = {'clump_number': clump_number,
             'mass': mass,
             'actual_tot': actual_tot,
@@ -669,10 +776,11 @@ def data_grabber(data):
             'imp_x_los': imp_x_los,
             'imp_y_los': imp_y_los,
             'imp_z_los': imp_z_los}
-
+    
+    logger.info("DataGrabber has been run successfully.")
     return(dict)
     
-def j_comp_plotter(x, y1, y2, axis_str, tit_str):
+def jCompPlotter(x, y1, y2, axis_str, tit_str):
     """
     Function that plots j/j for a specific in a time step in a specific Fiducial
     Run.
@@ -693,20 +801,26 @@ def j_comp_plotter(x, y1, y2, axis_str, tit_str):
             This is directed back out into previously tree file, and saved
             approprately to a save location pre-defined in the code.
     """
+    logger = logging.getLogger("initialize.definitions.jCompPlotter")
     #Insert Actual and Partial Data Here in LOGLOG style
     
+    logger.debug("Setting Axis/Title Strings.")
     x_str = 'Implied Specific Angular Momentum [$kg \ m^2 \ s^{-1}$]'
     y_str = 'Actual Specific Angular Momentum [$kg \ m^2 \ s^{-1}$]'
     title = 'j Comparison - '+axis_str+ ' LOS'
     
+    logger.debug("Creating Figure Environment.")
     fig = plt.figure()
     ax = fig.add_subplot(111)
+    logger.debug("Adding Main Data.")
     ax.loglog(x, y1, 'b.', label='Full')
     ax.loglog(x, y2, 'r.', label='Partial')
     
     #Grabs Min and Max for x-axis (searches all imputted data however)
     x_min = min(x)
     x_max = max(x)
+    logger.debug("x_min found to be: ", x_min)
+    logger.debug("x_max found to be: ", x_max)
 # Legacy Code for finding correct min/max values for graph.
 #    y1_min = min(y1)
 #    y1_max = max(y1)
@@ -714,20 +828,24 @@ def j_comp_plotter(x, y1, y2, axis_str, tit_str):
 #    y2_max = max(y2)
 #    x_master_min = min(x_min, y1_min,y2_min)
 #    x_master_max = min(x_max, y1_max,y2_max)
+    logger.debug("Creating Line of Constant Slope.")
     unity_x = np.linspace(x_min,x_max,1000) #Makes line of unity values
     ax.loglog(unity_x,unity_x, 'k--', label='Line of Unity') #Adds to plot here
     
     #Best Fit Calculations here
+    logger.debug("Starting Line of Best Fit Calculations.")
     log_x = np.log10(x)
     log_y1 = np.log10(y1)
     log_y2 = np.log10(y2)
     slope_1, intercept_1 = np.polyfit(log_x, log_y1, 1)
     slope_2, intercept_2 = np.polyfit(log_x, log_y2, 1)
-
+    
+    logger.debug("Creating Data for Lines.")
     fit_1 = 1e1**(slope_1 * log_x + intercept_1)
     fit_2 = 1e1**(slope_2 * log_x + intercept_2)
     
     #Insert on Plot Here
+    logger.debug("Inserting on Plot.")
     ax.loglog(x,
             fit_1,
             'b-',
@@ -754,19 +872,22 @@ def j_comp_plotter(x, y1, y2, axis_str, tit_str):
 #        ax.set_xlim(left=x_axis_min, right=x_axis_max)
 #        ax.set_ylim(bottom=y_axis_min,top=y_axis_max)
     
+    logger.debug("Tweaking plot settings.")
     ax.set_aspect('equal')   
     ax.set_facecolor('#f2f2f2')
     ax.grid()
     
     #Labelling and Legend
+    logger.debug("Setting plot labels.")
     ax.legend(bbox_to_anchor=(1.02, 1)) 
     ax.set_xlabel(x_str)
     ax.set_ylabel(y_str)
     ax.set_title(title)
 
+    logger.info("jCompPlotter has been run successfully.")
     return(fig)
 
-def j_comp_plotter_colormap(x, y1, y2, mass, axis_str, tit_str):
+def jCompPlotterColormap(x, y1, y2, mass, axis_str, tit_str):
     """
     Function that plots j/j for a specific in a time step in a specific Fiducial
     Run - colormapped by mass argument given.
@@ -789,13 +910,17 @@ def j_comp_plotter_colormap(x, y1, y2, mass, axis_str, tit_str):
             This is directed back out into previously tree file, and saved
             approprately to a save location pre-defined in the code.
     """
+    logger = logging.getLogger("initialize.definitions.jCompPlotterColormap")
     
+    logger.debug("Setting Axis/Title Strings.")
     x_str = 'Implied Specific Angular Momentum [$kg \ m^2 \ s^{-1}$]'
     y_str = 'Actual Specific Angular Momentum [$kg \ m^2 \ s^{-1}$]'
     title = 'j Comparison - '+axis_str+ ' LOS - Colormapped'
     
+    logger.debug("Creating Figure Environment.")
     fig = plt.figure()
     ax = fig.add_subplot(111)
+    logger.debug("Adding Main Data.")
     data1 = ax.scatter(x,
                        y1,
                        c=np.log10(mass),
@@ -818,6 +943,9 @@ def j_comp_plotter_colormap(x, y1, y2, mass, axis_str, tit_str):
     #Grabs Min and Max for x-axis
     x_min = min(x)
     x_max = max(x)
+    logger.debug("x_min found to be: ", x_min)
+    logger.debug("x_max found to be: ", x_max)
+    logger.debug("Creating Line of Constant Slope.")
     unity_x = np.linspace(x_min,x_max,1000) #Makes line of unity values
     ax.plot(unity_x,
             unity_x,
@@ -828,23 +956,18 @@ def j_comp_plotter_colormap(x, y1, y2, mass, axis_str, tit_str):
             label='Line of Unity') #Adds to plot here
     
     #Line Fitting Linear in Loglog Scaling
+    logger.debug("Starting Line of Best Fit Calculations.")
     log_x = np.log10(x)
     log_y1 = np.log10(y1)
     log_y2 = np.log10(y2)
     slope_1, intercept_1 = np.polyfit(log_x, log_y1, 1)
     slope_2, intercept_2 = np.polyfit(log_x, log_y2, 1)
-    #Debug Print Statement Here
-    """
-    print('Slope for Full Data: ', slope_1)
-    print('Intercept for Full Data: ', intercept_1)
-    print('Slope for Partial Data: ', slope_2)
-    print('Intercept for Partial Data: ', intercept_2)
-    """
 
     fit_1 = 1e1**(slope_1 * log_x + intercept_1)
     fit_2 = 1e1**(slope_2 * log_x + intercept_2)
     
     #Insert on Plot Here
+    logger.debug("Inserting on Plot.")
     ax.plot(x,
             fit_1,
             linestyle='-',
@@ -861,6 +984,7 @@ def j_comp_plotter_colormap(x, y1, y2, mass, axis_str, tit_str):
             label='Line of Best Fit - Partial')
     
     #Setting LOG LOG Scale for Scatter Plots
+    logger.debug("Tweaking plot settings.")
     ax.set_aspect('equal')
     ax.set_yscale('log')
     ax.set_xscale('log')
@@ -868,13 +992,16 @@ def j_comp_plotter_colormap(x, y1, y2, mass, axis_str, tit_str):
     ax.grid()
     
     #Labelling and Legend
+    logger.debug("Setting plot labels.")
     ax.legend(bbox_to_anchor=(1.02, 1),
                bbox_transform=plt.gcf().transFigure) 
     ax.set_xlabel(x_str)
     ax.set_ylabel(y_str)
     ax.set_title(title)
+    logger.debug("Setting Colorbar.")
     fig.colorbar(data1,label=r'$\log_{10}$(mass) [g]')
     
+    logger.info("jCompPlotterColormap has been run succesfully.")
     return(fig)
 
 def DictionarySifter(d):
@@ -893,7 +1020,9 @@ def DictionarySifter(d):
         - sifted_dict: dictionary
             See above, non-nan valued dictionary.
     """
+    logger = logging.getLogger("initialize.definitions.DictionarySifter")
     
+    logger.debug("Masking Data using act_tot nan values as filter.")
     imp_x_los_mask = np.ma.masked_where(np.isnan(d['actual_tot']) == True,
                                         d['imp_x_los'])
     imp_y_los_mask = np.ma.masked_where(np.isnan(d['actual_tot']) == True,
@@ -912,6 +1041,7 @@ def DictionarySifter(d):
                                    d['mass'])
     
     #Compress all the masked array to array with correct data
+    logger.debug("Compressing Masked array to sift out masked values.")
     imp_x_los_mask_compressed = np.ma.compressed(imp_x_los_mask)
     imp_y_los_mask_compressed = np.ma.compressed(imp_y_los_mask)
     imp_z_los_mask_compressed = np.ma.compressed(imp_z_los_mask)
@@ -921,6 +1051,7 @@ def DictionarySifter(d):
     act_par_yz_mask_compressed = np.ma.compressed(act_par_yz_mask)
     mass_mask_compressed = np.ma.compressed(mass_mask)
     
+    logger.debug("Creating new dictionary with sifted data.")
     sifted_dict = {}
     sifted_dict['imp_x_los'] = imp_x_los_mask_compressed
     sifted_dict['imp_y_los'] = imp_y_los_mask_compressed
@@ -931,6 +1062,7 @@ def DictionarySifter(d):
     sifted_dict['act_par_yz'] = act_par_yz_mask_compressed
     sifted_dict['mass'] = mass_mask_compressed
     
+    logger.info("DicationarySifter has been run successfully.")
     return(sifted_dict)
 
 def jComparisonPlotter(current_file):
@@ -944,21 +1076,29 @@ def jComparisonPlotter(current_file):
     Output:
         - No Outputs, self contained.
     """
+    logger = logging.getLogger("initialize.definitions.jComparisonPlotter")
+    
+    logger.debug("Opening inputted current file: ", current_file)
     hdu = fits.open(current_file)
+    logger.debug("hdu set as: ", hdu)
     #Print Statements for File being worked on:
     filename_printing = current_file.split("/")[-1]
-    
-    print("Current File being worked on: {}".format(filename_printing))
+    logger.debug("Current File being worked on: ", filename_printing)
     
     #Grabbing BinHDUTable object here, should always be second object
     hdu_table = hdu[1]
+    logger.debug("hdu_table extracted as: ", hdu_table)
+    logger.debug("Extracting data out of the HDU Table Object.")
     data = hdu_table.data #Grabs data stored in the table -> FITS REC   
-    d = data_grabber(data)
+    logger.debug("Invoking DataGrabber function.")
+    d = DataGrabber(data)
+    logger.debug("Closing hdu object.")
     hdu.close()
     
     #Making the Output Directory for current file:
     save_dir_list = current_file.split("/")[:-1]
     save_dir = '/'.join(save_dir_list)
+    logger.debug("Save_directory (General) set to: ", save_dir)
     
     #Make Masked arrays for data that is nan valued
     """
@@ -967,13 +1107,18 @@ def jComparisonPlotter(current_file):
     stated above to parse through the data and extract non-nan values
     """
     #Call the Data Sifter Function from definitions. See Note Above
-    data_sifted = DictionarySifter(d)  
+    logger.debug("Invoking DictionarySifter function.")
+    data_sifted = DictionarySifter(d)
     
-    #Call Function Here
+    logger.debug("Creating title string and axes string to loop over.")
     tit_str = ['Regular','Colormapped']    #Loop over these two values
     axis_str = ['X','Y','Z']        #Loop over these LOS axes
+    logger.debug("Looping over Title String Now.")
     for i in range(0,len(tit_str)): #Loop over full and partial data sets for actual sim
+        logger.debug("Currently Working on tit_str: ", tit_str[i])
+        logger.debug("Looping over Axis String Now.")
         for j in range(0,len(axis_str)): #Loop over all the LOS axes
+            logger.debug("Currently Working on axis_str: ", axis_str[j])
             #Looping to set the correct data for the los axis
             if axis_str[j] == 'X':
                 x_string = 'imp_x_los'
@@ -988,23 +1133,31 @@ def jComparisonPlotter(current_file):
                 y_string1 = 'act_tot'
                 y_string2 = 'act_par_xy'
             
+            logger.debug("x_string set as: ", x_string)
+            logger.debug("y_string1 set as: ", y_string1)
+            logger.debug("y_string2 set as: ", y_string2)
             # Setting the proper title string and axis los string
             title_string = tit_str[i]
             axis_string = axis_str[j]
 
             #Calling Function Here for Plotting - detects which function to call
             if tit_str[i] == 'Regular':
-                fig = j_comp_plotter(data_sifted[x_string],
+                logger.debug("tit_str detected as: ", tit_str[i])
+                logger.debug("Invoking jCompPlotter function.")
+                fig = jCompPlotter(data_sifted[x_string],
                                      data_sifted[y_string1],
                                      data_sifted[y_string2],
                                      axis_string,
                                      title_string)
                 plt.tight_layout()
                 save_fig_dir = save_dir + '/' + axis_string + '_LOS_' + title_string + '.pdf'
+                logger.debug("Save Directory set to: ", save_fig_dir)
                 fig.savefig(save_fig_dir, bbox_inches='tight')
                 plt.close(fig)
             else:
-                fig = j_comp_plotter_colormap(data_sifted[x_string],
+                logger.debug("tit_str detected as: ", tit_str[i])
+                logger.debug("Invoking jCompPlotterColormap function.")
+                fig = jCompPlotterColormap(data_sifted[x_string],
                                               data_sifted[y_string1],
                                               data_sifted[y_string2],
                                               data_sifted['mass'], #CALLS MASS HERE
@@ -1012,19 +1165,21 @@ def jComparisonPlotter(current_file):
                                               title_string)
                 plt.tight_layout()
                 save_fig_dir = save_dir + '/' + axis_string + '_LOS_' + title_string + '.pdf'
+                logger.debug("Save Directory set to: ", save_fig_dir)
                 fig.savefig(save_fig_dir, bbox_inches='tight')
                 plt.close(fig)
-
+    
+    logger.info("jComparisonPlotter has been run successfully.")
     return()
     
 
-def j_fiducial_plotter(dict_list,
-                       fid_list,
-                       save_dir,
-                       x_data_key,
-                       y_data_key,
-                       axis_str,
-                       tit_str): 
+def jFiducialPlotter(dict_list,
+                     fid_list,
+                     save_dir,
+                     x_data_key,
+                     y_data_key,
+                     axis_str,
+                     tit_str): 
     """
     Plots the Fiducial Comparison Plots for each timestep in all of the data 
     acquired by the analyzer function.
@@ -1049,18 +1204,25 @@ def j_fiducial_plotter(dict_list,
         - fig: matplotlib object
             - Used to step back in the directory tree and save later.
     """
+    logger = logging.getLogger("initialize.definitions.jFiducialPlotter")
+    
+    logger.debug("Setting Axis Strings.")
     x_str = 'Implied Specific Angular Momentum [$kg \ m^2 \ s^{-1}$]'
     y_str = 'Actual Specific Angular Momentum [$kg \ m^2 \ s^{-1}$]'
+    
     if tit_str == 'Full':
+        logger.debug("tit_str has been detected as: ", tit_str)
         title = 'j Comparison (x+y+z components) '+axis_str+ ' LOS'
     else:
+        logger.debug("tit_str has been detected as: ", tit_str)
         if axis_str == 'X':
             title = 'j Comparison (y+z components) '+axis_str+ ' LOS'
         if axis_str == 'Y':
             title = 'j Comparison (x+z components) '+axis_str+ ' LOS'
         if axis_str == 'Z':
             title = 'j Comparison (x+y components) '+axis_str+ ' LOS'
-
+    
+    logger.debug("title has been set to: ", title)
     #Starting Plotting Here
     fig = plt.figure()
     ax = fig.add_subplot(111)
@@ -1071,21 +1233,26 @@ def j_fiducial_plotter(dict_list,
     y_max = []
     
     #Setting Combination Tuples for marker and line style calling
+    logger.debug("Setting tuples for markers.")
     tuples_max = 12
     tuples_max_list = np.arange(0,tuples_max,1)
     marker_color = itertools.cycle(['r','k','b'])
     marker_style = itertools.cycle(['>','.','^','*'])
     marker_tuples = zip(tuples_max_list,marker_style,marker_color)
     marker_tuples_list = list(marker_tuples)
+    logger.debug("Marker List Tuple has been set to: ", marker_tuples_list)
 
+    logger.debug("Setting tuples for best fit lines.")
     line_color = itertools.cycle(['r','k','b'])
     line_style = itertools.cycle(['-','--','-.',':'])
     line_tuples = zip(tuples_max_list,line_style,line_color)
     line_tuples_list = list(line_tuples)
+    logger.debug("Best Fit Lines List Tuple has been set to: ", line_tuples_list)
 
     #Here will start the Plotting of the data
-# =============================================================================        
+# =============================================================================       
     for i in range(0,len(dict_list)):
+        logger.debug("Working on Entry: ", i, " in dict_list.")
         x = dict_list[i][x_data_key]
         y = dict_list[i][y_data_key]
         label_str = fid_list[i]
@@ -1111,27 +1278,32 @@ def j_fiducial_plotter(dict_list,
                 color = line_tuples_list[i][2],
                 alpha=0.5,
                 label = label_fit)
+        logger.debug("Data for entry: ", i, " has been plotted.")
 
 # =============================================================================
-
+    logger.debug("All Data inputted on graph.")
     #Doing Unity Line after to avoid overwrite by function above
     #Grabs Min and Max for x-axis
     x_min = min(x_min)
     x_max = max(x_max)
     unity_x = np.linspace(x_min,x_max,1000) #Makes line of unity values
+    logger.debug("Setting Line of Constant Slope.")
     ax.loglog(unity_x,unity_x, 'k--', label='Line of Unity')
         
     #Axes Specifications
+    logger.debug("Setting Plot Specifications.")
     ax.set_aspect('equal')
     #ax.set_facecolor('#f2f2f2')
     ax.grid()
     
     #Labelling and Legend
+    logger.debug("Setting Labels.")
     ax.legend(bbox_to_anchor=(1.02, 1)) #Sets Legend off to the side of the plot
     ax.set_xlabel(x_str)
     ax.set_ylabel(y_str)
     ax.set_title(title)
     
+    logger.info("jFiducialPlotter has been run successfully.")
     return(fig)
 
 def FiducialPlotter(flist, save_dir, timestamp):
@@ -1150,26 +1322,34 @@ def FiducialPlotter(flist, save_dir, timestamp):
     Output:
         - No Outputs, self contained.
     """
+    logger = logging.getLogger("initialize.definitions.FiducialPlotter")
 
     #Set empty lists for append statements
     dict_list = []
     fid_list = []
+    logger.debug("Starting Loop over all files inputted.")
     for i in range(0,len(flist)):
         current_file = flist[i]
+        logger.debug("Currently working on file: ", current_file)
         hdu = fits.open(current_file)
         fiducial_stamp = current_file.split("/")[-3]
         #Grabbing BinHDUTable object here, should always be second object
         hdu_table = hdu[1]
         data = hdu_table.data #Grabs data stored in the table -> FITS REC   
-        d = data_grabber(data)
+        logger.debug("Invoking DataGrabber function.")
+        d = DataGrabber(data)
         hdu.close()
         #Append the sifted dictionaries into the dict_list for computation.
+        logger.debug("Invoking DictionarySifter function.")
         dict_list.append(DictionarySifter(d))
         fid_list.append(fiducial_stamp)
     #Call Function Here
+    logger.debug("Creating tit_str and axis_str to loop over.")
     tit_str = ['Full','Partial']    #Loop over these two values
     axis_str = ['X','Y','Z']        #Loop over these LOS axes
     for i in range(0,len(tit_str)): #Loop over full and partial data sets for actual sim
+        logger.debug("Currently working on tit_str: ", tit_str[i])
+        logger.debug("Looping over Axis String now.")
         for j in range(0,len(axis_str)): #Loop over all the LOS axes
             if tit_str == 'Full':
                 #Setting actual data to be the full amount
@@ -1182,6 +1362,7 @@ def FiducialPlotter(flist, save_dir, timestamp):
                     y_string = 'act_par_xz'
                 if axis_str[j] == 'Z':
                     y_string = 'act_par_xy'
+            logger.debug("y_string has been set to: ", y_string)
             #Looping to set the correct data for the los axis
             if axis_str[j] == 'X':
                 x_string = 'imp_x_los'
@@ -1189,19 +1370,25 @@ def FiducialPlotter(flist, save_dir, timestamp):
                 x_string = 'imp_y_los'
             if axis_str[j] == 'Z':
                 x_string = 'imp_z_los'
+            
+            logger.debug("x_string has been set to: ", x_string)
             # Setting the proper title string and axis los string
             title_string = tit_str[i]
             axis_string = axis_str[j]
             #Call Main Function Here with all included inputs.
-            j_fiducial_plotter(dict_list,
-                                     fid_list,
-                                     save_dir,
-                                     x_string,
-                                     y_string,
-                                     axis_string,
-                                     title_string)
+            logger.debug("Invoking jFiducialPlotter function.")
+            jFiducialPlotter(dict_list,
+                             fid_list,
+                             save_dir,
+                             x_string,
+                             y_string,
+                             axis_string,
+                             title_string)
             #Make the filename for the pdf saved
             save_string = save_dir + timestamp + '_'+title_string+'_fid_j_comp_'+axis_string+'_LOS.pdf'
+            logger.debug("Save Directory set to: ", save_string)
             plt.savefig(save_string, bbox_inches='tight')
+            logger.debug("Plot Saved.")
             plt.close()
+    logger.info("FiducialPlotter has been run successfully.")
     return()

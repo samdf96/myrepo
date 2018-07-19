@@ -16,30 +16,33 @@ import os
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
 # Section for importing all the definitions from defitions.py file
-from definitions import octant_split
-from definitions import master_clump_maker
-from definitions import clump_finder
-from definitions import center_of_mass
-from definitions import bounding_box
-from definitions import clump_box
-from definitions import velocity_array
-from definitions import velocity_array_reducer
-from definitions import array_flattener
+from definitions import OctantSplit
+from definitions import MasterClumpMaker
+from definitions import ClumpFinder
+from definitions import CenterOfMass
+from definitions import BoundingBox
+from definitions import ClumpBox
+from definitions import VelocityArray
+from definitions import VelocityArrayReducer
+from definitions import ArrayFlattener
 #Add in if needed
-#from definitions import myplane
-#from definitions import plane_fit_visualization
-from definitions import plane_fit
-from definitions import gradient
-from definitions import angular_momentum_implied
-from definitions import angular_momentum_actual
-from definitions import proj_creator
+#from definitions import MyPlane
+#from definitions import PlaneFitVisualization
+from definitions import PlaneFit
+from definitions import Gradient
+from definitions import AngularMomentumImplied
+from definitions import AngularMomentumActual
+from definitions import ProjCreator
 
 #Section for Importing Exceptions classes
 from exceptions import YTErrorValue, YTErrorReshape, YTRuntimeError
 from exceptions import YTPassThrough
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
+import logging
 
-def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
+module_logger = logging.getLogger("initialize.clump_code_1")
+
+def Analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
     '''
     Takes in certain global parameters, and a simulation datafile and computes
     all the relevant values for angular momentum, implied and actual.
@@ -70,12 +73,15 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
     
     
     '''
+    logger = logging.getLogger("initialize.clump_code_1.Analyzer")
     
-    print('Simluation File Currently Working On: ',filename)
+    logger.info('Simluation File Currently Working On: ',filename)
     
     #Loads data into File
     ds = yt.load(filename)
+    logger.debug("File Loaded.")
     master_dist_data = int(ds.domain_dimensions[0])
+    logger.debug("Master Distance Data set as: ", master_dist_data)
     err_string = [] #Used for tracking errors in functions
     
     # =========================================================================
@@ -99,46 +105,54 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
     #Creating Sub Directory for individual Data Simulation File Timestamp
     
     #First Layer Here
-    save_dir = save_dir_fits + fid_str 
+    save_dir = save_dir_fits + fid_str
+    logger.debug("General Save Directory string set as: ", save_dir)
     if os.path.isdir(save_dir) == True:
-        print("Warning!!! Directory: " +
+        logger.debug("Warning!!! Directory: " +
               save_dir +
               "is detected as a valid directory." +
               "Files will be overwritten.")
     else:
+        logger.debug("Directory not detected. Creating Directory.")
         os.mkdir(save_dir)
     
     #Second Layer Here
     save_dir_specific = save_dir + '/' + time_stamp + "/"
-
+    logger.debug("Specific Save Directory string set as: ", save_dir_specific)
     if os.path.isdir(save_dir_specific) == True:
-        print("Warning!!! Directory: " +
+        logger.debug("Warning!!! Directory: " +
               save_dir_specific +
               "is detected as a valid directory." +
               "FITS Files will be overwritten.")
     else:
+        logger.debug("Specific Save Directory not detector. Creating Directory.")
         os.mkdir(save_dir_specific)
         
-    """
-    Directories have been built properly here, on to the anaysis section.
-    """
+    logger.info("Directories have been set.")
     # =========================================================================
-    
     #Creates a Data Object containing all the Simulation Data
+    logger.debug("Creating 'ad' data object.")
     ad = ds.all_data()
     
     #Splits the Data into Octants
-    octant = octant_split(ad,ds,l)
-    
+    logger.debug("Invoking OctantSplit function.")
+    octant = OctantSplit(ad,ds,l)
+
     #Grabs each of the octants and runs them through the Clump Finding algorithm
     clumps = [] #Defining Empty List for loop
+    logger.info("Clump Finding Section Started.")
     for i in range(0,len(octant)):
-        master_clump_main = master_clump_maker(octant[i])
+        logger.debug("Working on Octant: ", i+1)
+        logger.debug("Invoking MasterClumpMaker function.")
+        master_clump_main = MasterClumpMaker(octant[i])
         cmax = octant[i]["gas", "density"].max()
-        print("Now Finding clumps for Octant:",i)
-        lc = clump_finder(master_clump_main,clump_sizing,cmin,cmax,step)
+        logger.debug("cmax has been set to: ", cmax)
+        logger.debug("Invoking ClumpFinder function.")
+        lc = ClumpFinder(master_clump_main,clump_sizing,cmin,cmax,step)
         for j in range(0,len(lc)):
+            logger.debug("Appending Leaf Clumps to clumps list.")
             clumps.append(lc[j])
+    logger.info("Clump Finding Section Completed.")
     
     # =========================================================================
     # Making empty arrays to store the data, variable to allow for different
@@ -146,20 +160,25 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
     # that is how they are written with no difference between clump objects.
     # =========================================================================
     
+    logger.debug("Data Filling Section Started.")
+    
     #Creating Arrays for later export (see bottom of script for this step)
+    logger.debug("Initialization com and bregion arrays.")
     com = np.zeros((len(clumps),1,3))
     bregion = np.zeros((len(clumps),3,2))
     
     #Defining Unit for Angular Momentum
+    logger.debug("Setting Unit for angular momentum.")
     ang_mom_unit = u.kg * (u.m**2) / u.s
     per_sec_unit = u.s**(-1)
     
     # Creates lists for center_of_mass of clump list -> stores in com
     # Creates list for bounding boxes of clump list -> stores in bregion
+    logger.debug("Filling com and bregion with data.")
     for i in range(0,len(clumps)):
     
-        com[i] = center_of_mass(clumps[i])
-        bregion[i] = bounding_box(clumps[i])
+        com[i] = CenterOfMass(clumps[i])
+        bregion[i] = BoundingBox(clumps[i])
 
     # =========================================================================
     # CHECK IN POINT: What we have so far here in the script
@@ -168,6 +187,9 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
     #     bregion: x,y,z min/max value to build the boxes for clumps
     # ========================================================================        
     
+    logger.debug("Initializing the following lists: data_object,",
+                  "mass_clump, dist_span_cm, com_x, com_y, com_z,",
+                  "dist_span_cm_x, dist_span_cm_y, dist_span_cm_z.")
     data_object_clump = [] #Setting Empty list for loop
     mass_clump_g = []       #Setting Empty list for loop
     dist_span_cm = np.zeros((len(bregion),3,1))
@@ -180,30 +202,36 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
     dist_span_cm_y = np.zeros((len(clumps),1))
     dist_span_cm_z = np.zeros((len(clumps),1))
         
+    logger.debug("Creating Data Objects around Clump Objects.")
     for i in range(0,len(bregion)):
-        print('Creating Clump Number:',i)
-        data_object_clump.append(clump_box(ds,bregion[i]))
-        
+        logger.debug('Creating Clump Number:',i)
+        data_object_clump.append(ClumpBox(ds,bregion[i]))
+        logger.debug("Data Object Created.")
         #This loop runs to detect whether RuntimeError is triggered
+        logger.debug("Appending mass to initialized list.")
         while True:
             try:
                 mass_clump_g.append(np.array(data_object_clump[i].quantities.total_mass())[0])
-            
+                logger.debug("Mass Appended to List.")
             #If triggered, nan is written to mass array and 
             #error string is written with description of what happened
             except RuntimeError:
+                logger.exception("RunTimeError has been caught.")
+                logger.debug("Appending mass term as nan value.")
                 mass_clump_g.append(np.array(np.nan))
+                logger.debug("Appending err_string with relevant message.")
                 err_string.append('Clump Number: '+
                                   str(i+1)+
                                   ' , has no width in one axial direction.')
                 break
             break
             
-            
+        logger.debug("Creating dist_x,dist_y,dist_z from data object.")  
         dist_x = bregion[i,0,1] - bregion[i,0,0]
         dist_y = bregion[i,1,1] - bregion[i,1,0]
         dist_z = bregion[i,2,1] - bregion[i,2,0]
         
+        logger.debug("Creating dist_tot from individual components.")
         dist_tot = np.array([[dist_x],[dist_y],[dist_z]])
         
         # Already in array format for export later
@@ -223,29 +251,31 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
     
     # =========================================================================
     #Creating Tuples for Center of Mass along different LOS directions
+    logger.debug("Creating Tuples for Center of Mass along different LOS(s).")
     com_plotting = np.concatenate((com_x,com_y,com_z), axis=1)
     
     x_los_com = np.concatenate((com_y,com_z), axis=1) #(x,y) axis match (y,z)
     y_los_com = np.concatenate((com_z,com_x), axis=1) #(x,y) axis match (z,x)
     z_los_com = np.concatenate((com_x,com_y), axis=1) #(x,y) axis match (x,y)
     # Creatin of projection plots with markers for clump center of masses
-    proj_creator(ds,
-                 ad,
-                 com_plotting,
-                 x_los_com,
-                 y_los_com,
-                 z_los_com,
-                 save_dir_specific,
-                 fid_str,
-                 time_stamp)
+    logger.debug("Invoking ProjCreator function.")
+    ProjCreator(ds,
+                ad,
+                com_plotting,
+                x_los_com,
+                y_los_com,
+                z_los_com,
+                save_dir_specific,
+                fid_str,
+                time_stamp)
     
-    print('PLOT SAVING COMPLETED')
     #Turn into Array for later export (see bottom of script for this step)
     mass_clump_g = np.array(mass_clump_g)
     
     
     
     #Creation of Columns for Astropy FITS for all quantities computed above
+    logger.debug("Creating Column Object for FITS file.")
     q_com_x = fits.Column(name='Center of Mass Coordinate (x)',
                           format='D',unit='cm',array=com_x)
     q_com_y = fits.Column(name='Center of Mass Coordinate (y)',
@@ -288,6 +318,7 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
     # =========================================================================
     
     #Defining Empty Lists to store data into, will convert into arrays later on
+    logger.debug("Initializing lists for exporting data to FITS file.")
     grad_x = []
     grad_y = []
     grad_z = []
@@ -299,53 +330,69 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
     am_actual_partial_xz = []
     am_actual_partial_yz = []
 
-    
-    print('All Clumps Created Successfully')
+
+    logger.debug("Data Filling Section Ended.")
+    logger.debug("Plane Fitting Section Started.")
     
     for i in range(0,len(bregion)):
         clump = data_object_clump[i]
         
-        print('Working on Analysis for Clump Number:',i)
+        logger.debug('Working on Analysis for Clump Number:',i)
 
         # =====================================================================
         # Computing Integrated Velocity Arrays
+        logger.debug("Integrated Velocity Array Section Started.")
         while True:
             try:
-                arr_z, vz, broken = velocity_array(clump,
+                logger.debug("Invoking VelocityArray function.")
+                arr_z, vz, broken = VelocityArray(clump,
                                                    'velocity_z',
                                                    'z',
                                                    master_dist_data,
                                                    l)  
                 if broken==1:
+                    logger.warning("Broken Value from function VelocityArray",
+                                    " has been detected to be: ", broken)
                     raise YTRuntimeError
-                arr_x, vx, broken = velocity_array(clump,
+                
+                logger.debug("Invoking VelocityArray function.")
+                arr_x, vx, broken = VelocityArray(clump,
                                                    'velocity_x',
                                                    'x',
                                                    master_dist_data,
                                                    l)
                 if broken==1:
+                    logger.warning("Broken Value from function VelocityArray",
+                                    " has been detected to be: ", broken)
                     raise YTRuntimeError
-                arr_y, vy, broken = velocity_array(clump,
+                
+                logger.debug("Invoking VelocityArray function.")
+                arr_y, vy, broken = VelocityArray(clump,
                                                    'velocity_y',
                                                    'y',
                                                    master_dist_data,
                                                    l)
                 if broken==1:
+                    logger.warning("Broken Value from function VelocityArray",
+                                    " has been detected to be: ", broken)
                     raise YTRuntimeError
             
             #Setting Default value for detector variable
                 runtime_error_detector = False
                 
             except YTRuntimeError:
+                logger.exception("YTRunTimeError Detected.")
                 #Used below for pass through of values
+                logger.debug("Setting runtime_error_detector to be TRUE.")
                 runtime_error_detector = True
                 break #Break out of except statement
             break       # Break out of try statement for while loop
-                    
+        logger.debug("Integrated Velocity Array Section Completed.")          
         # =====================================================================
         
         # =====================================================================
         # Computing Reduced Velocity Arrays
+        logger.debug("Reduced Velocity Array Section Started.")
         
         # This while loop raises errors if broken values from output of 
         # definitions file is not zero.
@@ -355,79 +402,99 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
                 #This checks error value from above, if triggered, passes through
                 #the code and writes nan values to the arrays
                 if runtime_error_detector == True:
+                    logger.debug("run_time_error_detector value is TRUE. Pass through.")
                     raise YTPassThrough
                 
-                arr_x_red, vx_py, vx_pz, broken = velocity_array_reducer(arr_x,
-                                                         vx,
-                                                         'x',
-                                                         master_dist_data)
+                arr_x_red, vx_py, vx_pz, broken = VelocityArrayReducer(arr_x,
+                                                                       vx,
+                                                                       'x',
+                                                                       master_dist_data)
                 #Check if broken statement is triggered
                 if broken == 1:
+                    logger.debug("Broken Value from VelocityArrayReducer detected to be: ", broken)
                     raise YTErrorValue
                 if broken == 2:
+                    logger.debug("Broken Value from VelocityArrayReducer detected to be: ", broken)
                     raise YTErrorReshape
+                logger.debug("Broken Value from VelocityArrayReducer detected to be: ", broken)
+                logger.debug("X LOS Array Reducer Passed Without Issue.")
                 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
-                arr_y_red, vy_px, vy_pz, broken = velocity_array_reducer(arr_y,
-                                                         vy,
-                                                         'y',
-                                                         master_dist_data)
+                arr_y_red, vy_px, vy_pz, broken = VelocityArrayReducer(arr_y,
+                                                                       vy,
+                                                                       'y',
+                                                                       master_dist_data)
                 #Check if broken statement is triggered
                 if broken == 1:
+                    logger.debug("Broken Value from VelocityArrayReducer detected to be: ", broken)
                     raise YTErrorValue
                 if broken == 2:
+                    logger.debug("Broken Value from VelocityArrayReducer detected to be: ", broken)
                     raise YTErrorReshape
+                logger.debug("Broken Value from VelocityArrayReducer detected to be: ", broken)
+                logger.debug("Y LOS Array Reducer Passed Without Issue.")
                 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
-                arr_z_red, vz_px, vz_py, broken = velocity_array_reducer(arr_z,
-                                                         vz,
-                                                         'z',
-                                                         master_dist_data)
+                arr_z_red, vz_px, vz_py, broken = VelocityArrayReducer(arr_z,
+                                                                       vz,
+                                                                       'z',
+                                                                       master_dist_data)
                 #Check if broken statement is triggered
                 if broken == 1:
+                    logger.debug("Broken Value from VelocityArrayReducer detected to be: ", broken)
                     raise YTErrorValue
                 if broken == 2:
+                    logger.debug("Broken Value from VelocityArrayReducer detected to be: ", broken)
                     raise YTErrorReshape
+                logger.debug("Broken Value from VelocityArrayReducer detected to be: ", broken)
+                logger.debug("Z LOS Array Reducer Passed Without Issue.")
                 
                 # =============================================================
                 # Flattening Arrays for Plane Fitting Process
-                arr_x_red_flat = array_flattener(arr_x_red)
-                arr_y_red_flat = array_flattener(arr_y_red)
-                arr_z_red_flat = array_flattener(arr_z_red)
+                logger.debug("Flattening Arrays for Plane Fitting.")
+                logger.debug("Invoking ArrayFlattener function.")
+                arr_x_red_flat = ArrayFlattener(arr_x_red)
+                arr_y_red_flat = ArrayFlattener(arr_y_red)
+                arr_z_red_flat = ArrayFlattener(arr_z_red)
                 
-                vx_py_flat = array_flattener(vx_py)
-                vx_pz_flat = array_flattener(vx_pz)
-                vy_px_flat = array_flattener(vy_px)
-                vy_pz_flat = array_flattener(vy_pz)
-                vz_px_flat = array_flattener(vz_px)
-                vz_py_flat = array_flattener(vz_py)
+                vx_py_flat = ArrayFlattener(vx_py)
+                vx_pz_flat = ArrayFlattener(vx_pz)
+                vy_px_flat = ArrayFlattener(vy_px)
+                vy_pz_flat = ArrayFlattener(vy_pz)
+                vz_px_flat = ArrayFlattener(vz_px)
+                vz_py_flat = ArrayFlattener(vz_py)
                 # =============================================================
                 
                 #Plane Fitting Process
-                result_x = plane_fit(vx_py_flat,vx_pz_flat,arr_x_red_flat)
-                result_y = plane_fit(vy_px_flat,vy_pz_flat,arr_y_red_flat)
-                result_z = plane_fit(vz_px_flat,vz_py_flat,arr_z_red_flat)
+                logger.debug("Invoking PlaneFit function.")
+                result_x = PlaneFit(vx_py_flat,vx_pz_flat,arr_x_red_flat)
+                result_y = PlaneFit(vy_px_flat,vy_pz_flat,arr_y_red_flat)
+                result_z = PlaneFit(vz_px_flat,vz_py_flat,arr_z_red_flat)
                 
                 #Computing Gradients from Results
-                gradient_x = gradient(result_x)
-                gradient_y = gradient(result_y)
-                gradient_z = gradient(result_z)
+                logger.debug("Computing Gradients from Results.")
+                logger.debug("Invoking Gradient function.")
+                gradient_x = Gradient(result_x)
+                gradient_y = Gradient(result_y)
+                gradient_z = Gradient(result_z)
             
                 #Computing Specific Angular Momentum
                 # BETA VALUE INPUT TO DEFINITION WILL DEFAULT TO ONE
-                ang_mom_implied_x = angular_momentum_implied(gradient_x,
-                                                              dist_span_cm[i,1,0],
-                                                              dist_span_cm[i,2,0])
-                ang_mom_implied_y = angular_momentum_implied(gradient_y,
-                                                              dist_span_cm[i,0,0],
-                                                              dist_span_cm[i,2,0])
-                ang_mom_implied_z = angular_momentum_implied(gradient_z,
-                                                              dist_span_cm[i,0,0],
-                                                              dist_span_cm[i,1,0])
+                logger.debug("Computing Specific Angular Momentum")
+                ang_mom_implied_x = AngularMomentumImplied(gradient_x,
+                                                           dist_span_cm[i,1,0],
+                                                           dist_span_cm[i,2,0])
+                ang_mom_implied_y = AngularMomentumImplied(gradient_y,
+                                                           dist_span_cm[i,0,0],
+                                                           dist_span_cm[i,2,0])
+                ang_mom_implied_z = AngularMomentumImplied(gradient_z,
+                                                           dist_span_cm[i,0,0],
+                                                           dist_span_cm[i,1,0])
                 
-                ang_mom_actual_total, ang_mom_actual_xy, ang_mom_actual_xz, ang_mom_actual_yz = angular_momentum_actual(clump,
-                                                                                                                        mass_clump_g[i])
+                ang_mom_actual_total, ang_mom_actual_xy, ang_mom_actual_xz, ang_mom_actual_yz = AngularMomentumActual(clump,
+                                                                                                                      mass_clump_g[i])
                 
                 # =============================================================
                 #     STORAGE OF VALUES FOR LATER USE
+                logger.debug("Appending found values for later use in storage.")
                 grad_x.append(gradient_x)
                 grad_y.append(gradient_y)
                 grad_z.append(gradient_z)
@@ -442,6 +509,8 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
                 
 
             except YTErrorReshape: #Reshape Error - writes to error string
+                logger.exception("YTErrorReshape caught.")
+                logger.debug("Setting all relevent values to nan.")
                 grad_x.append(np.nan)
                 grad_y.append(np.nan)
                 grad_z.append(np.nan)
@@ -452,12 +521,15 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
                 am_actual_partial_xy.append(np.nan)
                 am_actual_partial_xz.append(np.nan)
                 am_actual_partial_yz.append(np.nan)
+                logger.debug("err_string appended with relevant message.")
                 err_string.append('Clump Number: '+
                                   str(i+1)+
                                   ' , could not reshape coordinates to 256x256 array.')
                 break
             
-            except YTErrorValue:    #V_positions error - writes to error string
+            except YTErrorValue:
+                logger.exception("YTErrorValue caught.")
+                logger.debug("Setting all relevent values to nan.")
                 grad_x.append(np.nan)
                 grad_y.append(np.nan)
                 grad_z.append(np.nan)
@@ -468,12 +540,15 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
                 am_actual_partial_xy.append(np.nan)
                 am_actual_partial_xz.append(np.nan)
                 am_actual_partial_yz.append(np.nan)
+                logger.debug("err_string appended with relevant message.")
                 err_string.append('Clump Number: '+
                                   str(i+1)+
                                   ' , has v_positions empty.')
                 break
             
             except YTPassThrough:
+                logger.exception("YTPassThrough caught.")
+                logger.debug("Setting all relevent values to nan.")
                 grad_x.append(np.nan)
                 grad_y.append(np.nan)
                 grad_z.append(np.nan)
@@ -484,12 +559,14 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
                 am_actual_partial_xy.append(np.nan)
                 am_actual_partial_xz.append(np.nan)
                 am_actual_partial_yz.append(np.nan)
+                logger.debug("err_string already appended with relevant message.")
                 break
             break #Break out of while loop
 
     
-    print('Analysis Section Completed')
+    logger.debug("Reduced Velocity Array Section Completed.")
     # Turning all the data into numpy arrays to convert to Column objects
+    logger.debug("Turning all data into numpy arrays.")
     clump_number = np.arange(1,len(bregion)+1)
     am_actual_total = np.array(am_actual_total)
     am_actual_partial_xy = np.array(am_actual_partial_xy)
@@ -504,6 +581,7 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
     
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
     #Creation of Columns for Astropy FITS for all quantities computed above
+    logger.debug("Creating Column obects for new quantities.")
     
     q_clump_number = fits.Column(name='Clump Number',
                                  format='D',
@@ -558,6 +636,7 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
     
     #Creating ColDefs Object
+    logger.debug("coldefs object being created.")
     coldefs = fits.ColDefs([q_clump_number,
                             q_com_x,
                             q_com_y,
@@ -578,17 +657,20 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
                             q_grad_z])
     
     # Creating HDU Object from ColDefs
+    logger.debug("Creating HDU Object with Coldefs.")
     hdu = fits.BinTableHDU.from_columns(coldefs)
-    print('ColDefs Object Created')
+    logger.debug('ColDefs Object Created')
     hdu.header['MINCLMP'] = clump_sizing
     hdu.header['STEP'] = step
     hdu.header['BETA'] = beta
     hdu.header['LENGTH'] = l
     hdu.header['CMIN'] = cmin
     
+    logger.debug("Setting Array from err_string.")
     err_string_array = np.array(err_string)
     
     #For Loop for Adding in all the Error Statements for clumps (if any)
+    logger.debug("Appending err_string statements to header as COMMENT(s).")
     for i in range(0,len(err_string_array)):
         hdu.header.add_comment(err_string_array[i])    
     
@@ -596,5 +678,6 @@ def analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
     #INSERT STRING CONNECTED TO DATAFILE INPUT FOR SCRIPT
     hdu.writeto(save_dir_specific+fid_str+"_"+time_stamp+".fits",
                 overwrite=True)
-    print('FITS FILE SAVED')
+    logger.debug('FITS FILE SAVED')
+    logger.info("Analyzer has been run successfully.")
     return()

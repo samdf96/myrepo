@@ -26,11 +26,15 @@ Returns:
 
 from astropy.io import fits
 import glob
+import logging
 
-def Header_Printer(config_input):
+module_logger = logging.getLogger("initialize.header_printer")
+
+def HeaderPrinter(config_input):
     """
     See Above for details about this function.
-    """    
+    """
+    logger = logging.getLogger("initialize.header_printer.HeaderPrinter")
 
     #Making input string into valid directory with slash ending
     config_dir = config_input + '/'
@@ -39,12 +43,14 @@ def Header_Printer(config_input):
     flist = glob.glob(config_dir + '**/**/*.fits')
     flist.sort() #Sorts the Config files by name for easier readability
     
+    logger.info("Fits files found for function: ", flist)
     #Creating text file name here
-    text_filename = config_dir + 'Header_Info.txt'  
+    text_filename = config_dir + 'Header_Info.txt' 
+    logger.info("Save Directory set as: ", text_filename)
     
     #Opens the file to write - Will always overwrite data due to '+' argument
     with open(text_filename, 'w+') as txt:
-        
+        logger.info("text_filename has been opened.")
         #Generic Print Statements for TXT File
         print('Below presents the Simulation Input parameters ' +
               'and COMMENT(S) for the FITS Files from the Directory: '+
@@ -52,12 +58,13 @@ def Header_Printer(config_input):
         print('', file=txt)
     
         for i in range(0,len(flist)):    #Loops over all fits files here
-        
+            logger.info("Currently working on FITS file: ", flist[i])
             current_file = flist[i]
             
             #Opening and closing a first fits file of the config_dir to get input
             #parameters, these write to the txt file opened above
             if i == 0:
+                logger.ingo("First flist object detected, writing extra info.")
                 main_hdu = fits.open(current_file)
                 param_hdu = main_hdu[1]
                 param_header = param_hdu.header
@@ -103,6 +110,7 @@ def Header_Printer(config_input):
                 clump_tot = hdu_table.columns['Clump Number'].array[-1]
                 print('Total Number of Clumps Found: ', clump_tot, file=txt)
                 print('', file=txt)
-                
+    o
+    logger.info("HeaderPrinter has been run successfully.")     
     return()
     
