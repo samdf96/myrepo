@@ -70,10 +70,29 @@ from definitions import FiducialPlotter
 import logging
 import logging.config
 
+#INPUTS HERE
+
+#Creates a list of directories with the appropriate files for analysis
+flist = glob.glob('/mnt/bigdata/erosolow/Orion2/*/data.*.hdf5')
+
+#This is to filter out the timestamps that we want to analyze over
+data_check_list = ['0060','0070','0080','0090','0100']
+
+#This is where the config files are
+tree_top_dir = '/home/sfielder/Documents/Clumps/'
+data_dir = '/home/sfielder/Documents/Clumps/Output/'
+
+#Load CONFIG FILE HERE
 logging.config.fileConfig('logging.conf')
+logging.fileConfig(logging.conf, defaults={'logfilename': data_dir+'output.log'})
 
 # create logger
 logger = logging.getLogger('initialize')
+
+logger.info("Glob function has found the following to be sifted: ", flist)
+logger.info("Data Check List has been set to: ", data_check_list)
+logger.info("tree_top_dir has been set to: ", tree_top_dir)
+logger.info("data_dir has been set to: ", data_dir)
 
 """
 Overwrite Protection Here:
@@ -102,25 +121,6 @@ logger.info("Overwrite Protection for Fiducial Plots function has been set to: "
             overwrite_fiducial_plots)
 
 # =============================================================================
-#INPUTS HERE
-
-#Creates a list of directories with the appropriate files for analysis
-flist = glob.glob('/mnt/bigdata/erosolow/Orion2/*/data.*.hdf5')
-
-logger.info("Glob function has found the following to be sifted: ", flist)
-
-#This is to filter out the timestamps that we want to analyze over
-data_check_list = ['0060','0070','0080','0090','0100']
-
-logger.info("Data Check List has been set to: ", data_check_list)
-
-#This is where the config files are
-tree_top_dir = '/home/sfielder/Documents/Clumps/'
-data_dir = '/home/sfielder/Documents/Clumps/Output/'
-
-logger.info("tree_top_dir has been set to: ", tree_top_dir)
-logger.info("data_dir has been set to: ", data_dir)
-
 # =============================================================================
 logger.info("Analysis Section Started.")
 #Creating empty list for data sorting
