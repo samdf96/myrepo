@@ -83,7 +83,6 @@ tree_top_dir = '/home/sfielder/Documents/Clumps/'
 data_dir = '/home/sfielder/Documents/Clumps/Output/'
 
 #Load CONFIG FILE HERE
-logging.config.fileConfig('logging.conf')
 logging.fileConfig(logging.conf, defaults={'logfilename': data_dir+'output.log'})
 
 # create logger
