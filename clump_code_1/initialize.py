@@ -87,8 +87,8 @@ Overwrite Protection Here:
     - Setting any of the following values to TRUE will overwrite files
       even if files and directories are found by the code to exist.
 """
-overwrite_analyzer = False
-overwrite_header = False
+overwrite_analyzer = True
+overwrite_header = True
 overwrite_timestep_plots = True
 overwrite_fiducial_plots = True
 
