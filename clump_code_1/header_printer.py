@@ -64,7 +64,7 @@ def HeaderPrinter(config_input):
             #Opening and closing a first fits file of the config_dir to get input
             #parameters, these write to the txt file opened above
             if i == 0:
-                logger.ingo("First flist object detected, writing extra info.")
+                logger.info("First flist object detected, writing extra info.")
                 main_hdu = fits.open(current_file)
                 param_hdu = main_hdu[1]
                 param_header = param_hdu.header
@@ -110,7 +110,7 @@ def HeaderPrinter(config_input):
                 clump_tot = hdu_table.columns['Clump Number'].array[-1]
                 print('Total Number of Clumps Found: ', clump_tot, file=txt)
                 print('', file=txt)
-    o
+    
     logger.info("HeaderPrinter has been run successfully.")     
     return()
     
