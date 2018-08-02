@@ -106,9 +106,9 @@ Overwrite Protection Here:
       even if files and directories are found by the code to exist.
 """
 overwrite_analyzer = False
-overwrite_header = True
-overwrite_timestep_plots = True
-overwrite_fiducial_plots = True
+overwrite_header = False
+overwrite_timestep_plots = False
+overwrite_fiducial_plots = False
 
 logger.info("Overwrite Protection for Analyzer function has been set to: ",
             overwrite_analyzer)

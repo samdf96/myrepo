@@ -28,8 +28,11 @@ import yt as yt
 from yt.analysis_modules.level_sets.api import Clump
 from yt.analysis_modules.level_sets.api import find_clumps
 from yt.analysis_modules.level_sets.api import get_lowest_clumps
+#Definitions for Gravitational Energy Calculations
+from yt.utilities.lib.misc_utilities import gravitational_binding_energy
 
-
+from yt.utilities.physical_constants import \
+    gravitational_constant_cgs as G
 
 import matplotlib.pyplot as plt
 from scipy.optimize import least_squares as lsq
@@ -47,6 +50,7 @@ from astropy.io import fits
 import logging
  
 module_logger = logging.getLogger("initialize.definitions")
+
 
 
 
@@ -623,6 +627,36 @@ def AngularMomentumActual(data_object,mass):
            angular_momentum_xy,
            angular_momentum_xz,
            angular_momentum_yz)
+
+def KineticEnergy(data_object,
+                  bulk_velocity):
+    """
+    Calculates the Kinetic Energy of a YTRegion
+    
+    Inputs:
+        - data_object: YTRegion
+        - bulk_velocity: array (quantity)
+            - 3 components (x,y,z) in cm/s
+            
+    Outputs:
+        - kinetic: quantity
+            - Value + unit of energy in cgs
+    """
+    kinetic = 0.5 * (data_object['cell_mass'] *
+        ((bulk_velocity[0] - data_object["gas", "velocity_x"])**2 +
+         (bulk_velocity[1] - data_object["gas", "velocity_y"])**2 +
+          (bulk_velocity[2] - data_object["gas", "velocity_z"])**2)).sum()
+    return(kinetic)
+    
+def GravitationalEnergy(data_object, kinetic_energy):
+    grav_energy = G * gravitational_binding_energy(data_object['cell_mass'],
+                                                   data_object['x'],
+                                                   data_object['y'],
+                                                   data_object['z'],
+                                                   True,
+                                                   (kinetic_energy/G).in_cgs())
+    return(grav_energy)
+
 
 def ProjCreator(ds,
                  data_object,

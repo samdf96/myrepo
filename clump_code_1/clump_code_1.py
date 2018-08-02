@@ -33,6 +33,8 @@ from definitions import Gradient
 from definitions import AngularMomentumImplied
 from definitions import AngularMomentumActual
 from definitions import ProjCreator
+from definitions import KineticEnergy
+from definitions import GravitationalEnergy
 
 #Section for Importing Exceptions classes
 from exceptions import YTErrorValue, YTErrorReshape, YTRuntimeError
@@ -171,6 +173,7 @@ def Analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
     logger.debug("Setting Unit for angular momentum.")
     ang_mom_unit = u.kg * (u.m**2) / u.s
     per_sec_unit = u.s**(-1)
+    energy_unit = u.g * (u.m**2) / (u.s**2)
     
     # Creates lists for center_of_mass of clump list -> stores in com
     # Creates list for bounding boxes of clump list -> stores in bregion
@@ -329,6 +332,9 @@ def Analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
     am_actual_partial_xy = []
     am_actual_partial_xz = []
     am_actual_partial_yz = []
+    kinetic = []
+    gravitational = []
+    boundedness = []
 
 
     logger.debug("Data Filling Section Ended.")
@@ -563,7 +569,22 @@ def Analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
                 break
             break #Break out of while loop
 
-    
+        #Calculations of Kinetic, Gravitational, Boundedness Here
+        
+                
+        bulk_velocity = clump.quantities.bulk_velocity(use_gas=True)
+        kinetic_energy = KineticEnergy(clump,bulk_velocity)
+        gravitational_energy = GravitationalEnergy(clump,kinetic_energy)
+                
+        if gravitational_energy.value > kinetic_energy.value:
+            gravitationally_bound = True
+        else:
+            gravitationally_bound = False
+            
+        kinetic.append(kinetic_energy)
+        gravitational.append(gravitational_energy)
+        boundedness.append(gravitationally_bound)
+        
     logger.debug("Reduced Velocity Array Section Completed.")
     # Turning all the data into numpy arrays to convert to Column objects
     logger.debug("Turning all data into numpy arrays.")
@@ -578,6 +599,9 @@ def Analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
     grad_x = np.array(grad_x)
     grad_y = np.array(grad_y)
     grad_z = np.array(grad_z)
+    kinetic = np.array(kinetic)
+    gravitational = np.array(gravitational)
+    boundedness = np.array(boundedness)    
     
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
     #Creation of Columns for Astropy FITS for all quantities computed above
@@ -633,6 +657,17 @@ def Analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
                            format='D',
                            unit=str(per_sec_unit),
                            array=grad_z)
+    q_kinetic = fits.Column(name='Kinetic Energy',
+                            format='D',
+                            unit=str(energy_unit),
+                            array=kinetic)
+    q_gravitational = fits.Column(name='Gravitational Energy',
+                                  format='D',
+                                  unit=str(energy_unit),
+                                  array=gravitational)
+    q_boundedness = fits.Column(name='Gravitational Boundedness',
+                                format='L',
+                                array=boundedness)
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
     
     #Creating ColDefs Object
@@ -654,7 +689,10 @@ def Analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
                             q_am_implied_z,
                             q_grad_x,
                             q_grad_y,
-                            q_grad_z])
+                            q_grad_z,
+                            q_kinetic,
+                            q_gravitational,
+                            q_boundedness])
     
     # Creating HDU Object from ColDefs
     logger.debug("Creating HDU Object with Coldefs.")
