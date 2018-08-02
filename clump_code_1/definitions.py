@@ -642,19 +642,33 @@ def KineticEnergy(data_object,
         - kinetic: quantity
             - Value + unit of energy in cgs
     """
+    logger = logging.getLogger("initialize.definitions.KineticEnergy")
     kinetic = 0.5 * (data_object['cell_mass'] *
         ((bulk_velocity[0] - data_object["gas", "velocity_x"])**2 +
          (bulk_velocity[1] - data_object["gas", "velocity_y"])**2 +
           (bulk_velocity[2] - data_object["gas", "velocity_z"])**2)).sum()
+          logger.info("KineticEnergy has been run successfully.")
     return(kinetic)
     
 def GravitationalEnergy(data_object, kinetic_energy):
+    """
+    Calculates the Gravitational Energy of a YTRegion
+    Inputs:
+        - data_object: YTRegion
+        - kinetic_energy: quantity
+    Outputs:
+        - grav_energy: quantity
+    
+    This will return grav_energy with the wrong units, because gravitational_binding_energy does not output with units (or as quantity).
+    """
+    logger = logging.getLogger("initialize.definitions.GravitationalEnergy")
     grav_energy = G * gravitational_binding_energy(data_object['cell_mass'],
                                                    data_object['x'],
                                                    data_object['y'],
                                                    data_object['z'],
                                                    True,
                                                    (kinetic_energy/G).in_cgs())
+    loggger.info("GravitationalEnergy has been run successfully.")
     return(grav_energy)
 
 

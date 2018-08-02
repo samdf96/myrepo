@@ -571,7 +571,7 @@ def Analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
 
         #Calculations of Kinetic, Gravitational, Boundedness Here
         
-                
+        logger.debug("Starting Kinetic, Gravitational, and Boundedness Section.")
         bulk_velocity = clump.quantities.bulk_velocity(use_gas=True)
         kinetic_energy = KineticEnergy(clump,bulk_velocity)
         gravitational_energy = GravitationalEnergy(clump,kinetic_energy)
@@ -584,6 +584,8 @@ def Analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
         kinetic.append(kinetic_energy)
         gravitational.append(gravitational_energy)
         boundedness.append(gravitationally_bound)
+
+        logger.debug("Kinetic, Gravitational, and Boundedness Section Completed.")
         
     logger.debug("Reduced Velocity Array Section Completed.")
     # Turning all the data into numpy arrays to convert to Column objects
