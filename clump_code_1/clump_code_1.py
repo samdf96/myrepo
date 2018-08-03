@@ -574,9 +574,9 @@ def Analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
         #Detecting if broken value == 1. Do not run the following computations, because there is a RuntimeError
         if broken == 1:
             logger.info("Broken value detected to be", broken, ". Skipping this section because RuntimeError will be triggered.")
-            kinetic = np.nan
-            gravitational = np.nan
-            boundedness = False
+            kinetic_energy = np.nan
+            gravitational_energy = np.nan
+            gravitationally_bound = False
         else:
             # This runs if broken =/= 1, which means we are good to proceed with this calculation.
             bulk_velocity = clump.quantities.bulk_velocity(use_gas=True)
