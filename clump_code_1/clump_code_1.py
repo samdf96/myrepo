@@ -577,7 +577,7 @@ def Analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
 
         # This detects if the clump is too big to compute the grav_energy
         # and this skips over this step if it detects that it is
-        if len(clump.fcoord) > 1000:
+        if len(clump.fcoords) > 1000:
             logger.info("Number of Pixels in the Clump detected to be over 1000.")
             gravitational_energy = np.nan
             logger.info("Gravitational Energy value set to nan.")
