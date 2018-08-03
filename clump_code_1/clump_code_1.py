@@ -570,30 +570,37 @@ def Analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
             break #Break out of while loop
 
         #Calculations of Kinetic, Gravitational, Boundedness Here
-        
         logger.debug("Starting Kinetic, Gravitational, and Boundedness Section.")
-        bulk_velocity = clump.quantities.bulk_velocity(use_gas=True)
-        kinetic_energy = KineticEnergy(clump,bulk_velocity)
-
-        # This detects if the clump is too big to compute the grav_energy
-        # and this skips over this step if it detects that it is
-        if len(clump.fcoords) > 1000:
-            logger.info("Number of Pixels in the Clump detected to be over 1000.")
-            gravitational_energy = np.nan
-            logger.info("Gravitational Energy value set to nan.")
-            gravitationally_bound = False
-            logger.info("Gravitational Boundedness automatically set to False.")
-            err_string.append('Clump Number: '+
-                  str(i+1)+
-                  ' , is too large in size to compute gravitational energy.')
+        #Detecting if broken value == 1. Do not run the following computations, because there is a RuntimeError
+        if broken == 1:
+            logger.info("Broken value detected to be", broken, ". Skipping this section because RuntimeError will be triggered.")
+            kinetic = np.nan
+            gravitational = np.nan
+            boundedness = False
         else:
-            gravitational_energy = GravitationalEnergy(clump,kinetic_energy)
-            logger.debug("Gravitational Energy value set to: ", gravitational_energy)
-            # Checking Gravitational Boundedness Here
-            if gravitational_energy.value > kinetic_energy.value:
-                gravitationally_bound = True
-            else:
+            # This runs if broken =/= 1, which means we are good to proceed with this calculation.
+            bulk_velocity = clump.quantities.bulk_velocity(use_gas=True)
+            kinetic_energy = KineticEnergy(clump,bulk_velocity)
+
+            # This detects if the clump is too big to compute the grav_energy
+            # and this skips over this step if it detects that it is
+            if len(clump.fcoords) > 1000:
+                logger.info("Number of Pixels in the Clump detected to be over 1000.")
+                gravitational_energy = np.nan
+                logger.info("Gravitational Energy value set to nan.")
                 gravitationally_bound = False
+                logger.info("Gravitational Boundedness automatically set to False.")
+                err_string.append('Clump Number: '+
+                      str(i+1)+
+                      ' , is too large in size to compute gravitational energy.')
+            else:
+                gravitational_energy = GravitationalEnergy(clump,kinetic_energy)
+                logger.debug("Gravitational Energy value set to: ", gravitational_energy)
+                # Checking Gravitational Boundedness Here
+                if gravitational_energy.value > kinetic_energy.value:
+                    gravitationally_bound = True
+                else:
+                    gravitationally_bound = False
             
         kinetic.append(kinetic_energy)
         gravitational.append(gravitational_energy)
