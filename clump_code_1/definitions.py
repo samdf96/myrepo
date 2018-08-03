@@ -647,7 +647,7 @@ def KineticEnergy(data_object,
         ((bulk_velocity[0] - data_object["gas", "velocity_x"])**2 +
          (bulk_velocity[1] - data_object["gas", "velocity_y"])**2 +
           (bulk_velocity[2] - data_object["gas", "velocity_z"])**2)).sum()
-          logger.info("KineticEnergy has been run successfully.")
+    logger.info("KineticEnergy has been run successfully.")
     return(kinetic)
     
 def GravitationalEnergy(data_object, kinetic_energy):
