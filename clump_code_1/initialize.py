@@ -73,7 +73,8 @@ import logging.config
 #INPUTS HERE
 
 #Creates a list of directories with the appropriate files for analysis
-flist = glob.glob('/mnt/bigdata/erosolow/Orion2/*/data.*.hdf5')
+# THIS WILL NEED TO BE CHANGED FOR THE NEWER DESIGN SIMULATIONS
+flist = glob.glob('/mnt/bigdata/erosolow/Orion2/*F/data.*.hdf5')
 
 #This is to filter out the timestamps that we want to analyze over
 data_check_list = ['0060','0070','0080','0090','0100']
