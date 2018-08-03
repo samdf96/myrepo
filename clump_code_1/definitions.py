@@ -668,7 +668,7 @@ def GravitationalEnergy(data_object, kinetic_energy):
                                                    data_object['z'],
                                                    True,
                                                    (kinetic_energy/G).in_cgs())
-    loggger.info("GravitationalEnergy has been run successfully.")
+    logger.info("GravitationalEnergy has been run successfully.")
     return(grav_energy)
 
 
