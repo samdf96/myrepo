@@ -23,16 +23,16 @@ Manual Inputs:
 
 Returns:
     Tree like directory structure matching different simulation input parameters
-    All input parameters are stored via directory naming in the Fiducialxx convention
+    All input parameters are stored via directory naming in the Timestepxx convention
     
     Directory Tree Output Structure:
         
-        tree_top / data_dir / config_x / Fiducialxx / Time Stamp / Output Files /
+        tree_top / data_dir / config_x / Simulationxx / Time Stamp / Output Files /
     
     tree_top - this is where the config files are stored for input
     data_dir - this is set at the highest level of the tree for output
     config_x - this is to seperate different input parameters for the analyzer
-    Fiducialxx - this is for different simulation data sets
+    Simulationxx - this is for different simulation data sets
     Time Stamp - this is for all the checkpoints in the simulation
     Output Files: Generated Currently:
         - FITS File
@@ -48,8 +48,8 @@ Returns:
             Notes:
                 - Both of these are auto saved within the directory of where
                 the fits files are located: /time stamp/
-            - j Comparison Plots by Fiducial run per time step
-                - These are saved in a created directory in the / Fiducialxx/
+            - j Comparison Plots by Simulation run per time step
+                - These are saved in a created directory in the / Timestepxx/
                 level.
 
 Notes:
@@ -63,7 +63,7 @@ import yaml
 import io
 import os
 from definitions import jComparisonPlotter
-from definitions import FiducialPlotter
+from definitions import TimestepPlotter
 
 # Logging Info Here:
 
@@ -99,7 +99,7 @@ Overwrite Protection Here:
     - header and timestep_plots have absolute status and will not even
       start looking for files if value below is set to FALSE.
     
-    - analyzer and fiducial_plots have conditional status, and will look for
+    - analyzer and simulation_plots have conditional status, and will look for
       for already created directories and will skip those that are found
       if the value below is set to FALSE.
     
@@ -109,7 +109,7 @@ Overwrite Protection Here:
 overwrite_analyzer = False
 overwrite_header = False
 overwrite_timestep_plots = False
-overwrite_fiducial_plots = False
+overwrite_simulation_plots = False
 
 logger.info("Overwrite Protection for Analyzer function has been set to: ",
             overwrite_analyzer)
@@ -117,8 +117,8 @@ logger.info("Overwrite Protection for Header Printer function has been set to: "
             overwrite_header)
 logger.info("Overwrite Protection for Timestep Plots function has been set to: ",
             overwrite_timestep_plots)
-logger.info("Overwrite Protection for Fiducial Plots function has been set to: ",
-            overwrite_fiducial_plots)
+logger.info("Overwrite Protection for Simulation Plots function has been set to: ",
+            overwrite_simulation_plots)
 
 # =============================================================================
 # =============================================================================
@@ -241,36 +241,36 @@ else:
 
 logger.info("Timestep Plots Section Completed.")
 # =============================================================================
-logger.info("Fiducial Plots Section Started.")
+logger.info("Simulation Plots Section Started.")
 # Comparison Plots over Fiducial Runs (by timestep) happens here:
-carry_on_fiducial_plots = False #Initialize value - this is the default
-logger.info("Carry On Value for Fiducial Plots is initialized as: ",
-            carry_on_fiducial_plots)
+carry_on_simulation_plots = False #Initialize value - this is the default
+logger.info("Carry On Value for Simulation Plots is initialized as: ",
+            carry_on_simulation_plots)
 flist_config = glob.glob(data_dir+'config_*')
 flist_config.sort()
 logger.info("Output config_x subdirectory list found to be: ", flist_config)
 for k in range(0,len(flist_config)): #Adding Loop for config directories
     logger.info("Currently working on config: ", flist_config[k])
     #Write in os function to create appropiate directory for Fiducial Plots
-    fid_dir = flist_config[k]+'/Fiducial_Plots/'
+    simulation_dir = flist_config[k]+'/Simulation_Plots/'
     if os.path.isdir(fid_dir) == True:
-        logger.info("Save Directory: ", fid_dir, " has been detected to exist.")
-        if overwrite_fiducial_plots==True:
-            logger.info("Overwrite for Fiducial Plots has been set to TRUE.")
+        logger.info("Save Directory: ", simulation_dir, " has been detected to exist.")
+        if overwrite_simulation_plots==True:
+            logger.info("Overwrite for Simulation Plots has been set to TRUE.")
             logger.info("Carry On Value is being set to TRUE.")
-            carry_on_fiducial_plots = True
+            carry_on_simulation_plots = True
         else:
-            logger.info("Overwrite for Fiducial Plots has been set to FALSE.")
+            logger.info("Overwrite for Simulation Plots has been set to FALSE.")
             logger.info("Carry On Value will remain as FALSE.")
     else:
-        logger.info("Save Directory: ", fid_dir, " has been detected as non-existent.")
+        logger.info("Save Directory: ", simulation_dir, " has been detected as non-existent.")
         logger.info("Creating Save Directory.")
-        os.mkdir(fid_dir)
+        os.mkdir(simulation_dir)
         logger.info("Setting Carry On Value to TRUE.")
-        carry_on_fiducial_plots = True
+        carry_on_simulation_plots = True
 
     #If Carry On Value is True then continue with plotting
-    if carry_on_fiducial_plots == True:
+    if carry_on_simulation_plots == True:
         logger.info("Carry On Value has been detected as TRUE.")
         logger.info("Proceeding with Analysis.")
         logger.info("Looping timesteps inputted by data_check_list.")
@@ -281,10 +281,10 @@ for k in range(0,len(flist_config)): #Adding Loop for config directories
             data_check_list_print = data_check_list[i]
             #Calling Main Function Here
             logger.info("Current Timestep being worked on: ", data_check_list_print)
-            logger.info("Invoking FiducialPlotter function.")
-            FiducialPlotter(flist,fid_dir,data_check_list_print)
+            logger.info("Invoking TimestepPlotter function.")
+            TimestepPlotter(flist,fid_dir,data_check_list_print)
 
-logger.info("Fiducial Plots Section Completed.") 
+logger.info("Simulation Plots Section Completed.")
 # =============================================================================
 
 

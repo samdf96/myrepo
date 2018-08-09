@@ -679,7 +679,7 @@ def ProjCreator(ds,
                  com_y,
                  com_z,
                  save_directory,
-                 fid_str,
+                 call_str,
                  time_stamp):
     """
     Takes the center of mass coordinates, and overlays markers on the simulation
@@ -699,8 +699,8 @@ def ProjCreator(ds,
         This has the center of mass data for z LOS (x,y coodinates)
     save_directory: string
         Has the specific location which plots are to be saved to
-    fid_str: string
-        Fiducial Number for simulation number
+    call_str: string
+         Number for simulation number
     time_stamp: string
         Time Stamp for Data simulation
     
@@ -743,7 +743,7 @@ def ProjCreator(ds,
                             coord_system='plot',
                             plot_args={'color':'red','s':500})
     logger.debug("COM markers have been overlayed.")
-    prj_x.save(save_directory+fid_str+"_"+time_stamp+"_x_los_clump_marker.pdf")
+    prj_x.save(save_directory+call_str+"_"+time_stamp+"_x_los_clump_marker.pdf")
     logger.debug("Projection Plot has been saved.")
     
     ## For y LOS
@@ -760,7 +760,7 @@ def ProjCreator(ds,
                             coord_system='plot',
                             plot_args={'color':'red','s':500})
     logger.debug("COM markers have been overlayed.")
-    prj_y.save(save_directory+fid_str+"_"+time_stamp+"_y_los_clump_marker.pdf")
+    prj_y.save(save_directory+call_str+"_"+time_stamp+"_y_los_clump_marker.pdf")
     logger.debug("Projection Plot has been saved.")
     
     ## For z LOS
@@ -777,7 +777,7 @@ def ProjCreator(ds,
                             coord_system='plot',
                             plot_args={'color':'red','s':500})
         logger.debug("COM markers have been overlayed.")
-    prj_z.save(save_directory+fid_str+"_"+time_stamp+"_z_los_clump_marker.pdf")
+    prj_z.save(save_directory+call_str+"_"+time_stamp+"_z_los_clump_marker.pdf")
     logger.debug("Projection Plot has been saved.")
     
     logger.info("All Figures have been saved.")
@@ -830,7 +830,7 @@ def DataGrabber(data):
     
 def jCompPlotter(x, y1, y2, axis_str, tit_str):
     """
-    Function that plots j/j for a specific in a time step in a specific Fiducial
+    Function that plots j/j for a specific in a time step in a specific Simulation
     Run.
     
     Inputs:
@@ -937,7 +937,7 @@ def jCompPlotter(x, y1, y2, axis_str, tit_str):
 
 def jCompPlotterColormap(x, y1, y2, mass, axis_str, tit_str):
     """
-    Function that plots j/j for a specific in a time step in a specific Fiducial
+    Function that plots j/j for a specific in a time step in a specific Timestep
     Run - colormapped by mass argument given.
     
     Inputs:
@@ -1221,23 +1221,23 @@ def jComparisonPlotter(current_file):
     return()
     
 
-def jFiducialPlotter(dict_list,
-                     fid_list,
+def jTimestepPlotter(dict_list,
+                     simulation_list,
                      save_dir,
                      x_data_key,
                      y_data_key,
                      axis_str,
                      tit_str): 
     """
-    Plots the Fiducial Comparison Plots for each timestep in all of the data 
+    Plots the Timestep Comparison Plots for each timestep in all of the data
     acquired by the analyzer function.
     
     Inputs:
         - dict_list: list of dictionaries
-            Has all the data sorted by fiducial run for each timestep (one at 
+            Has all the data sorted by simulation run for each timestep (one at
             a time however)
-        - fid_list: list of strings
-            Fiducial strings corresponding directly to the dict_list items
+        - simulation_list: list of strings
+            Simulation strings corresponding directly to the dict_list items
         - save_dir: string
             Save directory for plot
         - x_data_key: string
@@ -1252,7 +1252,7 @@ def jFiducialPlotter(dict_list,
         - fig: matplotlib object
             - Used to step back in the directory tree and save later.
     """
-    logger = logging.getLogger("initialize.definitions.jFiducialPlotter")
+    logger = logging.getLogger("initialize.definitions.jTimestepPlotter")
     
     logger.debug("Setting Axis Strings.")
     x_str = 'Implied Specific Angular Momentum [$kg \ m^2 \ s^{-1}$]'
@@ -1303,7 +1303,7 @@ def jFiducialPlotter(dict_list,
         logger.debug("Working on Entry: ", i, " in dict_list.")
         x = dict_list[i][x_data_key]
         y = dict_list[i][y_data_key]
-        label_str = fid_list[i]
+        label_str = simulation_list[i]
         ax.loglog(x,y,
                   marker = marker_tuples_list[i][1],
                   markerfacecolor = marker_tuples_list[i][2],
@@ -1320,7 +1320,7 @@ def jFiducialPlotter(dict_list,
         log_y = np.log10(y)
         slope, intercept = np.polyfit(log_x, log_y, 1)
         fit_y = 1e1**(slope * log_x + intercept) #Creating Fit Line
-        label_fit = 'Line of Best Fit: ' + fid_list[i]
+        label_fit = 'Line of Best Fit: ' + simulation_list[i]
         ax.plot(x,fit_y,
                 linestyle = line_tuples_list[i][1],
                 color = line_tuples_list[i][2],
@@ -1351,12 +1351,12 @@ def jFiducialPlotter(dict_list,
     ax.set_ylabel(y_str)
     ax.set_title(title)
     
-    logger.info("jFiducialPlotter has been run successfully.")
+    logger.info("jTimestepPlotter has been run successfully.")
     return(fig)
 
-def FiducialPlotter(flist, save_dir, timestamp):
+def TimestepPlotter(flist, save_dir, timestamp):
     """
-    Master Function for starting the Fiducial Plotting
+    Master Function for starting the Timestep Plotting
     
     Input:
         - flist: list of strings
@@ -1370,17 +1370,17 @@ def FiducialPlotter(flist, save_dir, timestamp):
     Output:
         - No Outputs, self contained.
     """
-    logger = logging.getLogger("initialize.definitions.FiducialPlotter")
+    logger = logging.getLogger("initialize.definitions.TimestepPlotter")
 
     #Set empty lists for append statements
     dict_list = []
-    fid_list = []
+    simulation_list = []
     logger.debug("Starting Loop over all files inputted.")
     for i in range(0,len(flist)):
         current_file = flist[i]
         logger.debug("Currently working on file: ", current_file)
         hdu = fits.open(current_file)
-        fiducial_stamp = current_file.split("/")[-3]
+        timestep_stamp = current_file.split("/")[-3]
         #Grabbing BinHDUTable object here, should always be second object
         hdu_table = hdu[1]
         data = hdu_table.data #Grabs data stored in the table -> FITS REC   
@@ -1390,7 +1390,7 @@ def FiducialPlotter(flist, save_dir, timestamp):
         #Append the sifted dictionaries into the dict_list for computation.
         logger.debug("Invoking DictionarySifter function.")
         dict_list.append(DictionarySifter(d))
-        fid_list.append(fiducial_stamp)
+        simulation_list.append(timestep_stamp)
     #Call Function Here
     logger.debug("Creating tit_str and axis_str to loop over.")
     tit_str = ['Full','Partial']    #Loop over these two values
@@ -1424,19 +1424,19 @@ def FiducialPlotter(flist, save_dir, timestamp):
             title_string = tit_str[i]
             axis_string = axis_str[j]
             #Call Main Function Here with all included inputs.
-            logger.debug("Invoking jFiducialPlotter function.")
-            jFiducialPlotter(dict_list,
-                             fid_list,
+            logger.debug("Invoking jTimestepPlotter function.")
+            jTimestepPlotter(dict_list,
+                             simulation_list,
                              save_dir,
                              x_string,
                              y_string,
                              axis_string,
                              title_string)
             #Make the filename for the pdf saved
-            save_string = save_dir + timestamp + '_'+title_string+'_fid_j_comp_'+axis_string+'_LOS.pdf'
+            save_string = save_dir + timestamp + '_'+title_string+'_j_comp_'+axis_string+'_LOS.pdf'
             logger.debug("Save Directory set to: ", save_string)
             plt.savefig(save_string, bbox_inches='tight')
             logger.debug("Plot Saved.")
             plt.close()
-    logger.info("FiducialPlotter has been run successfully.")
+    logger.info("TimestepPlotter has been run successfully.")
     return()

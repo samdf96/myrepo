@@ -91,12 +91,12 @@ def Analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
     
     #Splitting the Whole Directory String by / 
     main_string = filename.split("/")
-    #Finding where the list matches Fiducial
-    fid_string_true = ['Fiducial' in k for k in main_string]
+    #Finding where the list matches Fiducial or Design - Add Naming conventions here for new simulations
+    sim_string_true = ['Fiducial' or 'Design' in k for k in main_string]
     #Grabbing that indice
-    fid_string_id = [i for i, x in enumerate(fid_string_true) if x]
-    #Making a string that is called the Directory found above ex. Fiducial00
-    fid_str = main_string[fid_string_id[0]] #Should only have one entry
+    sim_string_id = [i for i, x in enumerate(sim_string_true) if x]
+    #Making a string that is called the Directory found above ex. Fiducial00 or Design00
+    sim_str = main_string[sim_string_id[0]] #Should only have one entry
     #Grabs last component of filename
     out_string = main_string[-1].split(".") #Splits around periods
     time_stamp = out_string[1] #Ex. 0060
@@ -107,7 +107,7 @@ def Analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
     #Creating Sub Directory for individual Data Simulation File Timestamp
     
     #First Layer Here
-    save_dir = save_dir_fits + fid_str
+    save_dir = save_dir_fits + sim_str
     logger.debug("General Save Directory string set as: ", save_dir)
     if os.path.isdir(save_dir) == True:
         logger.debug("Warning!!! Directory: " +
@@ -269,7 +269,7 @@ def Analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
                 y_los_com,
                 z_los_com,
                 save_dir_specific,
-                fid_str,
+                sim_str,
                 time_stamp)
     
     #Turn into Array for later export (see bottom of script for this step)
@@ -737,7 +737,7 @@ def Analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
     
     
     #INSERT STRING CONNECTED TO DATAFILE INPUT FOR SCRIPT
-    hdu.writeto(save_dir_specific+fid_str+"_"+time_stamp+".fits",
+    hdu.writeto(save_dir_specific+sim_str+"_"+time_stamp+".fits",
                 overwrite=True)
     logger.debug('FITS FILE SAVED')
     logger.info("Analyzer has been run successfully.")
