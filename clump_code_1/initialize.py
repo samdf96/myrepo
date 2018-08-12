@@ -80,8 +80,8 @@ flist = glob.glob('/mnt/bigdata/erosolow/Orion2/**/data.*.hdf5')
 data_check_list = ['0060','0070','0080','0090','0100']
 
 #This is where the config files are
-tree_top_dir = '/home/sfielder/Documents/Clumps/'
-data_dir = '/home/sfielder/Documents/Clumps/Output/'
+tree_top_dir = '/home/sfielder/bigdata/Clumps/'
+data_dir = '/home/sfielder/bigdata/Clumps/Output/'
 
 #Load CONFIG FILE HERE
 logging.config.fileConfig('logging.conf', defaults={'logfilename': data_dir+'output.log'})
