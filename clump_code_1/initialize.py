@@ -183,7 +183,6 @@ for i in range(0,len(flist_config_yaml)):
             data_loaded = yaml.load(stream)
             logger.info("Config File has been opened and settings extracted.")
         
-        import pdb; pdb.set_trace()
         #Call main code here
         #Testing first file here
         for j in range(0,len(flist_data)):

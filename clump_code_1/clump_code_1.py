@@ -131,6 +131,8 @@ def Analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
         os.mkdir(save_dir_specific)
         
     logger.info("Directories have been set.")
+
+    import pdb; pdb.set_trace()
     # =========================================================================
     #Creates a Data Object containing all the Simulation Data
     logger.debug("Creating 'ad' data object.")
