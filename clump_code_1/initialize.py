@@ -137,6 +137,8 @@ for i in range(0,len(flist)):
 #Sorting the Data by filename
 flist_data.sort()
 
+import pdb; pdb.set_trace()
+
 logger.info("Glob function has found the following to be analyzed: ",
             flist_data)
 #Make a list of all the yaml files found in data_dir
