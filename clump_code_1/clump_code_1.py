@@ -92,7 +92,16 @@ def Analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
     #Splitting the Whole Directory String by / 
     main_string = filename.split("/")
     #Finding where the list matches Fiducial or Design - Add Naming conventions here for new simulations
-    sim_string_true = ['Fiducial' or 'Design' in k for k in main_string]
+    
+    #This is a workaround for now, need better way of doing this
+    # Would like to have an input list of all the strings to be searched in the database,
+    # Once one of these strings have been found in the input directory structure
+    # return the correct out_string and move on in the coding structure
+    # Might be able to parse through using the lists, and then just do an:
+    # if any(sim_string_true) == True, then set value and exit for-loop
+    sim_string_true = ['Fiducial' in k for k in main_string]
+    if any(sim_string_true) == False:
+        sim_string_true = ['Design' in k for k in main_string]
     #Grabbing that indice
     sim_string_id = [i for i, x in enumerate(sim_string_true) if x]
     #Making a string that is called the Directory found above ex. Fiducial00 or Design00
@@ -132,7 +141,6 @@ def Analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
         
     logger.info("Directories have been set.")
 
-    import pdb; pdb.set_trace()
     # =========================================================================
     #Creates a Data Object containing all the Simulation Data
     logger.debug("Creating 'ad' data object.")
