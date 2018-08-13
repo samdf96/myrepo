@@ -70,13 +70,28 @@ from definitions import TimestepPlotter
 import logging
 import logging.config
 
+#Twillo Account and SMS integration.
+from twilio.rest import TwilioRestClient
+
+with io.open('/home/sfielder/Documents/TwilloAccountInfo.yaml', 'r') as TwillAcnt:
+    TwillAcntDict = yaml.load(TwillAcnt)
+
+account_sid = TwillAcntDict['Acc_SID']
+auth_token = TwillAcntDict['Acc_TKN']
+tw = TwilioRestClient(account_sid, auth_token)
+twilio_phone_number = TwillAcntDict['T_N']
+my_phone_number = TwillAcntDict['T_M']
+
+t = tw.messages.create(body='Your Python program has started.', from_=twilio_phone_number, to=my_phone_number)
+
+
 #INPUTS HERE
 
 #Creates a list of directories with the appropriate files for analysis
 # THIS WILL NEED TO BE CHANGED FOR THE NEWER DESIGN SIMULATIONS
 
 #This batches input filters the search criteria to only look for `batches` simulation directories
-batches = 'Design'
+batches = 'Fiducial'
 
 
 flist = glob.glob('/mnt/bigdata/erosolow/Orion2/*'+batches+'*/data.*.hdf5')
@@ -296,6 +311,8 @@ for k in range(0,len(flist_config)): #Adding Loop for config directories
             TimestepPlotter(flist,fid_dir,data_check_list_print)
 
 logger.info("Simulation Plots Section Completed.")
+
+t = tw.messages.create(body='Your Python program has ended.', from_=twilio_phone_number, to=my_phone_number)
 # =============================================================================
 
 
