@@ -134,8 +134,8 @@ Overwrite Protection Here:
       even if files and directories are found by the code to exist.
 """
 
-overwrite_analyzer = True
-overwrite_header = True
+overwrite_analyzer = False
+overwrite_header = False
 overwrite_timestep_plots = True
 overwrite_simulation_plots = True
 
@@ -281,7 +281,7 @@ for k in range(0,len(flist_config)): #Adding Loop for config directories
     logger.info("Currently working on config: ", str(flist_config[k]))
     #Write in os function to create appropiate directory for Fiducial Plots
     simulation_dir = flist_config[k]+'/Simulation_Plots/'
-    if os.path.isdir(fid_dir) == True:
+    if os.path.isdir(simulation_dir) == True:
         logger.info("Save Directory: ", str(simulation_dir), " has been detected to exist.")
         if overwrite_simulation_plots==True:
             logger.info("Overwrite for Simulation Plots has been set to TRUE.")
@@ -310,7 +310,7 @@ for k in range(0,len(flist_config)): #Adding Loop for config directories
             #Calling Main Function Here
             logger.info("Current Timestep being worked on: ", str(data_check_list_print))
             logger.info("Invoking TimestepPlotter function.")
-            TimestepPlotter(flist,fid_dir,data_check_list_print)
+            TimestepPlotter(flist,simulation_dir,data_check_list_print)
 
 logger.info("Simulation Plots Section Completed.")
 
