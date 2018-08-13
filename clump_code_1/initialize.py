@@ -78,7 +78,6 @@ with io.open('/home/sfielder/Documents/TwilloAccountInfo.yaml', 'r') as TwillAcn
 
 account_sid = TwillAcntDict['Acc_SID']
 auth_token = TwillAcntDict['Acc_TKN']
-tw = TwilioRestClient(account_sid, auth_token)
 twilio_phone_number = TwillAcntDict['T_N']
 my_phone_number = TwillAcntDict['T_M']
 
