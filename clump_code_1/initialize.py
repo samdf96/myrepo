@@ -71,7 +71,7 @@ import logging
 import logging.config
 
 #Twillo Account and SMS integration.
-from twilio.rest import TwilioRestClient
+from twilio.rest import Client
 
 with io.open('/home/sfielder/Documents/TwilloAccountInfo.yaml', 'r') as TwillAcnt:
     TwillAcntDict = yaml.load(TwillAcnt)
@@ -82,7 +82,10 @@ tw = TwilioRestClient(account_sid, auth_token)
 twilio_phone_number = TwillAcntDict['T_N']
 my_phone_number = TwillAcntDict['T_M']
 
-t = tw.messages.create(body='Your Python program has started.', from_=twilio_phone_number, to=my_phone_number)
+client = Client(account_sid, auth_token)
+
+message_start = client.messages.create(to=my_phone_number, from_=twilio_phone_number,
+                                 body="Python Script has Started.")
 
 
 #INPUTS HERE
@@ -312,7 +315,8 @@ for k in range(0,len(flist_config)): #Adding Loop for config directories
 
 logger.info("Simulation Plots Section Completed.")
 
-t = tw.messages.create(body='Your Python program has ended.', from_=twilio_phone_number, to=my_phone_number)
+message_end = client.messages.create(to=my_phone_number, from_=twilio_phone_number,
+                                 body="Python Script has Ended.")
 # =============================================================================
 
 

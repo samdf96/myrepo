@@ -34,6 +34,8 @@ from yt.utilities.lib.misc_utilities import gravitational_binding_energy
 from yt.utilities.physical_constants import \
     gravitational_constant_cgs as G
 
+import matplotlib
+matplotlib.use('agg') # This is to default matplitlib to draw off screen and not throw errors when running in screen
 import matplotlib.pyplot as plt
 from scipy.optimize import least_squares as lsq
 
