@@ -84,7 +84,7 @@ def OctantSplit(data_object,ds,l):
         dbox_array.append(ds.r[(x1[i],'pc'):(x2[i],'pc'),
                                (y1[i],'pc'):(y2[i],'pc'),
                                (z1[i],'pc'):(z2[i],'pc')])	
-    logger.info("OctantSplit has been run successfully.")
+    logger.debug("OctantSplit has been run successfully.")
     return(dbox_array)
 
 def MasterClumpMaker(data_object):
@@ -103,7 +103,7 @@ def MasterClumpMaker(data_object):
     #Defining Field for Contouring
     field = ("gas", "density")
     master_clump = Clump(data_object, field)
-    logger.info("MasterClumpMaker has been run successfully.")
+    logger.debug("MasterClumpMaker has been run successfully.")
     return(master_clump)
 
 def ClumpFinder(master_clump,clump_sizing,cmin,cmax,step):
@@ -136,7 +136,7 @@ def ClumpFinder(master_clump,clump_sizing,cmin,cmax,step):
     #Finding Clumps Here
     find_clumps(master_clump, cmin, cmax, step)
     leaf_clumps = get_lowest_clumps(master_clump)
-    logger.info("ClumpFinder has been run successfully.")
+    logger.debug("ClumpFinder has been run successfully.")
     return(leaf_clumps)
 
 def CenterOfMass(lc):
@@ -155,8 +155,8 @@ def CenterOfMass(lc):
     '''
     logger = logging.getLogger("initialize.definitions.CenterOfMass")
     com = np.array(lc.quantities.center_of_mass())
-    logger.debug("Center Of Mass found to be: ", com)
-    logger.info("CenterOfMass has run successfully.")
+    logger.debug("Center Of Mass found to be: ", str(com))
+    logger.debug("CenterOfMass has run successfully.")
     return(com)
 
 def BoundingBox(lc):
@@ -178,8 +178,8 @@ def BoundingBox(lc):
     bounding_box = np.array(lc.quantities.extrema([('gas','x'),
                                                    ('gas','y'),
                                                    ('gas','z')]))
-    logger.debug("Bounding Box found to be: ", bounding_box)
-    logger.info("BoundingBox has run successfully.")
+    logger.debug("Bounding Box found to be: ", str(bounding_box))
+    logger.debug("BoundingBox has run successfully.")
     return(bounding_box)
     
 def ClumpBox(data_object_original,br):
@@ -203,7 +203,7 @@ def ClumpBox(data_object_original,br):
     dbox_clump = data_object_original.r[(br[0,0],'cm'):(br[0,1],'cm'),
                                         (br[1,0],'cm'):(br[1,1],'cm'),
                                         (br[2,0],'cm'):(br[2,1],'cm')]
-    logger.info("ClumpBox has been run successfully.")
+    logger.debug("ClumpBox has been run successfully.")
     return(dbox_clump)
     
 def VelocityArray(data_object,velocity,axis,master_dist_data,l):
@@ -244,24 +244,24 @@ def VelocityArray(data_object,velocity,axis,master_dist_data,l):
     '''
     logger = logging.getLogger("initialize.definitions.VelocityArray")
     broken=0    #Setting default value for error detection
-    logger.debug("Broken Export Value has initialized to: ", broken)
+    logger.debug("Broken Export Value has initialized to: ", str(broken))
     while True:
         try:
             v_object = data_object.integrate(velocity, weight='density', axis=axis)
             v_reform = v_object.to_frb((l,'pc'),(master_dist_data,master_dist_data))
             v_arr = np.array(v_reform[velocity])
             v_arr = np.reshape(v_arr,(master_dist_data,master_dist_data))
-            logger.info("VelocityArray has been run successfully.")
+            logger.debug("VelocityArray has been run successfully.")
             return(v_arr,v_object,broken)
         except RuntimeError:
             logging.exception("RunTimeError has been caught.")
             broken=1
             logging.warning("Broken Export Value has been overwritten to: ",
                             broken)
-            logging.info("Setting v_object to False, and v_arr to zeros.")
+            logging.debug("Setting v_object to False, and v_arr to zeros.")
             v_object = False
             v_arr = np.zeros((master_dist_data,master_dist_data))
-            logger.info("VelocityArray has not been run successfully.")
+            logger.debug("VelocityArray has not been run successfully.")
             return(v_arr,v_object,broken)
 
     
@@ -310,7 +310,7 @@ def VelocityArrayReducer(velocity_int_array,
     logger = logging.getLogger("initialize.definitions.VelocityArrayReducer")
     #Setting transferable quantity to exit loop if error occurs
     broken=0
-    logger.debug("Broken Export Value has initialized to: ", broken)
+    logger.debug("Broken Export Value has initialized to: ", str(broken))
     
     #Find where the data is non-nan valued
     v_positions = np.argwhere(~np.isnan(velocity_int_array))
@@ -320,11 +320,11 @@ def VelocityArrayReducer(velocity_int_array,
         logger.debug("v_positions check has returned that it's length is zero.")
         broken=1
         logger.warning("Broken Export Value is being overwritten to: ", broken)
-        logger.info("Setting all export values of this function to empty.")
+        logger.debug("Setting all export values of this function to empty.")
         arr = np.empty((1,1))
         perp_coord_1 = np.empty((1,1))
         perp_coord_2 = np.empty((1,1))
-        logger.info("VelocityArrayReducer has not been run successfully.")
+        logger.debug("VelocityArrayReducer has not been run successfully.")
         return(arr,perp_coord_1,perp_coord_2,broken)
     
     logger.debug("Setting v_positions.")
@@ -333,7 +333,7 @@ def VelocityArrayReducer(velocity_int_array,
     v_positions_ij.append(v_positions[-1,0])    #Last Row Value
     v_positions_ij.append(v_positions[0,1])     #First Column Value
     v_positions_ij.append(v_positions[-1,1])    #Last Column Value
-    logger.debug("v_positions set to: ", v_positions)
+    logger.debug("v_positions set to: ", str(v_positions))
     while True:
         try:
             if axis == 'z':
@@ -351,8 +351,8 @@ def VelocityArrayReducer(velocity_int_array,
                                        v_positions_ij[2]:v_positions_ij[3]+1]
                 velocity_int_array_reduced = velocity_int_array[v_positions_ij[0]:v_positions_ij[1]+1,
                                                                 v_positions_ij[2]:v_positions_ij[3]+1]
-                logger.info("VelocityArrayReducer has been run successfully on axis: ",
-                            axis)
+                logger.debug("VelocityArrayReducer has been run successfully on axis: ",
+                            str(axis))
                 return(velocity_int_array_reduced,vz_px,vz_py,broken)
             
             if axis == 'y':
@@ -370,12 +370,12 @@ def VelocityArrayReducer(velocity_int_array,
                                        v_positions_ij[2]:v_positions_ij[3]+1]
                 velocity_int_array_reduced = velocity_int_array[v_positions_ij[0]:v_positions_ij[1]+1,
                                                                 v_positions_ij[2]:v_positions_ij[3]+1]
-                logger.info("VelocityArrayReducer has been run successfully on axis: ",
-                            axis)
+                logger.debug("VelocityArrayReducer has been run successfully on axis: ",
+                            str(axis))
                 return(velocity_int_array_reduced,vy_px,vy_pz,broken)
                 
             if axis == 'x':
-                logger.debug("axis string input detected as: ", axis)
+                logger.debug("axis string input detected as: ", str(axis))
                 # Finds appropriate px coordinates and py coordinates
                 vy_coordinates = np.array(velocity_int_data_object['py'])
                 vy_coordinates = np.reshape(vy_coordinates,
@@ -389,8 +389,8 @@ def VelocityArrayReducer(velocity_int_array,
                                        v_positions_ij[2]:v_positions_ij[3]+1]
                 velocity_int_array_reduced = velocity_int_array[v_positions_ij[0]:v_positions_ij[1]+1,
                                                                 v_positions_ij[2]:v_positions_ij[3]+1]
-                logger.info("VelocityArrayReducer has been run successfully on axis: ",
-                            axis)
+                logger.debug("VelocityArrayReducer has been run successfully on axis: ",
+                            str(axis))
             return(velocity_int_array_reduced,vx_py,vx_pz,broken)
         
         except ValueError:
@@ -398,11 +398,11 @@ def VelocityArrayReducer(velocity_int_array,
             broken=2
             logging.warning("Broken Export Value has been overwritten to: ",
                             broken)
-            logging.info("Setting arr, perp_coord1a and perp_coord2 to zeros.")
+            logging.debug("Setting arr, perp_coord1a and perp_coord2 to zeros.")
             arr = np.empty((1,1))
             perp_coord_1 = np.empty((1,1))
             perp_coord_2 = np.empty((1,1))
-            logging.info("VelocityArrayReducer has not been run successfully.")
+            logging.debug("VelocityArrayReducer has not been run successfully.")
             return(arr,perp_coord_1,perp_coord_2,broken)
         
 
@@ -421,7 +421,7 @@ def ArrayFlattener(x):
     '''
     logger = logging.getLogger("initialize.definitions.ArrayFlattener")
     arr_flat = np.ndarray.flatten(x)
-    logger.info("ArrayFlattener has been run successfully.")
+    logger.debug("ArrayFlattener has been run successfully.")
     return(arr_flat)
         
 def MyPlane(p, x, y, z):
@@ -460,20 +460,20 @@ def PlaneFitVisualization(x,y,z,k):
     '''
     logger = logging.getLogger("initialize.definitions.PlaneFitVisualization")
     data = np.c_[x,y,z]
-    logger.debug("data has been set to: ", data)
+    logger.debug("data has been set to: ", str(data))
     mn = np.min(data, axis=0)
-    logger.debug("Minimum Value for Data found to be: ", mn)
+    logger.debug("Minimum Value for Data found to be: ", str(mn))
     mx = np.max(data, axis=0)
-    logger.debug("Maximum Value for Data found to be: ", mn)
+    logger.debug("Maximum Value for Data found to be: ", str(mn))
     X,Y = np.meshgrid(np.linspace(mn[0], mx[0], 20), np.linspace(mn[1], mx[1], 20))
     logger.debug("Meshgrid Created.")
     A = np.c_[data[:,0], data[:,1], np.ones(data.shape[0])]
     C,_,_,_ = scipy.linalg.lstsq(A, data[:,2])    # coefficients
-    logger.debug("Results Coefficients from linalg.lstsq: ", C)
+    logger.debug("Results Coefficients from linalg.lstsq: ", str(C))
     
     # evaluate it on grid
     Z = C[0]*X + C[1]*Y + C[2]
-    logger.debug("Z values grid set as: ", Z)
+    logger.debug("Z values grid set as: ", str(Z))
     
     logger.debug("Creating Figure Object.")
     fig = plt.figure()
@@ -493,7 +493,7 @@ def PlaneFitVisualization(x,y,z,k):
     plt.savefig("Plane_Fitting_Clump_{k}.pdf".format(k=k), bbox_inches='tight')
     plt.savefig("Plane_Fitting_Clump_{k}.png".format(k=k), bbox_inches='tight')        
     plt.show()
-    logger.info("PlaneFitVisualization has been run successfully.")
+    logger.idebug("PlaneFitVisualization has been run successfully.")
     return()
 
 
@@ -516,21 +516,21 @@ def PlaneFit(x, y, z, robust=False):
     logger = logging.getLogger("initialization.definitions.PlaneFit")
     logger.debug("Setting Median Values.")
     x0, y0 = np.median(x), np.median(y)
-    logger.debug("x median value found to be: ", x0)
-    logger.debug("y median value found to be: ", y0)
+    logger.debug("x median value found to be: ", str(x0))
+    logger.debug("y median value found to be: ", str(y0))
     dataz = np.c_[np.ones(x.size), 
                   x-x0, 
                   y-y0]
-    logger.debug("dataz to fit set as: ", dataz)
+    logger.debug("dataz to fit set as: ", str(dataz))
     lsqcoeffs, _, _, _ = np.linalg.lstsq(dataz,z)
-    logger.debug("Coefficients from fit found to be: ", lsqcoeffs)
+    logger.debug("Coefficients from fit found to be: ", str(lsqcoeffs))
     if robust:
         outputs = lsq(MyPlane, np.r_[lsqcoeffs],
                       args=([x-x0,
                              y-y0, z]),
                       loss = 'soft_l1')
         lsqcoeffs = outputs.x
-    logger.info("PlaneFit has been run successfully.")
+    logger.debug("PlaneFit has been run successfully.")
     return(lsqcoeffs)
     
 def Gradient(results):
@@ -549,7 +549,7 @@ def Gradient(results):
     '''
     logger = logging.getLogger("initialize.definitions.Gradient")
     gradient = ((results[1]**2) + (results[2]**2))**(1/2)
-    logger.info("Gradient has been run successfully.")
+    logger.debug("Gradient has been run successfully.")
     return(gradient)
 
 
@@ -576,8 +576,8 @@ def AngularMomentumImplied(gradient,dist_perp_1,dist_perp_2,beta=1):
     '''
     logger = logging.getLogger("initialize.definitions.AngularMomentumImplied")
     ang_mom_implied = beta * gradient * dist_perp_1 * dist_perp_2
-    logger.debug("ang_mom_implied found to be: ", ang_mom_implied)
-    logger.info("AngularMomentumImplied has been run successfully.")
+    logger.debug("ang_mom_implied found to be: ", str(ang_mom_implied))
+    logger.debug("AngularMomentumImplied has been run successfully.")
     return(ang_mom_implied)
 
 def AngularMomentumActual(data_object,mass):
@@ -605,9 +605,9 @@ def AngularMomentumActual(data_object,mass):
     angular_momentum_x = data_object.sum('angular_momentum_x')
     angular_momentum_y = data_object.sum('angular_momentum_y') 
     angular_momentum_z = data_object.sum('angular_momentum_z')
-    logger.debug("X component found to be: ", angular_momentum_x)
-    logger.debug("Y component found to be: ", angular_momentum_y)
-    logger.debug("Z component found to be: ", angular_momentum_z)
+    logger.debug("X component found to be: ", str(angular_momentum_x))
+    logger.debug("Y component found to be: ", str(angular_momentum_y))
+    logger.debug("Z component found to be: ", str(angular_momentum_z))
     logger.debug("Combining Sums on: xy, xz, yz, and total.")
     angular_momentum_xy = (((angular_momentum_x**2)+
                            (angular_momentum_y**2))**(1/2))/mass
@@ -618,11 +618,11 @@ def AngularMomentumActual(data_object,mass):
     angular_momentum_total = (((angular_momentum_x**2)+
                               (angular_momentum_y**2)+
                               (angular_momentum_z**2))**(1/2))/mass
-    logger.debug("xy sum found to be: ", angular_momentum_xy)
-    logger.debug("xz sum found to be: ", angular_momentum_xz)
-    logger.debug("yz sum found to be: ", angular_momentum_yz)
-    logger.debug("total found to be: ", angular_momentum_total)
-    logger.info("AngularMomentumActual has been run successfully.")
+    logger.debug("xy sum found to be: ", str(angular_momentum_xy))
+    logger.debug("xz sum found to be: ", str(angular_momentum_xz))
+    logger.debug("yz sum found to be: ", str(angular_momentum_yz))
+    logger.debug("total found to be: ", str(angular_momentum_total))
+    logger.debug("AngularMomentumActual has been run successfully.")
     return(angular_momentum_total,
            angular_momentum_xy,
            angular_momentum_xz,
@@ -647,7 +647,7 @@ def KineticEnergy(data_object,
         ((bulk_velocity[0] - data_object["gas", "velocity_x"])**2 +
          (bulk_velocity[1] - data_object["gas", "velocity_y"])**2 +
           (bulk_velocity[2] - data_object["gas", "velocity_z"])**2)).sum()
-    logger.info("KineticEnergy has been run successfully.")
+    logger.debug("KineticEnergy has been run successfully.")
     return(kinetic)
     
 def GravitationalEnergy(data_object, kinetic_energy):
@@ -668,7 +668,7 @@ def GravitationalEnergy(data_object, kinetic_energy):
                                                    data_object['z'],
                                                    True,
                                                    (kinetic_energy/G).in_cgs())
-    logger.info("GravitationalEnergy has been run successfully.")
+    logger.debug("GravitationalEnergy has been run successfully.")
     return(grav_energy)
 
 
@@ -716,18 +716,18 @@ def ProjCreator(ds,
     com_x = com_x * u.cm
     com_y = com_y * u.cm
     com_z = com_z * u.cm
-    logger.debug("com_x set to: ", com_x)
-    logger.debug("com_y set to: ", com_y)
-    logger.debug("com_z set to: ", com_z)
+    logger.debug("com_x set to: ", str(com_x))
+    logger.debug("com_y set to: ", str(com_y))
+    logger.debug("com_z set to: ", str(com_z))
     
     #Converting to Parsec for plot overlay
     logger.debug("Converting Quantities to parsec units.")
     com_x_pc = com_x.to(u.parsec)
     com_y_pc = com_y.to(u.parsec)
     com_z_pc = com_z.to(u.parsec)
-    logger.debug("com_x reset to: ", com_x_pc)
-    logger.debug("com_y reset to: ", com_y_pc)
-    logger.debug("com_z reset to: ", com_z_pc)
+    logger.debug("com_x reset to: ", str(com_x_pc))
+    logger.debug("com_y reset to: ", str(com_y_pc))
+    logger.debug("com_z reset to: ", str(com_z_pc))
     
     ## For x LOS
     logger.debug("Working on X LOS.")
@@ -780,8 +780,8 @@ def ProjCreator(ds,
     prj_z.save(save_directory+call_str+"_"+time_stamp+"_z_los_clump_marker.pdf")
     logger.debug("Projection Plot has been saved.")
     
-    logger.info("All Figures have been saved.")
-    logger.info("ProjCreator has been run successfully.")
+    logger.debug("All Figures have been saved.")
+    logger.debug("ProjCreator has been run successfully.")
     return()
 
 def DataGrabber(data):
@@ -825,7 +825,7 @@ def DataGrabber(data):
             'imp_y_los': imp_y_los,
             'imp_z_los': imp_z_los}
     
-    logger.info("DataGrabber has been run successfully.")
+    logger.debug("DataGrabber has been run successfully.")
     return(dict)
     
 def jCompPlotter(x, y1, y2, axis_str, tit_str):
@@ -867,8 +867,8 @@ def jCompPlotter(x, y1, y2, axis_str, tit_str):
     #Grabs Min and Max for x-axis (searches all imputted data however)
     x_min = min(x)
     x_max = max(x)
-    logger.debug("x_min found to be: ", x_min)
-    logger.debug("x_max found to be: ", x_max)
+    logger.debug("x_min found to be: ", str(x_min))
+    logger.debug("x_max found to be: ", str(x_max))
 # Legacy Code for finding correct min/max values for graph.
 #    y1_min = min(y1)
 #    y1_max = max(y1)
@@ -932,7 +932,7 @@ def jCompPlotter(x, y1, y2, axis_str, tit_str):
     ax.set_ylabel(y_str)
     ax.set_title(title)
 
-    logger.info("jCompPlotter has been run successfully.")
+    logger.debug("jCompPlotter has been run successfully.")
     return(fig)
 
 def jCompPlotterColormap(x, y1, y2, mass, axis_str, tit_str):
@@ -991,8 +991,8 @@ def jCompPlotterColormap(x, y1, y2, mass, axis_str, tit_str):
     #Grabs Min and Max for x-axis
     x_min = min(x)
     x_max = max(x)
-    logger.debug("x_min found to be: ", x_min)
-    logger.debug("x_max found to be: ", x_max)
+    logger.debug("x_min found to be: ", str(x_min))
+    logger.debug("x_max found to be: ", str(x_max))
     logger.debug("Creating Line of Constant Slope.")
     unity_x = np.linspace(x_min,x_max,1000) #Makes line of unity values
     ax.plot(unity_x,
@@ -1049,7 +1049,7 @@ def jCompPlotterColormap(x, y1, y2, mass, axis_str, tit_str):
     logger.debug("Setting Colorbar.")
     fig.colorbar(data1,label=r'$\log_{10}$(mass) [g]')
     
-    logger.info("jCompPlotterColormap has been run succesfully.")
+    logger.debug("jCompPlotterColormap has been run succesfully.")
     return(fig)
 
 def DictionarySifter(d):
@@ -1110,7 +1110,7 @@ def DictionarySifter(d):
     sifted_dict['act_par_yz'] = act_par_yz_mask_compressed
     sifted_dict['mass'] = mass_mask_compressed
     
-    logger.info("DicationarySifter has been run successfully.")
+    logger.debug("DicationarySifter has been run successfully.")
     return(sifted_dict)
 
 def jComparisonPlotter(current_file):
@@ -1126,16 +1126,16 @@ def jComparisonPlotter(current_file):
     """
     logger = logging.getLogger("initialize.definitions.jComparisonPlotter")
     
-    logger.debug("Opening inputted current file: ", current_file)
+    logger.debug("Opening inputted current file: ", str(current_file))
     hdu = fits.open(current_file)
-    logger.debug("hdu set as: ", hdu)
+    logger.debug("hdu set as: ", str(hdu))
     #Print Statements for File being worked on:
     filename_printing = current_file.split("/")[-1]
-    logger.debug("Current File being worked on: ", filename_printing)
+    logger.debug("Current File being worked on: ", str(filename_printing))
     
     #Grabbing BinHDUTable object here, should always be second object
     hdu_table = hdu[1]
-    logger.debug("hdu_table extracted as: ", hdu_table)
+    logger.debug("hdu_table extracted as: ", str(hdu_table))
     logger.debug("Extracting data out of the HDU Table Object.")
     data = hdu_table.data #Grabs data stored in the table -> FITS REC   
     logger.debug("Invoking DataGrabber function.")
@@ -1163,10 +1163,10 @@ def jComparisonPlotter(current_file):
     axis_str = ['X','Y','Z']        #Loop over these LOS axes
     logger.debug("Looping over Title String Now.")
     for i in range(0,len(tit_str)): #Loop over full and partial data sets for actual sim
-        logger.debug("Currently Working on tit_str: ", tit_str[i])
+        logger.debug("Currently Working on tit_str: ", str(tit_str[i]))
         logger.debug("Looping over Axis String Now.")
         for j in range(0,len(axis_str)): #Loop over all the LOS axes
-            logger.debug("Currently Working on axis_str: ", axis_str[j])
+            logger.debug("Currently Working on axis_str: ", str(axis_str[j]))
             #Looping to set the correct data for the los axis
             if axis_str[j] == 'X':
                 x_string = 'imp_x_los'
@@ -1181,16 +1181,16 @@ def jComparisonPlotter(current_file):
                 y_string1 = 'act_tot'
                 y_string2 = 'act_par_xy'
             
-            logger.debug("x_string set as: ", x_string)
-            logger.debug("y_string1 set as: ", y_string1)
-            logger.debug("y_string2 set as: ", y_string2)
+            logger.debug("x_string set as: ", str(x_string))
+            logger.debug("y_string1 set as: ", str(y_string1))
+            logger.debug("y_string2 set as: ", str(y_string2))
             # Setting the proper title string and axis los string
             title_string = tit_str[i]
             axis_string = axis_str[j]
 
             #Calling Function Here for Plotting - detects which function to call
             if tit_str[i] == 'Regular':
-                logger.debug("tit_str detected as: ", tit_str[i])
+                logger.debug("tit_str detected as: ", str(tit_str[i]))
                 logger.debug("Invoking jCompPlotter function.")
                 fig = jCompPlotter(data_sifted[x_string],
                                      data_sifted[y_string1],
@@ -1199,11 +1199,11 @@ def jComparisonPlotter(current_file):
                                      title_string)
                 plt.tight_layout()
                 save_fig_dir = save_dir + '/' + axis_string + '_LOS_' + title_string + '.pdf'
-                logger.debug("Save Directory set to: ", save_fig_dir)
+                logger.debug("Save Directory set to: ", str(save_fig_dir))
                 fig.savefig(save_fig_dir, bbox_inches='tight')
                 plt.close(fig)
             else:
-                logger.debug("tit_str detected as: ", tit_str[i])
+                logger.debug("tit_str detected as: ", str(tit_str[i]))
                 logger.debug("Invoking jCompPlotterColormap function.")
                 fig = jCompPlotterColormap(data_sifted[x_string],
                                               data_sifted[y_string1],
@@ -1213,11 +1213,11 @@ def jComparisonPlotter(current_file):
                                               title_string)
                 plt.tight_layout()
                 save_fig_dir = save_dir + '/' + axis_string + '_LOS_' + title_string + '.pdf'
-                logger.debug("Save Directory set to: ", save_fig_dir)
+                logger.debug("Save Directory set to: ", str(save_fig_dir))
                 fig.savefig(save_fig_dir, bbox_inches='tight')
                 plt.close(fig)
     
-    logger.info("jComparisonPlotter has been run successfully.")
+    logger.debug("jComparisonPlotter has been run successfully.")
     return()
     
 
@@ -1259,10 +1259,10 @@ def jTimestepPlotter(dict_list,
     y_str = 'Actual Specific Angular Momentum [$kg \ m^2 \ s^{-1}$]'
     
     if tit_str == 'Full':
-        logger.debug("tit_str has been detected as: ", tit_str)
+        logger.debug("tit_str has been detected as: ", str(tit_str))
         title = 'j Comparison (x+y+z components) '+axis_str+ ' LOS'
     else:
-        logger.debug("tit_str has been detected as: ", tit_str)
+        logger.debug("tit_str has been detected as: ", str(tit_str))
         if axis_str == 'X':
             title = 'j Comparison (y+z components) '+axis_str+ ' LOS'
         if axis_str == 'Y':
@@ -1270,7 +1270,7 @@ def jTimestepPlotter(dict_list,
         if axis_str == 'Z':
             title = 'j Comparison (x+y components) '+axis_str+ ' LOS'
     
-    logger.debug("title has been set to: ", title)
+    logger.debug("title has been set to: ", str(title))
     #Starting Plotting Here
     fig = plt.figure()
     ax = fig.add_subplot(111)
@@ -1288,19 +1288,19 @@ def jTimestepPlotter(dict_list,
     marker_style = itertools.cycle(['>','.','^','*'])
     marker_tuples = zip(tuples_max_list,marker_style,marker_color)
     marker_tuples_list = list(marker_tuples)
-    logger.debug("Marker List Tuple has been set to: ", marker_tuples_list)
+    logger.debug("Marker List Tuple has been set to: ", str(marker_tuples_list))
 
     logger.debug("Setting tuples for best fit lines.")
     line_color = itertools.cycle(['r','k','b'])
     line_style = itertools.cycle(['-','--','-.',':'])
     line_tuples = zip(tuples_max_list,line_style,line_color)
     line_tuples_list = list(line_tuples)
-    logger.debug("Best Fit Lines List Tuple has been set to: ", line_tuples_list)
+    logger.debug("Best Fit Lines List Tuple has been set to: ", str(line_tuples_list))
 
     #Here will start the Plotting of the data
 # =============================================================================       
     for i in range(0,len(dict_list)):
-        logger.debug("Working on Entry: ", i, " in dict_list.")
+        logger.debug("Working on Entry: ", str(i), " in dict_list.")
         x = dict_list[i][x_data_key]
         y = dict_list[i][y_data_key]
         label_str = simulation_list[i]
@@ -1326,7 +1326,7 @@ def jTimestepPlotter(dict_list,
                 color = line_tuples_list[i][2],
                 alpha=0.5,
                 label = label_fit)
-        logger.debug("Data for entry: ", i, " has been plotted.")
+        logger.debug("Data for entry: ", str(i), " has been plotted.")
 
 # =============================================================================
     logger.debug("All Data inputted on graph.")
@@ -1351,7 +1351,7 @@ def jTimestepPlotter(dict_list,
     ax.set_ylabel(y_str)
     ax.set_title(title)
     
-    logger.info("jTimestepPlotter has been run successfully.")
+    logger.debug("jTimestepPlotter has been run successfully.")
     return(fig)
 
 def TimestepPlotter(flist, save_dir, timestamp):
@@ -1378,7 +1378,7 @@ def TimestepPlotter(flist, save_dir, timestamp):
     logger.debug("Starting Loop over all files inputted.")
     for i in range(0,len(flist)):
         current_file = flist[i]
-        logger.debug("Currently working on file: ", current_file)
+        logger.debug("Currently working on file: ", str(current_file))
         hdu = fits.open(current_file)
         timestep_stamp = current_file.split("/")[-3]
         #Grabbing BinHDUTable object here, should always be second object
@@ -1396,7 +1396,7 @@ def TimestepPlotter(flist, save_dir, timestamp):
     tit_str = ['Full','Partial']    #Loop over these two values
     axis_str = ['X','Y','Z']        #Loop over these LOS axes
     for i in range(0,len(tit_str)): #Loop over full and partial data sets for actual sim
-        logger.debug("Currently working on tit_str: ", tit_str[i])
+        logger.debug("Currently working on tit_str: ", str(tit_str[i]))
         logger.debug("Looping over Axis String now.")
         for j in range(0,len(axis_str)): #Loop over all the LOS axes
             if tit_str == 'Full':
@@ -1410,7 +1410,7 @@ def TimestepPlotter(flist, save_dir, timestamp):
                     y_string = 'act_par_xz'
                 if axis_str[j] == 'Z':
                     y_string = 'act_par_xy'
-            logger.debug("y_string has been set to: ", y_string)
+            logger.debug("y_string has been set to: ", str(y_string))
             #Looping to set the correct data for the los axis
             if axis_str[j] == 'X':
                 x_string = 'imp_x_los'
@@ -1419,7 +1419,7 @@ def TimestepPlotter(flist, save_dir, timestamp):
             if axis_str[j] == 'Z':
                 x_string = 'imp_z_los'
             
-            logger.debug("x_string has been set to: ", x_string)
+            logger.debug("x_string has been set to: ", str(x_string))
             # Setting the proper title string and axis los string
             title_string = tit_str[i]
             axis_string = axis_str[j]
@@ -1434,9 +1434,9 @@ def TimestepPlotter(flist, save_dir, timestamp):
                              title_string)
             #Make the filename for the pdf saved
             save_string = save_dir + timestamp + '_'+title_string+'_j_comp_'+axis_string+'_LOS.pdf'
-            logger.debug("Save Directory set to: ", save_string)
+            logger.debug("Save Directory set to: ", str(save_string))
             plt.savefig(save_string, bbox_inches='tight')
             logger.debug("Plot Saved.")
             plt.close()
-    logger.info("TimestepPlotter has been run successfully.")
+    logger.debug("TimestepPlotter has been run successfully.")
     return()

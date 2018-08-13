@@ -66,7 +66,7 @@ def Analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
         Minimum Value for Clump Finding
     save_dir_fits: string
         Directory imput to save all FITS files
-        
+
     Returns:
     -------- 
     FITS File contatining all the data computed.
@@ -154,7 +154,7 @@ def Analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
     clumps = [] #Defining Empty List for loop
     logger.info("Clump Finding Section Started.")
     for i in range(0,len(octant)):
-        logger.debug("Working on Octant: ", i+1)
+        logger.info("Working on Octant: ", i+1)
         logger.debug("Invoking MasterClumpMaker function.")
         master_clump_main = MasterClumpMaker(octant[i])
         cmax = octant[i]["gas", "density"].max()
@@ -583,7 +583,7 @@ def Analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
         logger.debug("Starting Kinetic, Gravitational, and Boundedness Section.")
         #Detecting if broken value == 1. Do not run the following computations, because there is a RuntimeError
         if broken == 1:
-            logger.info("Broken value detected to be", broken, ". Skipping this section because RuntimeError will be triggered.")
+            logger.info("Broken value detected to be", str(broken), ". Skipping this section because RuntimeError will be triggered.")
             kinetic_energy = np.nan
             gravitational_energy = np.nan
             gravitationally_bound = False

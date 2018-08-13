@@ -43,14 +43,14 @@ def HeaderPrinter(config_input):
     flist = glob.glob(config_dir + '**/**/*.fits')
     flist.sort() #Sorts the Config files by name for easier readability
     
-    logger.info("Fits files found for function: ", flist)
+    logger.debug("Fits files found for function: ", str(flist))
     #Creating text file name here
     text_filename = config_dir + 'Header_Info.txt' 
-    logger.info("Save Directory set as: ", text_filename)
+    logger.debug("Save Directory set as: ", str(text_filename))
     
     #Opens the file to write - Will always overwrite data due to '+' argument
     with open(text_filename, 'w+') as txt:
-        logger.info("text_filename has been opened.")
+        logger.debug("text_filename has been opened.")
         #Generic Print Statements for TXT File
         print('Below presents the Simulation Input parameters ' +
               'and COMMENT(S) for the FITS Files from the Directory: '+
@@ -58,13 +58,13 @@ def HeaderPrinter(config_input):
         print('', file=txt)
     
         for i in range(0,len(flist)):    #Loops over all fits files here
-            logger.info("Currently working on FITS file: ", flist[i])
+            logger.debug("Currently working on FITS file: ", str(flist[i]))
             current_file = flist[i]
             
             #Opening and closing a first fits file of the config_dir to get input
             #parameters, these write to the txt file opened above
             if i == 0:
-                logger.info("First flist object detected, writing extra info.")
+                logger.debug("First flist object detected, writing extra info.")
                 main_hdu = fits.open(current_file)
                 param_hdu = main_hdu[1]
                 param_header = param_hdu.header
