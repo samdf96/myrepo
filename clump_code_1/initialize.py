@@ -93,7 +93,7 @@ message_start = client.messages.create(to=my_phone_number, from_=twilio_phone_nu
 # THIS WILL NEED TO BE CHANGED FOR THE NEWER DESIGN SIMULATIONS
 
 #This batches input filters the search criteria to only look for `batches` simulation directories
-batches = 'Fiducial'
+batches = 'Design'
 
 
 flist = glob.glob('/mnt/bigdata/erosolow/Orion2/*'+batches+'*/data.*.hdf5')
@@ -135,7 +135,7 @@ Overwrite Protection Here:
 """
 
 overwrite_analyzer = False
-overwrite_header = False
+overwrite_header = True
 overwrite_timestep_plots = True
 overwrite_simulation_plots = True
 
