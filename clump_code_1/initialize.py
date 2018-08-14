@@ -93,7 +93,7 @@ message_start = client.messages.create(to=my_phone_number, from_=twilio_phone_nu
 # THIS WILL NEED TO BE CHANGED FOR THE NEWER DESIGN SIMULATIONS
 
 #This batches input filters the search criteria to only look for `batches` simulation directories
-batches = 'Fiducial'
+batches = 'Design'
 
 flist = glob.glob('/mnt/bigdata/erosolow/Orion2/*'+batches+'*/data.*.hdf5')
 #flist = glob.glob('/mnt/bigdata/erosolow/Orion2/**/data.*.hdf5')
@@ -134,10 +134,10 @@ Overwrite Protection Here:
       even if files and directories are found by the code to exist.
 """
 
-overwrite_analyzer = False
+overwrite_analyzer = True
 overwrite_header = True
 overwrite_timestep_plots = True
-overwrite_simulation_plots = False
+overwrite_simulation_plots = True
 
 logger.info("Overwrite Protection for Analyzer function has been set to: %s",
             overwrite_analyzer)

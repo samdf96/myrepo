@@ -168,7 +168,7 @@ def Analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
     # that is how they are written with no difference between clump objects.
     # =========================================================================
     
-    logger.debug("Data Filling Section Started.")
+    logger.info("Data Filling Section Started.")
     
     #Creating Arrays for later export (see bottom of script for this step)
     logger.debug("Initialization com and bregion arrays.")
