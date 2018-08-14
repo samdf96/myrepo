@@ -96,7 +96,7 @@ message_start = client.messages.create(to=my_phone_number, from_=twilio_phone_nu
 batches = 'Design'
 
 
-flist = glob.glob('/mnt/bigdata/erosolow/Orion2/*'+batches+'*/data.*.hdf5')
+flist = glob.glob('/mnt/bigdata/erosolow/Orion2/**/data.*.hdf5')
 
 #This is to filter out the timestamps that we want to analyze over
 data_check_list = ['0060','0070','0080','0090','0100']
@@ -137,7 +137,7 @@ Overwrite Protection Here:
 overwrite_analyzer = False
 overwrite_header = True
 overwrite_timestep_plots = True
-overwrite_simulation_plots = True
+overwrite_simulation_plots = False
 
 logger.info("Overwrite Protection for Analyzer function has been set to: ",
             overwrite_analyzer)
