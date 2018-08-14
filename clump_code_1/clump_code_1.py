@@ -77,13 +77,13 @@ def Analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
     '''
     logger = logging.getLogger("initialize.clump_code_1.Analyzer")
     
-    logger.info('Simluation File Currently Working On: ',filename)
+    logger.info('Simluation File Currently Working On: %s',filename)
     
     #Loads data into File
     ds = yt.load(filename)
     logger.debug("File Loaded.")
     master_dist_data = int(ds.domain_dimensions[0])
-    logger.debug("Master Distance Data set as: ", master_dist_data)
+    logger.debug("Master Distance Data set as: %s", master_dist_data)
     err_string = [] #Used for tracking errors in functions
     
     # =========================================================================
@@ -117,24 +117,20 @@ def Analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
     
     #First Layer Here
     save_dir = save_dir_fits + sim_str
-    logger.debug("General Save Directory string set as: ", save_dir)
+    logger.debug("General Save Directory string set as: %s", save_dir)
     if os.path.isdir(save_dir) == True:
-        logger.debug("Warning!!! Directory: " +
-              save_dir +
-              "is detected as a valid directory." +
-              "Files will be overwritten.")
+        logger.debug("Warning!!! Directory: %s , is detected as a valid directory. Files will be overwritten.",
+                     save_dir)
     else:
         logger.debug("Directory not detected. Creating Directory.")
         os.mkdir(save_dir)
     
     #Second Layer Here
     save_dir_specific = save_dir + '/' + time_stamp + "/"
-    logger.debug("Specific Save Directory string set as: ", save_dir_specific)
+    logger.debug("Specific Save Directory string set as: %s", save_dir_specific)
     if os.path.isdir(save_dir_specific) == True:
-        logger.debug("Warning!!! Directory: " +
-              save_dir_specific +
-              "is detected as a valid directory." +
-              "FITS Files will be overwritten.")
+        logger.debug("Warning!!! Directory: %s , is detected as a valid directory. FITS Files will be overwritten.",
+                     save_dir_specific)
     else:
         logger.debug("Specific Save Directory not detector. Creating Directory.")
         os.mkdir(save_dir_specific)
@@ -154,11 +150,11 @@ def Analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
     clumps = [] #Defining Empty List for loop
     logger.info("Clump Finding Section Started.")
     for i in range(0,len(octant)):
-        logger.info("Working on Octant: ", i+1)
+        logger.info("Working on Octant: %s", i+1)
         logger.debug("Invoking MasterClumpMaker function.")
         master_clump_main = MasterClumpMaker(octant[i])
         cmax = octant[i]["gas", "density"].max()
-        logger.debug("cmax has been set to: ", cmax)
+        logger.debug("cmax has been set to: %s", cmax)
         logger.debug("Invoking ClumpFinder function.")
         lc = ClumpFinder(master_clump_main,clump_sizing,cmin,cmax,step)
         for j in range(0,len(lc)):
@@ -368,7 +364,7 @@ def Analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
                                                    l)  
                 if broken==1:
                     logger.warning("Broken Value from function VelocityArray",
-                                    " has been detected to be: ", broken)
+                                    " has been detected to be: %s", broken)
                     raise YTRuntimeError
                 
                 logger.debug("Invoking VelocityArray function.")
@@ -379,7 +375,7 @@ def Analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
                                                    l)
                 if broken==1:
                     logger.warning("Broken Value from function VelocityArray",
-                                    " has been detected to be: ", broken)
+                                    " has been detected to be: %s", broken)
                     raise YTRuntimeError
                 
                 logger.debug("Invoking VelocityArray function.")
@@ -390,7 +386,7 @@ def Analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
                                                    l)
                 if broken==1:
                     logger.warning("Broken Value from function VelocityArray",
-                                    " has been detected to be: ", broken)
+                                    " has been detected to be: %s", broken)
                     raise YTRuntimeError
             
             #Setting Default value for detector variable
@@ -427,12 +423,12 @@ def Analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
                                                                        master_dist_data)
                 #Check if broken statement is triggered
                 if broken == 1:
-                    logger.debug("Broken Value from VelocityArrayReducer detected to be: ", broken)
+                    logger.debug("Broken Value from VelocityArrayReducer detected to be: %s", broken)
                     raise YTErrorValue
                 if broken == 2:
-                    logger.debug("Broken Value from VelocityArrayReducer detected to be: ", broken)
+                    logger.debug("Broken Value from VelocityArrayReducer detected to be: %s", broken)
                     raise YTErrorReshape
-                logger.debug("Broken Value from VelocityArrayReducer detected to be: ", broken)
+                logger.debug("Broken Value from VelocityArrayReducer detected to be: %s", broken)
                 logger.debug("X LOS Array Reducer Passed Without Issue.")
                 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
                 arr_y_red, vy_px, vy_pz, broken = VelocityArrayReducer(arr_y,
@@ -441,12 +437,12 @@ def Analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
                                                                        master_dist_data)
                 #Check if broken statement is triggered
                 if broken == 1:
-                    logger.debug("Broken Value from VelocityArrayReducer detected to be: ", broken)
+                    logger.debug("Broken Value from VelocityArrayReducer detected to be: %s", broken)
                     raise YTErrorValue
                 if broken == 2:
-                    logger.debug("Broken Value from VelocityArrayReducer detected to be: ", broken)
+                    logger.debug("Broken Value from VelocityArrayReducer detected to be: %s", broken)
                     raise YTErrorReshape
-                logger.debug("Broken Value from VelocityArrayReducer detected to be: ", broken)
+                logger.debug("Broken Value from VelocityArrayReducer detected to be: %s", broken)
                 logger.debug("Y LOS Array Reducer Passed Without Issue.")
                 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
                 arr_z_red, vz_px, vz_py, broken = VelocityArrayReducer(arr_z,
@@ -455,12 +451,12 @@ def Analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
                                                                        master_dist_data)
                 #Check if broken statement is triggered
                 if broken == 1:
-                    logger.debug("Broken Value from VelocityArrayReducer detected to be: ", broken)
+                    logger.debug("Broken Value from VelocityArrayReducer detected to be: %s", broken)
                     raise YTErrorValue
                 if broken == 2:
-                    logger.debug("Broken Value from VelocityArrayReducer detected to be: ", broken)
+                    logger.debug("Broken Value from VelocityArrayReducer detected to be: %s", broken)
                     raise YTErrorReshape
-                logger.debug("Broken Value from VelocityArrayReducer detected to be: ", broken)
+                logger.debug("Broken Value from VelocityArrayReducer detected to be: %s", broken)
                 logger.debug("Z LOS Array Reducer Passed Without Issue.")
                 
                 # =============================================================
@@ -583,7 +579,7 @@ def Analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
         logger.debug("Starting Kinetic, Gravitational, and Boundedness Section.")
         #Detecting if broken value == 1. Do not run the following computations, because there is a RuntimeError
         if broken == 1:
-            logger.info("Broken value detected to be", str(broken), ". Skipping this section because RuntimeError will be triggered.")
+            logger.info("Broken value detected to be %s . Skipping this section because RuntimeError will be triggered.", str(broken))
             kinetic_energy = np.nan
             gravitational_energy = np.nan
             gravitationally_bound = False
@@ -594,7 +590,7 @@ def Analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
 
             # This detects if the clump is too big to compute the grav_energy
             # and this skips over this step if it detects that it is
-            if len(clump.fcoords) > 1000:
+            if len(clump.fcoords) > 10000:
                 logger.info("Number of Pixels in the Clump detected to be over 1000.")
                 gravitational_energy = np.nan
                 logger.info("Gravitational Energy value set to nan.")
@@ -605,7 +601,7 @@ def Analyzer(filename,l,cmin,step,beta,clump_sizing,save_dir_fits):
                       ' , is too large in size to compute gravitational energy.')
             else:
                 gravitational_energy = GravitationalEnergy(clump,kinetic_energy)
-                logger.debug("Gravitational Energy value set to: ", gravitational_energy)
+                logger.debug("Gravitational Energy value set to: %s", gravitational_energy)
                 # Checking Gravitational Boundedness Here
                 if gravitational_energy.value > kinetic_energy.value:
                     gravitationally_bound = True

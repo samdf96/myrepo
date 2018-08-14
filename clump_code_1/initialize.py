@@ -115,11 +115,11 @@ logging.config.fileConfig('logging.conf', defaults={'logfilename': data_dir+'out
 # create logger
 logger = logging.getLogger('initialize')
 
-logger.info("Batches search value set to: ", batches)
-logger.info("Glob function has found the following to be sifted: ", flist)
-logger.info("Data Check List has been set to: ", data_check_list)
-logger.info("tree_top_dir has been set to: ", tree_top_dir)
-logger.info("data_dir has been set to: ", data_dir)
+logger.info("Batches search value set to: %s", batches)
+logger.info("Glob function has found the following to be sifted: %s", flist)
+logger.info("Data Check List has been set to: %s", data_check_list)
+logger.info("tree_top_dir has been set to: %s", tree_top_dir)
+logger.info("data_dir has been set to: %s", data_dir)
 
 """
 Overwrite Protection Here:
@@ -139,13 +139,13 @@ overwrite_header = True
 overwrite_timestep_plots = True
 overwrite_simulation_plots = False
 
-logger.info("Overwrite Protection for Analyzer function has been set to: ",
+logger.info("Overwrite Protection for Analyzer function has been set to: %s",
             overwrite_analyzer)
-logger.info("Overwrite Protection for Header Printer function has been set to: ",
+logger.info("Overwrite Protection for Header Printer function has been set to: %s",
             overwrite_header)
-logger.info("Overwrite Protection for Timestep Plots function has been set to: ",
+logger.info("Overwrite Protection for Timestep Plots function has been set to: %s",
             overwrite_timestep_plots)
-logger.info("Overwrite Protection for Simulation Plots function has been set to: ",
+logger.info("Overwrite Protection for Simulation Plots function has been set to: %s",
             overwrite_simulation_plots)
 
 # =============================================================================
@@ -165,21 +165,21 @@ for i in range(0,len(flist)):
 #Sorting the Data by filename
 flist_data.sort()
 
-logger.info("Glob function has found the following to be analyzed: ",
+logger.info("Glob function has found the following to be analyzed: %s",
             flist_data)
 #Make a list of all the yaml files found in data_dir
 logger.info("Finding All Config Files.")
 flist_config_yaml = glob.glob(tree_top_dir+'*.yaml')
 flist_config_yaml.sort()
 
-logger.info("The following files will be inputs to the analyzer: ",
+logger.info("The following files will be inputs to the analyzer: %s",
             flist_config_yaml)
 
 carry_on_analyzer = False #Initialization Value - this is the default
-logger.debug("Setting Initialization value for carry_on to: ",
+logger.debug("Setting Initialization value for carry_on to: %s",
              carry_on_analyzer)
 for i in range(0,len(flist_config_yaml)):
-    logger.debug("Currentl Working on Config File: ", flist_config_yaml[i])
+    logger.debug("Currentl Working on Config File: %s", flist_config_yaml[i])
     #Grabs the config file name here
     naming_string = flist_config_yaml[i].split("/")[-1].split(".")[0]
     #Creating String for Directory
@@ -187,7 +187,7 @@ for i in range(0,len(flist_config_yaml)):
     
     #Checking if Directory Exists
     if os.path.isdir(save_dir) == True:
-        logger.info("Save Directory: ", save_dir, " has been detected as existing.")
+        logger.info("Save Directory: %s has been detected as existing.", save_dir)
         if overwrite_analyzer == True:
             logger.info("Overwrite for Analyzer has been set to TRUE.")
             logger.info("Carry On Value is being set to TRUE.")
@@ -196,8 +196,8 @@ for i in range(0,len(flist_config_yaml)):
             logger.info("Overwrite for Analyzer has been set to FALSE.")
             logger.info("Carry On Value will remain as FALSE.")
     else:
-        logger.info("Save Directory: ", save_dir, " has been detected as non-existent.")
-        logger.info("Save Directory: ", save_dir, " is being created.")
+        logger.info("Save Directory: %s , has been detected as non-existent.", save_dir)
+        logger.info("Save Directory: %s , is being created.", save_dir)
         os.mkdir(save_dir)
         logger.info("Setting Carry On Value to TRUE.")
         carry_on_analyzer = True
@@ -214,7 +214,7 @@ for i in range(0,len(flist_config_yaml)):
         #Call main code here
         #Testing first file here
         for j in range(0,len(flist_data)):
-            logger.info("Currently working on file: ", flist_data[j])
+            logger.info("Currently working on file: %s", flist_data[j])
             logger.info("Invoking Analyzer function (cc).")
             cc.Analyzer(flist_data[j],
                     data_loaded['l'],
@@ -240,7 +240,7 @@ if overwrite_header == True:
     #Run Loop over all the config_x directories found that are in the list
     
     for i in range(0,len(flist_config_dir)):
-        logger.info("Processing Summary File for directory: ", str(flist_config_dir[i]))
+        logger.info("Processing Summary File for directory: %s", str(flist_config_dir[i]))
         logger.info("Invoking HeaderPrinter function from header_printer.py")
         hp.HeaderPrinter(flist_config_dir[i])
 else:
@@ -256,7 +256,7 @@ if overwrite_timestep_plots == True:
     # Comparison Plots by specific timestep happens here:
     flist_plots = glob.glob(data_dir + '**/*.fits', recursive=True)
     flist_plots.sort()
-    logger.info("Files to loop over: ", str(flist_plots))
+    logger.info("Files to loop over: %s", str(flist_plots))
     
     for i in range(0,len(flist_plots)):
         current_file = flist_plots[i]
@@ -272,17 +272,17 @@ logger.info("Timestep Plots Section Completed.")
 logger.info("Simulation Plots Section Started.")
 # Comparison Plots over Fiducial Runs (by timestep) happens here:
 carry_on_simulation_plots = False #Initialize value - this is the default
-logger.info("Carry On Value for Simulation Plots is initialized as: ",
+logger.info("Carry On Value for Simulation Plots is initialized as: %s",
             str(carry_on_simulation_plots))
 flist_config = glob.glob(data_dir+'config_*')
 flist_config.sort()
-logger.info("Output config_x subdirectory list found to be: ", str(flist_config))
+logger.info("Output config_x subdirectory list found to be: %s", str(flist_config))
 for k in range(0,len(flist_config)): #Adding Loop for config directories
-    logger.info("Currently working on config: ", str(flist_config[k]))
+    logger.info("Currently working on config: %s", str(flist_config[k]))
     #Write in os function to create appropiate directory for Fiducial Plots
     simulation_dir = flist_config[k]+'/Simulation_Plots/'
     if os.path.isdir(simulation_dir) == True:
-        logger.info("Save Directory: ", str(simulation_dir), " has been detected to exist.")
+        logger.info("Save Directory: %s , has been detected to exist.", str(simulation_dir))
         if overwrite_simulation_plots==True:
             logger.info("Overwrite for Simulation Plots has been set to TRUE.")
             logger.info("Carry On Value is being set to TRUE.")
@@ -291,7 +291,7 @@ for k in range(0,len(flist_config)): #Adding Loop for config directories
             logger.info("Overwrite for Simulation Plots has been set to FALSE.")
             logger.info("Carry On Value will remain as FALSE.")
     else:
-        logger.info("Save Directory: ", str(simulation_dir), " has been detected as non-existent.")
+        logger.info("Save Directory: %s , has been detected as non-existent.", str(simulation_dir))
         logger.info("Creating Save Directory.")
         os.mkdir(simulation_dir)
         logger.info("Setting Carry On Value to TRUE.")
@@ -308,7 +308,7 @@ for k in range(0,len(flist_config)): #Adding Loop for config directories
             flist.sort()
             data_check_list_print = data_check_list[i]
             #Calling Main Function Here
-            logger.info("Current Timestep being worked on: ", str(data_check_list_print))
+            logger.info("Current Timestep being worked on: %s", str(data_check_list_print))
             logger.info("Invoking TimestepPlotter function.")
             TimestepPlotter(flist,simulation_dir,data_check_list_print)
 
