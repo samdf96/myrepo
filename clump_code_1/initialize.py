@@ -134,7 +134,7 @@ Overwrite Protection Here:
       even if files and directories are found by the code to exist.
 """
 
-overwrite_analyzer = True
+overwrite_analyzer = False
 overwrite_header = True
 overwrite_timestep_plots = True
 overwrite_simulation_plots = True
