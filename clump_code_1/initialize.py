@@ -260,7 +260,7 @@ if overwrite_timestep_plots == True:
     
     for i in range(0,len(flist_plots)):
         current_file = flist_plots[i]
-        logger.info("Current File being worked on: ", str(current_file))
+        logger.info("Current File being worked on: %s", str(current_file))
         logger.info("Invoking jComparisonPlotter function.")
         jComparisonPlotter(current_file)
 else:
