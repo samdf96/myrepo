@@ -50,7 +50,7 @@ for i in range(0,len(octant)):
 
 clump = clumps[8] # This will pull the 9th clump which gives error.
 
-import pdb; pdb.set_trace()q
+import pdb; pdb.set_trace()
 
 
 
