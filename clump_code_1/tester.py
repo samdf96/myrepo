@@ -25,7 +25,7 @@ filename = '/mnt/bigdata/erosolow/Orion2/Fiducial00/data.0070.3d.hdf5'
 
 ## Imported Values
 l = 10
-clump_sizing = 30
+clump_sizing = 50
 cmin = 5.0e-21
 step = 100
 

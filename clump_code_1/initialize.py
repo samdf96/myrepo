@@ -56,7 +56,7 @@ Notes:
     - SEE OVERWRITE PROTECTION BELOW.
 """
 
-import clump_code_1 as cc
+import analyzer as analyzer
 import header_printer as hp
 import glob
 import yaml
@@ -216,13 +216,13 @@ for i in range(0,len(flist_config_yaml)):
         for j in range(0,len(flist_data)):
             logger.info("Currently working on file: %s", flist_data[j])
             logger.info("Invoking Analyzer function (cc).")
-            cc.Analyzer(flist_data[j],
-                    data_loaded['l'],
-                    data_loaded['cmin'],
-                    data_loaded['step'],
-                    data_loaded['beta'],
-                    data_loaded['clump_sizing'],
-                    save_dir)
+            analyzer.Analyzer(flist_data[j],
+                              data_loaded['l'],
+                              data_loaded['cmin'],
+                              data_loaded['step'],
+                              data_loaded['beta'],
+                              data_loaded['clump_sizing'],
+                              save_dir)
     else:
         logger.info("Carry On Value has been detected as FALSE.")
         logger.info("Skipping Analysis for current config file.")

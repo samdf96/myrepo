@@ -136,19 +136,9 @@ def ClumpFinder(master_clump,clump_sizing,cmin,cmax,step):
     #Adds Center of Mass info for Clumps
     master_clump.add_info_item("center_of_mass") 
     #Finding Clumps Here
-    while True:
-        try:
-            find_clumps(master_clump, cmin, cmax, step)
-            leaf_clumps = get_lowest_clumps(master_clump)
-            logger.debug("ClumpFinder has been run successfully.")
-            print('ClumpFinder has been run successfully.')
-        except TypeError:
-            leaf_clumps = []
-            logger.debug('ClumpFinder has not been run successfully.')
-            print('ClumpFinder has not been run successfully.')
-            break
-        break
-
+    find_clumps(master_clump, cmin, cmax, step)
+    leaf_clumps = get_lowest_clumps(master_clump)
+    logger.debug("ClumpFinder has been run successfully.")
     return(leaf_clumps)
 
 def CenterOfMass(lc):
@@ -656,9 +646,9 @@ def KineticEnergy(data_object,
     """
     logger = logging.getLogger("initialize.definitions.KineticEnergy")
     kinetic = 0.5 * (data_object['cell_mass'] *
-        ((bulk_velocity[0] - data_object["gas", "velocity_x"].value)**2 +
-         (bulk_velocity[1] - data_object["gas", "velocity_y"].value)**2 +
-          (bulk_velocity[2] - data_object["gas", "velocity_z"].value)**2)).sum()
+        ((bulk_velocity[0] - data_object["gas", "velocity_x"])**2 +
+         (bulk_velocity[1] - data_object["gas", "velocity_y"])**2 +
+          (bulk_velocity[2] - data_object["gas", "velocity_z"])**2)).sum()
     logger.debug("KineticEnergy has been run successfully.")
     return(kinetic)
     
@@ -679,7 +669,7 @@ def GravitationalEnergy(data_object, kinetic_energy):
                                                    data_object['y'],
                                                    data_object['z'],
                                                    True,
-                                                   (kinetic_energy/G))
+                                                   (kinetic_energy/G).in_cgs())
     logger.debug("GravitationalEnergy has been run successfully.")
     return(grav_energy)
 
