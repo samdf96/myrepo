@@ -4,7 +4,7 @@
     Created on Thu May  3 19:53:52 2018
     
     @author: sfielder
-    """
+"""
 
 #Import Main Packages Here
 
@@ -38,37 +38,36 @@ module_logger = logging.getLogger("initialize.analyzer")
 
 def Analyzer(filename, l, cmin, step, beta, clump_sizing, save_dir_fits):
 
-'''
-Takes in certain global parameters, and a simulation datafile and computes
-all the relevant values for angular momentum, implied and actual.
+    '''
+    Takes in certain global parameters, and a simulation datafile and computes
+    all the relevant values for angular momentum, implied and actual.
 
-Arguments:
-----------
-filename: string
-must point to a data-simulation file (mostly .hdf5 files)
-needs to be the full directory string of the filename
-l: float
-length of data simulation in pc along one side of cube
-cmin: float
-Minimum Density Threshold for Clump Finding
-step: float
-Step-size multiplier for Clump Finding
-beta: float
-For Implied Angular Momentum Calculation
-clump_sizing: float
-Minimum Value for Clump Finding
-save_dir_fits: string
-Directory imput to save all FITS files
+    Arguments:
+    ----------
+    filename: string
+    must point to a data-simulation file (mostly .hdf5 files)
+    needs to be the full directory string of the filename
+    l: float
+    length of data simulation in pc along one side of cube
+    cmin: float
+    Minimum Density Threshold for Clump Finding
+    step: float
+    Step-size multiplier for Clump Finding
+    beta: float
+    For Implied Angular Momentum Calculation
+    clump_sizing: float
+    Minimum Value for Clump Finding
+    save_dir_fits: string
+    Directory imput to save all FITS files
 
-Returns:
---------
-FITS File contatining all the data computed.
-- Has all clump data
-- COMMENTS in the header for any clumps that returned errors
+    Returns:
+    --------
+    FITS File contatining all the data computed.
+    - Has all clump data
+    - COMMENTS in the header for any clumps that returned errors
 
 
-'''
-
+    '''
     logger = logging.getLogger("initialize.analyzer.Analyzer")
 
     logger.info('Simulation File Current Working On: %s', filename)
