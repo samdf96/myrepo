@@ -309,8 +309,8 @@ def Analyzer(filename, l, cmin, step, beta, clump_sizing, save_dir_fits):
         else:
             gravitational_energy[i] = 0
             boundedness[i] = False
-            err_string.append("Pixel Volume Exceeds Threshold for Clump Number: ",
-                              i+1,". Gravitational Energy not being computed.")
+            err_string.append("Pixel Volume Exceeds Threshold for Clump Number: " +
+                              str(i+1) + ". Gravitational Energy not being computed.")
 
 
     #Recasting Arrays as Quantities with proper units, will be used to track data
