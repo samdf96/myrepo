@@ -320,27 +320,27 @@ def Analyzer(filename, l, cmin, step, beta, clump_sizing, save_dir_fits):
                 com_y[i] = np.nan
                 com_z[i] = np.nan
                 mass[i] = np.nan
-                actual_angular_momentum_x = np.nan
-                actual_angular_momentum_y = np.nan
-                actual_angular_momentum_z = np.nan
-                actual_angular_momentum_total = np.nan
-                actual_angular_momentum_par_xy = np.nan
-                actual_angular_momentum_par_xz = np.nan
-                actual_angular_momentum_par_yz = np.nan
-                implied_angular_momentum_x_los = np.nan
-                implied_angular_momentum_y_los = np.nan
-                implied_angular_momentum_z_los = np.nan
-                x_length = np.nan
-                y_length = np.nan
-                z_length = np.nan
+                actual_angular_momentum_x[i] = np.nan
+                actual_angular_momentum_y[i] = np.nan
+                actual_angular_momentum_z[i] = np.nan
+                actual_angular_momentum_total[i] = np.nan
+                actual_angular_momentum_par_xy[i] = np.nan
+                actual_angular_momentum_par_xz[i] = np.nan
+                actual_angular_momentum_par_yz[i] = np.nan
+                implied_angular_momentum_x_los[i] = np.nan
+                implied_angular_momentum_y_los[i] = np.nan
+                implied_angular_momentum_z_los[i] = np.nan
+                x_length[i] = np.nan
+                y_length[i] = np.nan
+                z_length[i] = np.nan
                 volume_pix[i] = np.nan
-                gradient_x_los = np.nan
-                gradient_y_los = np.nan
-                gradient_z_los = np.nan
-                bulk_velocity = np.nan
-                kinetic_energy = np.nan
-                gravitational_energy = np.nan
-                boundedness = False # Needs to be a boolean for FITS File
+                gradient_x_los[i] = np.nan
+                gradient_y_los[i] = np.nan
+                gradient_z_los[i] = np.nan
+                bulk_velocity[i] = np.nan
+                kinetic_energy[i] = np.nan
+                gravitational_energy[i] = np.nan
+                boundedness[i] = False # Needs to be a boolean for FITS File
                 break # Exception
             break #While statement
                 
