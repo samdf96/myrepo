@@ -36,3 +36,10 @@ class YTPassThrough(Error):
     Signifies we need to pass through code to not kick any more errors.
     """
     pass
+
+class YTNoClump(Error):
+    '''
+    Happens when YT finds a clump, but that clump has no data associated 
+    with it, thus program crashes out instantly.
+    '''
+    pass

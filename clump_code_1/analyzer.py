@@ -26,9 +26,9 @@ from definitions import AngularMomentumImplied
 from definitions import KineticEnergy
 from definitions import GravitationalEnergy
 
-
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
+# Use if implementing 3D Basic Plots to visualize clump structure.
+#import matplotlib.pyplot as plt
+#from mpl_toolkits.mplot3d import Axes3D
 
 # Logging Imports Here
 import logging
@@ -182,135 +182,168 @@ def Analyzer(filename, l, cmin, step, beta, clump_sizing, save_dir_fits):
     gravitational_energy = np.zeros((len(clumps),1))
     boundedness = np.zeros((len(clumps),1))
     logger.info("Initialization of Data Arrays completed.")
-
+    
     for i in range(0,len(clumps)):
+        while True: #This is for catching IndexError if YT finds clump with no data
+            try:
+                logger.info("Currently Working on Clump Number %s out of %s",
+                            str(i+1),
+                            str(len(clumps)))
+                print("Currently Working on Clump Number ",i+1," out of ", len(clumps))
+                com = clumps[i].quantities.center_of_mass()
+                com_x[i] = com[0].value
+                com_y[i] = com[1].value
+                com_z[i] = com[2].value
+                logger.debug("Center_Of_Mass x Quantity found to be %s",
+                             str(com_x[i]))
+                logger.debug("Center_Of_Mass y Quantity found to be %s",
+                             str(com_y[i]))
+                logger.debug("Center_Of_Mass z Quantity found to be %s",
+                             str(com_z[i]))
+                '''
+                Using the following technique to compute total mass.
+                Originally used clumps[i].quantities.total_mass()
+                This way takes more memory and time, the following is equivalent in terms
+                of output, for actual data runs.
+                '''
+                mass[i] = clumps[i]['cell_mass'].sum()
+                logger.debug("Mass found to be: %s", str(mass[i]))
+                
+                x_coords = clumps[i]['x']
+                logger.debug("x_coords found to be: %s", str(x_coords))
+                y_coords = clumps[i]['y']
+                logger.debug("y_coords found to be: %s", str(y_coords))
+                z_coords = clumps[i]['z']
+                logger.debug("z_coords found to be: %s", str(z_coords))
+                
+                x_length[i] = x_coords.max()-x_coords.min()
+                y_length[i] = y_coords.max()-y_coords.min()
+                z_length[i] = z_coords.max()-z_coords.min()
+                logger.debug("x_length found to be: %s", str(x_length[i]))
+                logger.debug("y_length found to be: %s", str(y_length[i]))
+                logger.debug("z_length found to be: %s", str(z_length[i]))
+                
+                #Using x_coords by convention to determine number of pixels in clump.
+                volume_pix[i] = len(x_coords)
+                logger.debug("volume_pix found to be %s", volume_pix[i])
         
-        logger.info("Currently Working on Clump Number %s out of %s",
-                    str(i+1),
-                    str(len(clumps)))
-        print("Currently Working on Clump Number ",i+1," out of ", len(clumps))
-        com = clumps[i].quantities.center_of_mass()
-        com_x[i] = com[0].value
-        com_y[i] = com[1].value
-        com_z[i] = com[2].value
-        logger.debug("Center_Of_Mass x Quantity found to be %s",
-                     str(com_x[i]))
-        logger.debug("Center_Of_Mass y Quantity found to be %s",
-                     str(com_y[i]))
-        logger.debug("Center_Of_Mass z Quantity found to be %s",
-                     str(com_z[i]))
-        '''
-        Using the following technique to compute total mass.
-        Originally used clumps[i].quantities.total_mass()
-        This way takes more memory and time, the following is equivalent in terms
-        of output, for actual data runs.
-        '''
-        mass[i] = clumps[i]['cell_mass'].sum()
-        logger.debug("Mass found to be: %s", str(mass[i]))
+                x_velocity = clumps[i]['velocity_x']
+                y_velocity = clumps[i]['velocity_y']
+                z_velocity = clumps[i]['velocity_z']
+                logger.debug("x_velocity found to be: %s", str(x_velocity))
+                logger.debug("y_velocity found to be: %s", str(y_velocity))
+                logger.debug("z_velocity found to be: %s", str(z_velocity))
         
-        x_coords = clumps[i]['x']
-        logger.debug("x_coords found to be: %s", str(x_coords))
-        y_coords = clumps[i]['y']
-        logger.debug("y_coords found to be: %s", str(y_coords))
-        z_coords = clumps[i]['z']
-        logger.debug("z_coords found to be: %s", str(z_coords))
+                #Add in for basic visualization of data.
+            #    fig = plt.figure()
+            #    ax = fig.add_subplot(111, projection='3d')
+            #    ax.scatter(x_coords, y_coords, z_coords)
+            
+            
+                x_coords_flat = ArrayFlattener(x_coords)
+                y_coords_flat = ArrayFlattener(y_coords)
+                z_coords_flat = ArrayFlattener(z_coords)
+                x_velocity_flat = ArrayFlattener(x_velocity)
+                y_velocity_flat = ArrayFlattener(y_velocity)
+                z_velocity_flat = ArrayFlattener(z_velocity)
+                logger.info("Coordinate and Velocity Arrays flattened.")
         
-        x_length[i] = x_coords.max()-x_coords.min()
-        y_length[i] = y_coords.max()-y_coords.min()
-        z_length[i] = z_coords.max()-z_coords.min()
-        logger.debug("x_length found to be: %s", str(x_length[i]))
-        logger.debug("y_length found to be: %s", str(y_length[i]))
-        logger.debug("z_length found to be: %s", str(z_length[i]))
-        
-        #Using x_coords by convention to determine number of pixels in clump.
-        volume_pix[i] = len(x_coords)
-        logger.debug("volume_pix found to be %s", volume_pix[i])
-
-        x_velocity = clumps[i]['velocity_x']
-        y_velocity = clumps[i]['velocity_y']
-        z_velocity = clumps[i]['velocity_z']
-        logger.debug("x_velocity found to be: %s", str(x_velocity))
-        logger.debug("y_velocity found to be: %s", str(y_velocity))
-        logger.debug("z_velocity found to be: %s", str(z_velocity))
-
-        #Add in for basic visualization of data.
-    #    fig = plt.figure()
-    #    ax = fig.add_subplot(111, projection='3d')
-    #    ax.scatter(x_coords, y_coords, z_coords)
-    
-    
-        x_coords_flat = ArrayFlattener(x_coords)
-        y_coords_flat = ArrayFlattener(y_coords)
-        z_coords_flat = ArrayFlattener(z_coords)
-        x_velocity_flat = ArrayFlattener(x_velocity)
-        y_velocity_flat = ArrayFlattener(y_velocity)
-        z_velocity_flat = ArrayFlattener(z_velocity)
-        logger.info("Coordinate and Velocity Arrays flattened.")
-
-        actual_angular_momentum[i] = clumps[i].quantities.angular_momentum_vector()
-        
-        actual_angular_momentum_x[i] = actual_angular_momentum[i,0]
-        actual_angular_momentum_y[i] = actual_angular_momentum[i,1]
-        actual_angular_momentum_z[i] = actual_angular_momentum[i,2]
-        
-        actual_angular_momentum_par_xy[i] = (actual_angular_momentum_x[i] +
-                                      actual_angular_momentum_y[i])
-        actual_angular_momentum_par_xz[i] = (actual_angular_momentum_x[i] +
-                                      actual_angular_momentum_z[i])
-        actual_angular_momentum_par_yz[i] = (actual_angular_momentum_y[i] +
-                                      actual_angular_momentum_z[i])
-        actual_angular_momentum_total[i] = (actual_angular_momentum_x[i] +
-                                      actual_angular_momentum_y[i] +
-                                      actual_angular_momentum_z[i])
-        
-        logger.info("Actual Angular Momentum has been found.")
-        
-        # Implied Angular Momentum Calulations Here
-        '''
-        Plane Fitting is done using actual cm coordinate space, thus output
-        coefficients for both gradient terms, are already in units of 1/s.
-        Thus gradient_x/y/z_los are in units of 1/s.
-        '''
-        logger.info("Plane Fitting Commencing.")
-        #For X LOS
-        coeffs_x_los = PlaneFit(y_coords_flat,z_coords_flat,x_velocity_flat)
-        gradient_x_los[i] = Gradient(coeffs_x_los)
-        
-        #For Y LOS
-        coeffs_y_los = PlaneFit(z_coords_flat,x_coords_flat,y_velocity_flat)
-        gradient_y_los[i] = Gradient(coeffs_y_los)
-        
-        #For Z LOS
-        coeffs_z_los = PlaneFit(x_coords_flat, y_coords_flat, z_velocity_flat)
-        gradient_z_los[i] = Gradient(coeffs_z_los)
-        
-        logger.info("Plane Fitting Completed.")
-        
-        implied_angular_momentum_x_los[i] = AngularMomentumImplied(gradient_x_los[i],
-                                                                    y_length[i],
-                                                                    z_length[i])
-        implied_angular_momentum_y_los[i] = AngularMomentumImplied(gradient_y_los[i],
-                                                                    x_length[i],
-                                                                    z_length[i])
-        implied_angular_momentum_z_los[i] = AngularMomentumImplied(gradient_z_los[i],
-                                                                    x_length[i],
-                                                                    y_length[i])
-        
-        ## Computation of Kinetic and Gravitational Energy
-        bulk_velocity[i] = clumps[i].quantities.bulk_velocity(use_gas=True)
-        kinetic_energy[i] = KineticEnergy(clumps[i],bulk_velocity[i])
-        if volume_pix[i] < 10000:
-            gravitational_energy[i] = GravitationalEnergy(clumps[i],
-                                kinetic_energy[i])
-            if gravitational_energy[i] > kinetic_energy[i]:
-                boundedness[i] = True
-            else:
-                boundedness[i] = False
-        else:
-            gravitational_energy[i] = 0
-            boundedness[i] = False
-            err_string.append("Pixel Volume Exceeds Threshold for Clump Number: " +
-                              str(i+1) + ". Gravitational Energy not being computed.")
+                actual_angular_momentum[i] = clumps[i].quantities.angular_momentum_vector()
+                
+                actual_angular_momentum_x[i] = actual_angular_momentum[i,0]
+                actual_angular_momentum_y[i] = actual_angular_momentum[i,1]
+                actual_angular_momentum_z[i] = actual_angular_momentum[i,2]
+                
+                actual_angular_momentum_par_xy[i] = (actual_angular_momentum_x[i] +
+                                              actual_angular_momentum_y[i])
+                actual_angular_momentum_par_xz[i] = (actual_angular_momentum_x[i] +
+                                              actual_angular_momentum_z[i])
+                actual_angular_momentum_par_yz[i] = (actual_angular_momentum_y[i] +
+                                              actual_angular_momentum_z[i])
+                actual_angular_momentum_total[i] = (actual_angular_momentum_x[i] +
+                                              actual_angular_momentum_y[i] +
+                                              actual_angular_momentum_z[i])
+                
+                logger.info("Actual Angular Momentum has been found.")
+                
+                # Implied Angular Momentum Calulations Here
+                '''
+                Plane Fitting is done using actual cm coordinate space, thus output
+                coefficients for both gradient terms, are already in units of 1/s.
+                Thus gradient_x/y/z_los are in units of 1/s.
+                '''
+                logger.info("Plane Fitting Commencing.")
+                #For X LOS
+                coeffs_x_los = PlaneFit(y_coords_flat,z_coords_flat,x_velocity_flat)
+                gradient_x_los[i] = Gradient(coeffs_x_los)
+                
+                #For Y LOS
+                coeffs_y_los = PlaneFit(z_coords_flat,x_coords_flat,y_velocity_flat)
+                gradient_y_los[i] = Gradient(coeffs_y_los)
+                
+                #For Z LOS
+                coeffs_z_los = PlaneFit(x_coords_flat, y_coords_flat, z_velocity_flat)
+                gradient_z_los[i] = Gradient(coeffs_z_los)
+                
+                logger.info("Plane Fitting Completed.")
+                
+                implied_angular_momentum_x_los[i] = AngularMomentumImplied(gradient_x_los[i],
+                                                                            y_length[i],
+                                                                            z_length[i])
+                implied_angular_momentum_y_los[i] = AngularMomentumImplied(gradient_y_los[i],
+                                                                            x_length[i],
+                                                                            z_length[i])
+                implied_angular_momentum_z_los[i] = AngularMomentumImplied(gradient_z_los[i],
+                                                                            x_length[i],
+                                                                            y_length[i])
+                
+                ## Computation of Kinetic and Gravitational Energy
+                bulk_velocity[i] = clumps[i].quantities.bulk_velocity(use_gas=True)
+                kinetic_energy[i] = KineticEnergy(clumps[i],bulk_velocity[i])
+                if volume_pix[i] < 10000:
+                    gravitational_energy[i] = GravitationalEnergy(clumps[i],
+                                        kinetic_energy[i])
+                    if gravitational_energy[i] > kinetic_energy[i]:
+                        boundedness[i] = True
+                    else:
+                        boundedness[i] = False
+                else:
+                    gravitational_energy[i] = 0
+                    boundedness[i] = False
+                    err_string.append("Pixel Volume Exceeds Threshold for Clump Number: " +
+                                      str(i+1) + ". Gravitational Energy not being computed.")
+            except IndexError:
+                err_string.append("Clump Number: " +
+                                  str(i+1) +
+                                  " has no data. Setting all values to nan.")
+                com_x[i] = np.nan
+                com_y[i] = np.nan
+                com_z[i] = np.nan
+                mass[i] = np.nan
+                actual_angular_momentum_x = np.nan
+                actual_angular_momentum_y = np.nan
+                actual_angular_momentum_z = np.nan
+                actual_angular_momentum_total = np.nan
+                actual_angular_momentum_par_xy = np.nan
+                actual_angular_momentum_par_xz = np.nan
+                actual_angular_momentum_par_yz = np.nan
+                implied_angular_momentum_x_los = np.nan
+                implied_angular_momentum_y_los = np.nan
+                implied_angular_momentum_z_los = np.nan
+                x_length = np.nan
+                y_length = np.nan
+                z_length = np.nan
+                volume_pix[i] = np.nan
+                gradient_x_los = np.nan
+                gradient_y_los = np.nan
+                gradient_z_los = np.nan
+                bulk_velocity = np.nan
+                kinetic_energy = np.nan
+                gravitational_energy = np.nan
+                boundedness = False # Needs to be a boolean for FITS File
+                break # Exception
+            break #While statement
+                
 
 
     #Recasting Arrays as Quantities with proper units, will be used to track data
@@ -340,7 +373,9 @@ def Analyzer(filename, l, cmin, step, beta, clump_sizing, save_dir_fits):
     gravitational_energy *= u.g * (u.cm**2) / (u.s**2)
     boundedness = np.array(boundedness)
 
+    '''
     pixel = (10 * u.pc).to(u.cm) / 256
+
     #Have conversion ready if needed (just divide gradients by this term)
     km_per_pc = 3.24077929e-14
 
@@ -348,6 +383,7 @@ def Analyzer(filename, l, cmin, step, beta, clump_sizing, save_dir_fits):
     x_length_pix = (x_length / pixel).round()
     y_length_pix = (y_length / pixel).round()
     z_length_pix = (z_length / pixel).round()
+    '''
 
     #Creation of Columns for Astropy FITS for all quantities computed above
     logger.debug("Creating Column obects for new quantities.")
