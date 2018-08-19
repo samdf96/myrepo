@@ -192,6 +192,12 @@ def Analyzer(filename, l, cmin, step, beta, clump_sizing, save_dir_fits):
                 print("Currently Working on Clump Number ",i+1," out of ", len(clumps))
                 com = clumps[i].quantities.center_of_mass()
                 if str(com[0].value) == True:
+                    """
+                    This will check to see if there is any data stored in the clump
+                    this will raise an error and divert the code to the appropriate section
+                    for dealing with this clump object.
+                    Will return to the top of the for loop for the next clump.
+                    """
                     raise ValueError
                 
                 com_x[i] = com[0].value
