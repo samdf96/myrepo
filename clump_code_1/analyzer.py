@@ -189,7 +189,8 @@ def Analyzer(filename, l, cmin, step, beta, clump_sizing, save_dir_fits):
                 logger.info("Currently Working on Clump Number %s out of %s",
                             str(i+1),
                             str(len(clumps)))
-                print("Currently Working on Clump Number ",i+1," out of ", len(clumps))
+                logger.info("Computing Center of Mass Values.")
+                
                 com = clumps[i].quantities.center_of_mass()
                 if str(com[0].value) == True:
                     """
@@ -198,7 +199,9 @@ def Analyzer(filename, l, cmin, step, beta, clump_sizing, save_dir_fits):
                     for dealing with this clump object.
                     Will return to the top of the for loop for the next clump.
                     """
+                    logger.info("Center of Mass x detected to be nan. Raising error.")
                     raise ValueError
+                
                 
                 com_x[i] = com[0].value
                 com_y[i] = com[1].value

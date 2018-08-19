@@ -99,7 +99,8 @@ flist = glob.glob('/mnt/bigdata/erosolow/Orion2/*'+batches+'*/data.*.hdf5')
 #flist = glob.glob('/mnt/bigdata/erosolow/Orion2/**/data.*.hdf5')
 
 #This is to filter out the timestamps that we want to analyze over
-data_check_list = ['0060','0070','0080','0090','0100']
+#data_check_list = ['0060','0070','0080','0090','0100']
+data_check_list = ['0090']
 
 #This is where the config files are
 tree_top_dir = '/home/sfielder/bigdata/Clumps/'
