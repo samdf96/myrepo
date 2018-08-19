@@ -286,7 +286,7 @@ def Analyzer(filename, l, cmin, step, beta, clump_sizing, save_dir_fits):
                 '''
                 logger.info("Plane Fitting Commencing.")
                 #For X LOS
-                coeffs_x_los = PlaneFit(y_coords_flat,z_coords_flat,x_velocityi_flat)
+                coeffs_x_los = PlaneFit(y_coords_flat,z_coords_flat,x_velocity_flat)
                 gradient_x_los[i] = Gradient(coeffs_x_los)
                 
                 #For Y LOS
