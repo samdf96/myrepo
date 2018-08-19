@@ -313,9 +313,11 @@ def Analyzer(filename, l, cmin, step, beta, clump_sizing, save_dir_fits):
                     gravitational_energy[i] = GravitationalEnergy(clumps[i],
                                         kinetic_energy[i])
                     if gravitational_energy[i] > kinetic_energy[i]:
+                        logger.info("Clump is Gravitationall Bound.")
                         boundedness[i] = True
                     else:
                         boundedness[i] = False
+                        logger.info("Clump is Not Gravitationally Bound.")
                 else:
                     gravitational_energy[i] = 0
                     boundedness[i] = False
@@ -350,7 +352,7 @@ def Analyzer(filename, l, cmin, step, beta, clump_sizing, save_dir_fits):
                 kinetic_energy[i] = np.nan
                 gravitational_energy[i] = np.nan
                 boundedness[i] = False # Needs to be a boolean for FITS File
-                break # Exception
+                
             break #While statement
                 
 
