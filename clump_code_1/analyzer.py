@@ -192,7 +192,7 @@ def Analyzer(filename, l, cmin, step, beta, clump_sizing, save_dir_fits):
                 logger.info("Computing Center of Mass Values.")
                 
                 com = clumps[i].quantities.center_of_mass()
-                if str(com[0].value) == True:
+                if str(com[0].value) == 'nan':
                     """
                     This will check to see if there is any data stored in the clump
                     this will raise an error and divert the code to the appropriate section
@@ -286,7 +286,7 @@ def Analyzer(filename, l, cmin, step, beta, clump_sizing, save_dir_fits):
                 '''
                 logger.info("Plane Fitting Commencing.")
                 #For X LOS
-                coeffs_x_los = PlaneFit(y_coords_flat,z_coords_flat,x_velocity_flat)
+                coeffs_x_los = PlaneFit(y_coords_flat,z_coords_flat,x_velocityi_flat)
                 gradient_x_los[i] = Gradient(coeffs_x_los)
                 
                 #For Y LOS
