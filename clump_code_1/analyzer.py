@@ -203,7 +203,7 @@ def Analyzer(filename, l, cmin, step, beta, clump_sizing, save_dir_fits):
                     logger.info("Center of Mass x detected to be nan. Raising error.")
                     raise ValueError
                 
-                
+                logger.info("Setting COM and Mass Values.")
                 com_x[i] = com[0].value
                 com_y[i] = com[1].value
                 com_z[i] = com[2].value
@@ -222,6 +222,7 @@ def Analyzer(filename, l, cmin, step, beta, clump_sizing, save_dir_fits):
                 mass[i] = clumps[i]['cell_mass'].sum()
                 logger.debug("Mass found to be: %s", str(mass[i]))
                 
+                logger.info("Setting Coords and Length values.")
                 x_coords = clumps[i]['x']
                 logger.debug("x_coords found to be: %s", str(x_coords))
                 y_coords = clumps[i]['y']
@@ -327,12 +328,12 @@ def Analyzer(filename, l, cmin, step, beta, clump_sizing, save_dir_fits):
                     boundedness[i] = False
                     err_string.append("Pixel Volume Exceeds Threshold for Clump Number: " +
                                       str(i+1) + ". Gravitational Energy not being computed.")
-                break #Out of While Loop
                     
             except (ValueError, IndexError):
                 err_string.append("Clump Number: " +
                                   str(i+1) +
                                   " has no data. Setting all values to nan.")
+                logger.info("Setting all values to nan.")
                 com_x[i] = np.nan
                 com_y[i] = np.nan
                 com_z[i] = np.nan
@@ -358,6 +359,8 @@ def Analyzer(filename, l, cmin, step, beta, clump_sizing, save_dir_fits):
                 kinetic_energy[i] = np.nan
                 gravitational_energy[i] = np.nan
                 boundedness[i] = False # Needs to be a boolean for FITS File
+                break # Out of Except and Restart the Loop at next iteration.
+            break #Out of While Loop
 
     #Recasting Arrays as Quantities with proper units, will be used to track data
     logger.info("Re-casting numpy arrays as Quantities.")
