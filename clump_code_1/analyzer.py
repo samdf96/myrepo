@@ -189,10 +189,7 @@ def Analyzer(filename, l, cmin, step, beta, clump_sizing, save_dir_fits):
                             str(i+1),
                             str(len(clumps)))
                 logger.info("Computing Center of Mass Values.")
-                logger.info("i value before computation set to %s", i)
                 com = clumps[i].quantities.center_of_mass()
-                logger.info("COM found to be: %s", str(com))
-                logger.info("Specific Test Value found to be: %s", str(com[0].value))
                 if str(com[0].value) == 'nan':
                     """
                     This will check to see if there is any data stored in the clump
