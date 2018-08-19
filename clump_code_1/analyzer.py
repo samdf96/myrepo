@@ -191,6 +191,9 @@ def Analyzer(filename, l, cmin, step, beta, clump_sizing, save_dir_fits):
                             str(len(clumps)))
                 print("Currently Working on Clump Number ",i+1," out of ", len(clumps))
                 com = clumps[i].quantities.center_of_mass()
+                if str(com[0].value) == True:
+                    raise ValueError
+                
                 com_x[i] = com[0].value
                 com_y[i] = com[1].value
                 com_z[i] = com[2].value
@@ -312,7 +315,7 @@ def Analyzer(filename, l, cmin, step, beta, clump_sizing, save_dir_fits):
                     boundedness[i] = False
                     err_string.append("Pixel Volume Exceeds Threshold for Clump Number: " +
                                       str(i+1) + ". Gravitational Energy not being computed.")
-            except IndexError:
+            except ValueError:
                 err_string.append("Clump Number: " +
                                   str(i+1) +
                                   " has no data. Setting all values to nan.")
