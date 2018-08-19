@@ -148,7 +148,6 @@ def Analyzer(filename, l, cmin, step, beta, clump_sizing, save_dir_fits):
 
     logger.info("Clump Finding Section Completed.")
 
-    #%%
     logger.info("Data Filling Section Started.")
 
     #Creating Arrays for later export (see bottom of script for this step)
@@ -190,7 +189,7 @@ def Analyzer(filename, l, cmin, step, beta, clump_sizing, save_dir_fits):
                             str(i+1),
                             str(len(clumps)))
                 logger.info("Computing Center of Mass Values.")
-                
+                logger.info("i value before computation set to %s", i)
                 com = clumps[i].quantities.center_of_mass()
                 logger.info("COM found to be: %s", str(com))
                 logger.info("Specific Test Value found to be: %s", str(com[0].value))
@@ -328,7 +327,9 @@ def Analyzer(filename, l, cmin, step, beta, clump_sizing, save_dir_fits):
                     boundedness[i] = False
                     err_string.append("Pixel Volume Exceeds Threshold for Clump Number: " +
                                       str(i+1) + ". Gravitational Energy not being computed.")
-            except ValueError:
+                break #Out of While Loop
+                    
+            except (ValueError, IndexError):
                 err_string.append("Clump Number: " +
                                   str(i+1) +
                                   " has no data. Setting all values to nan.")
@@ -357,10 +358,6 @@ def Analyzer(filename, l, cmin, step, beta, clump_sizing, save_dir_fits):
                 kinetic_energy[i] = np.nan
                 gravitational_energy[i] = np.nan
                 boundedness[i] = False # Needs to be a boolean for FITS File
-                
-            break #While statement
-                
-
 
     #Recasting Arrays as Quantities with proper units, will be used to track data
     logger.info("Re-casting numpy arrays as Quantities.")
