@@ -71,6 +71,7 @@ import logging
 import logging.config
 
 #Twillo Account and SMS integration.
+messaging = False
 from twilio.rest import Client
 
 with io.open('/home/sfielder/Documents/TwilloAccountInfo.yaml', 'r') as TwillAcnt:
@@ -83,8 +84,9 @@ my_phone_number = TwillAcntDict['T_M']
 
 client = Client(account_sid, auth_token)
 
-message_start = client.messages.create(to=my_phone_number, from_=twilio_phone_number,
-                                 body="Python Script has Started.")
+if messaging == True:
+    message_start = client.messages.create(to=my_phone_number, from_=twilio_phone_number,
+                                           body="Python Script has Started.")
 
 
 #INPUTS HERE
@@ -93,7 +95,7 @@ message_start = client.messages.create(to=my_phone_number, from_=twilio_phone_nu
 # THIS WILL NEED TO BE CHANGED FOR THE NEWER DESIGN SIMULATIONS
 
 #This batches input filters the search criteria to only look for `batches` simulation directories
-batches = 'Fiducial'
+batches = 'Design'
 
 flist = glob.glob('/mnt/bigdata/erosolow/Orion2/*'+batches+'*/data.*.hdf5')
 #flist = glob.glob('/mnt/bigdata/erosolow/Orion2/**/data.*.hdf5')
@@ -136,9 +138,9 @@ Overwrite Protection Here:
 """
 
 overwrite_analyzer = False
-overwrite_header = True
-overwrite_timestep_plots = True
-overwrite_simulation_plots = True
+overwrite_header = False
+overwrite_timestep_plots = False
+overwrite_simulation_plots = False
 
 logger.info("Overwrite Protection for Analyzer function has been set to: %s",
             overwrite_analyzer)
