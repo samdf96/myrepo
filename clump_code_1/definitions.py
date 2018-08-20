@@ -622,7 +622,7 @@ def AngularMomentumActual(data_object,mass):
     logger.debug("Z component found to be: %s", str(angular_momentum_z))
     logger.debug("Combining Sums on: xy, xz, yz, and total.")
     angular_momentum_xy = (((angular_momentum_x**2)+
-                           (angular_momentum_y**2))**(1/2))/mass
+                          (angular_momentum_y**2))**(1/2))/mass
     angular_momentum_xz = (((angular_momentum_x**2)+
                            (angular_momentum_z**2))**(1/2))/mass
     angular_momentum_yz = (((angular_momentum_y**2)+

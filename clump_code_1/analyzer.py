@@ -265,15 +265,16 @@ def Analyzer(filename, l, cmin, step, beta, clump_sizing, save_dir_fits):
                 actual_angular_momentum_y[i] = actual_angular_momentum[i,1]
                 actual_angular_momentum_z[i] = actual_angular_momentum[i,2]
                 
-                actual_angular_momentum_par_xy[i] = (actual_angular_momentum_x[i] +
-                                              actual_angular_momentum_y[i])
-                actual_angular_momentum_par_xz[i] = (actual_angular_momentum_x[i] +
-                                              actual_angular_momentum_z[i])
-                actual_angular_momentum_par_yz[i] = (actual_angular_momentum_y[i] +
-                                              actual_angular_momentum_z[i])
-                actual_angular_momentum_total[i] = (actual_angular_momentum_x[i] +
-                                              actual_angular_momentum_y[i] +
-                                              actual_angular_momentum_z[i])
+                #Using vectorial addition because of pos/neg quantities found.
+                actual_angular_momentum_par_xy[i] = ((actual_angular_momentum_x[i]**2) +
+                                              (actual_angular_momentum_y[i]**2))**(1/2)
+                actual_angular_momentum_par_xz[i] = ((actual_angular_momentum_x[i]**2) +
+                                              (actual_angular_momentum_z[i]**2))**(1/2)
+                actual_angular_momentum_par_yz[i] = ((actual_angular_momentum_y[i]**2) +
+                                              (actual_angular_momentum_z[i]**2))**(1/2)
+                actual_angular_momentum_total[i] = ((actual_angular_momentum_x[i]**2) +
+                                              (actual_angular_momentum_y[i]**2) + 
+                                              (actual_angular_momentum_z[i]**2))**(1/2)
                 
                 logger.info("Actual Angular Momentum has been found.")
                 

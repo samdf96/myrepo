@@ -253,7 +253,7 @@ else:
 
 logger.info("Header Printer Section Completed.")
 # =============================================================================
-"""
+
 logger.info("Timestep Plots Section Started.")
 if overwrite_timestep_plots == True:
     logger.info("Overwrite for Timestep Plots has been set to TRUE.")
@@ -274,6 +274,7 @@ else:
 
 logger.info("Timestep Plots Section Completed.")
 # =============================================================================
+"""
 logger.info("Simulation Plots Section Started.")
 # Comparison Plots over Fiducial Runs (by timestep) happens here:
 carry_on_simulation_plots = False #Initialize value - this is the default
