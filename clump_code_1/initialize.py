@@ -96,9 +96,10 @@ if messaging == True:
 
 #This batches input filters the search criteria to only look for `batches` simulation directories
 batches = 'Design'
+#flist = glob.glob('/mnt/bigdata/erosolow/Orion2/*'+batches+'*/data.*.hdf5')
 
-flist = glob.glob('/mnt/bigdata/erosolow/Orion2/*'+batches+'*/data.*.hdf5')
-#flist = glob.glob('/mnt/bigdata/erosolow/Orion2/**/data.*.hdf5')
+#Call ALL Found Files in input directory
+flist = glob.glob('/mnt/bigdata/erosolow/Orion2/**/data.*.hdf5')
 
 #This is to filter out the timestamps that we want to analyze over
 data_check_list = ['0060','0070','0080','0090','0100']
@@ -252,6 +253,7 @@ else:
 
 logger.info("Header Printer Section Completed.")
 # =============================================================================
+"""
 logger.info("Timestep Plots Section Started.")
 if overwrite_timestep_plots == True:
     logger.info("Overwrite for Timestep Plots has been set to TRUE.")
@@ -316,7 +318,7 @@ for k in range(0,len(flist_config)): #Adding Loop for config directories
             TimestepPlotter(flist,simulation_dir,data_check_list_print)
 
 logger.info("Simulation Plots Section Completed.")
-
+"""
 message_end = client.messages.create(to=my_phone_number, from_=twilio_phone_number,
                                  body="Python Script has Ended.")
 # =============================================================================
