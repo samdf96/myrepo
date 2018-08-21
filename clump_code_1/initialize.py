@@ -139,8 +139,8 @@ Overwrite Protection Here:
 """
 
 overwrite_analyzer = False
-overwrite_header = False
-overwrite_timestep_plots = False
+overwrite_header = True
+overwrite_timestep_plots = True
 overwrite_simulation_plots = False
 
 logger.info("Overwrite Protection for Analyzer function has been set to: %s",
