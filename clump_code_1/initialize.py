@@ -95,11 +95,11 @@ if messaging == True:
 # THIS WILL NEED TO BE CHANGED FOR THE NEWER DESIGN SIMULATIONS
 
 #This batches input filters the search criteria to only look for `batches` simulation directories
-batches = 'Design'
-#flist = glob.glob('/mnt/bigdata/erosolow/Orion2/*'+batches+'*/data.*.hdf5')
+batches = 'Fiducial'
+flist = glob.glob('/mnt/bigdata/erosolow/Orion2/*'+batches+'*/data.*.hdf5')
 
 #Call ALL Found Files in input directory
-flist = glob.glob('/mnt/bigdata/erosolow/Orion2/**/data.*.hdf5')
+#flist = glob.glob('/mnt/bigdata/erosolow/Orion2/**/data.*.hdf5')
 
 #This is to filter out the timestamps that we want to analyze over
 data_check_list = ['0060','0070','0080','0090','0100']
@@ -140,7 +140,7 @@ Overwrite Protection Here:
 
 overwrite_analyzer = False
 overwrite_header = False
-overwrite_timestep_plots = True
+overwrite_timestep_plots = False
 overwrite_simulation_plots = False
 
 logger.info("Overwrite Protection for Analyzer function has been set to: %s",

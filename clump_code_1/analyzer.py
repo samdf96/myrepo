@@ -182,6 +182,9 @@ def Analyzer(filename, l, cmin, step, beta, clump_sizing, save_dir_fits):
     boundedness = np.zeros((len(clumps),1))
     logger.info("Initialization of Data Arrays completed.")
     
+    #This value is used to correct for pixel resolution on length computation.
+    pixel = ((10 * u.pc).to(u.cm) / 256).value
+    
     for i in range(0,len(clumps)):
         while True: #This is for catching IndexError if YT finds clump with no data
             try:
@@ -227,9 +230,9 @@ def Analyzer(filename, l, cmin, step, beta, clump_sizing, save_dir_fits):
                 z_coords = clumps[i]['z']
                 logger.debug("z_coords found to be: %s", str(z_coords))
                 
-                x_length[i] = x_coords.max()-x_coords.min()
-                y_length[i] = y_coords.max()-y_coords.min()
-                z_length[i] = z_coords.max()-z_coords.min()
+                x_length[i] = x_coords.max()-x_coords.min() + pixel
+                y_length[i] = y_coords.max()-y_coords.min() + pixel
+                z_length[i] = z_coords.max()-z_coords.min() + pixel
                 logger.debug("x_length found to be: %s", str(x_length[i]))
                 logger.debug("y_length found to be: %s", str(y_length[i]))
                 logger.debug("z_length found to be: %s", str(z_length[i]))
