@@ -5,182 +5,331 @@ Created on Mon Jul 16 10:12:57 2018
 
 @author: sfielder
 """
-
-
-import analyzer as analyzer
-import header_printer as hp
-import glob
-import yaml
-import io
 import os
-from definitions import jComparisonPlotter
-from definitions import TimestepPlotter
 
-# Logging Info Here:
-
+import yt
+import numpy as np
 import logging
-import logging.config
+import astropy.units as u
+from astropy.io import fits
 
-#Twillo Account and SMS integration.
-messaging = False
-from twilio.rest import Client
+# Import Functions from definitions.py file
+from definitions import OctantSplit
+from definitions import MasterClumpMaker
+from definitions import ClumpFinder
 
-with io.open('/home/sfielder/Documents/TwilloAccountInfo.yaml', 'r') as TwillAcnt:
-    TwillAcntDict = yaml.load(TwillAcnt)
+from definitions import PlaneFit
+from definitions import ArrayFlattener
+from definitions import Gradient
+from definitions import AngularMomentumImplied
+from definitions import KineticEnergy
+from definitions import GravitationalEnergy
 
-account_sid = TwillAcntDict['Acc_SID']
-auth_token = TwillAcntDict['Acc_TKN']
-twilio_phone_number = TwillAcntDict['T_N']
-my_phone_number = TwillAcntDict['T_M']
-
-client = Client(account_sid, auth_token)
-
-if messaging == True:
-    message_start = client.messages.create(to=my_phone_number, from_=twilio_phone_number,
-                                           body="Python Script has Started.")
-
-
-#INPUTS HERE
-
-#Creates a list of directories with the appropriate files for analysis
-# THIS WILL NEED TO BE CHANGED FOR THE NEWER DESIGN SIMULATIONS
-
-#This batches input filters the search criteria to only look for `batches` simulation directories
-batches = 'Design'
-#flist = glob.glob('/mnt/bigdata/erosolow/Orion2/*'+batches+'*/data.*.hdf5')
-
-#Call ALL Found Files in input directory
-flist = glob.glob('/mnt/bigdata/erosolow/Orion2/**/data.*.hdf5')
-
-#This is to filter out the timestamps that we want to analyze over
-data_check_list = ['0060','0070','0080','0090','0100']
+#Local Variables
+l = 10
+cmin = 5.0e-21
+beta = 1
+clump_sizing = 30
+step = 100
 
 
-#This is where the config files are
-tree_top_dir = '/Users/sfielder/Documents/Astro_Data/'
-data_dir = '/Users/sfielder/Documents/Astro_Data/Fiducial00'
+filename = '/Users/sfielder/Documents/Astro_Data/Fiducial00/data.0060.3d.hdf5'
+save_dir_fits = '/Users/sfielder/Documents/Astro_Data/Output/'
 
-#Load CONFIG FILE HERE
-logging.config.fileConfig('logging.conf', defaults={'logfilename': data_dir+'output.log'})
+logger = logging.getLogger("initialize.analyzer.Analyzer")
 
-#Set the Batch to do here:
-#Batches will be by Simulation Directory General Name (ex. Fiducial or Design...)
+logger.info('Simulation File Current Working On: %s', filename)
 
+#Loading File into Dataset
+ds = yt.load(filename)
+logger.debug('File Loaded')
+master_dist_data = int(ds.domain_dimensions[0])
+logger.debug('Master Distance Data set as: %s', master_dist_data)
 
-# create logger
-logger = logging.getLogger('initialize')
+#Might be Deprecated
+err_string = []
 
-logger.info("Batches search value set to: %s", batches)
-logger.info("Glob function has found the following to be sifted: %s", flist)
-logger.info("Data Check List has been set to: %s", data_check_list)
-logger.info("tree_top_dir has been set to: %s", tree_top_dir)
-logger.info("data_dir has been set to: %s", data_dir)
+main_string = filename.split("/")
 
-"""
-Overwrite Protection Here:
-    - header and timestep_plots have absolute status and will not even
-      start looking for files if value below is set to FALSE.
+#Make this modular in the future.
+sim_string_true = [(('Fiducial' in k) or ('Design' in k)) for k in main_string]
+
+#Grabbing Indice in main_string that corresponds to where Input Simulation string is.
+sim_string_id = [i for i, x in enumerate(sim_string_true) if x]
+
+sim_str = main_string[sim_string_id[0]] #sim_string_id should only have one entry!
+
+out_string = main_string[-1].split(".") # Splits the data file name by periods
+time_stamp = out_string[1]
+
+#First Layer Here
+save_dir = save_dir_fits + sim_str
+logger.debug("General Save Directory string set as: %s", save_dir)
+if os.path.isdir(save_dir) == True:
+    logger.debug("Warning!!! Directory: %s , is detected as a valid directory. Files will be overwritten.",
+                 save_dir)
+else:
+    logger.debug("Directory not detected. Creating Directory.")
+    os.mkdir(save_dir)
+
+    #Second Layer Here
+save_dir_specific = save_dir + '/' + time_stamp + "/"
+logger.debug("Specific Save Directory string set as: %s", save_dir_specific)
+if os.path.isdir(save_dir_specific) == True:
+    logger.debug("Warning!!! Directory: %s , is detected as a valid directory. FITS Files will be overwritten.",
+                 save_dir_specific)
+else:
+    logger.debug("Specific Save Directory not detector. Creating Directory.")
+    os.mkdir(save_dir_specific)
+
+logger.info("Directories have been set.")
+
+# =========================================================================
+#Creates a Data Object containing all the Simulation Data
+logger.debug("Creating 'ad' data object.")
+ad = ds.all_data()
+
+#Splits the Data into Octants
+logger.debug("Invoking OctantSplit function.")
+octant = OctantSplit(ad,ds,l)
+
+#Grabs each of the octants and runs them through the Clump Finding algorithm
+clumps = [] #Defining Empty List for loop
+logger.info("Clump Finding Section Started.")
+for i in range(0,len(octant)):
+    logger.info("Working on Octant: %s", i+1)
+    logger.debug("Invoking MasterClumpMaker function.")
+    master_clump_main = MasterClumpMaker(octant[i])
+    cmax = octant[i]["gas", "density"].max()
+    logger.debug("cmax has been set to: %s", cmax)
+    logger.debug("Invoking ClumpFinder function.")
+    lc = ClumpFinder(master_clump_main,clump_sizing,cmin,cmax,step)
+
+    #If lc returns empty the next for-loop will not be triggered. Write out message to err_string
+    if len(lc) == 0:
+        err_string.append('ClumpFinder has failed for Octant: ' + str(i+1))
+        logger.info("Error String for FITS file has been written to. ClumpFinder failed.")
     
-    - analyzer and simulation_plots have conditional status, and will look for
-      for already created directories and will skip those that are found
-      if the value below is set to FALSE.
-    
-    - Setting any of the following values to TRUE will overwrite files
-      even if files and directories are found by the code to exist.
-"""
+    for j in range(0,len(lc)):
+        logger.debug("Appending Leaf Clumps to clumps list.")
+        clumps.append(lc[j])
 
-overwrite_analyzer = False
-overwrite_header = False
-overwrite_timestep_plots = False
-overwrite_simulation_plots = False
+logger.info("Clump Finding Section Completed.")
 
-logger.info("Overwrite Protection for Analyzer function has been set to: %s",
-            overwrite_analyzer)
-logger.info("Overwrite Protection for Header Printer function has been set to: %s",
-            overwrite_header)
-logger.info("Overwrite Protection for Timestep Plots function has been set to: %s",
-            overwrite_timestep_plots)
-logger.info("Overwrite Protection for Simulation Plots function has been set to: %s",
-            overwrite_simulation_plots)
+logger.info("Data Filling Section Started.")
 
-# =============================================================================
-# =============================================================================
-logger.info("Analysis Section Started.")
-#Creating empty list for data sorting
-flist_data = []
-logger.debug("Filtering data by data_check_list_entry.")
-for i in range(0,len(flist)):
-    main_string = flist[i].split("/")
-    out_string = main_string[-1].split(".")
-    time_stamp = out_string[1]
-    #This checks if timestamp
-    if any(x in time_stamp for x in data_check_list):
-        flist_data.append(flist[i])
+#Creating Arrays for later export (see bottom of script for this step)
+logger.debug("Initialization data arrays.")
+clump_number = np.arange(1,len(clumps)+1)
+com = np.zeros((len(clumps),1,3))
+com_x = np.zeros((len(clumps),1))
+com_y = np.zeros((len(clumps),1))
+com_z = np.zeros((len(clumps),1))
+mass = np.zeros((len(clumps),1))
+actual_angular_momentum = np.zeros((len(clumps),3))
+actual_angular_momentum_x = np.zeros((len(clumps),1))
+actual_angular_momentum_y = np.zeros((len(clumps),1))
+actual_angular_momentum_z = np.zeros((len(clumps),1))
+actual_angular_momentum_total = np.zeros((len(clumps),1))
+actual_angular_momentum_par_xy = np.zeros((len(clumps),1))
+actual_angular_momentum_par_xz = np.zeros((len(clumps),1))
+actual_angular_momentum_par_yz = np.zeros((len(clumps),1))
+implied_angular_momentum_x_los = np.zeros((len(clumps),1))
+implied_angular_momentum_y_los = np.zeros((len(clumps),1))
+implied_angular_momentum_z_los = np.zeros((len(clumps),1))
+x_length = np.zeros((len(clumps),1))
+y_length = np.zeros((len(clumps),1))
+z_length = np.zeros((len(clumps),1))
+volume_pix = np.zeros((len(clumps),1))
+gradient_x_los = np.zeros((len(clumps),1))
+gradient_y_los = np.zeros((len(clumps),1))
+gradient_z_los = np.zeros((len(clumps),1))
+bulk_velocity = np.zeros((len(clumps),3))
+kinetic_energy = np.zeros((len(clumps),1))
+gravitational_energy = np.zeros((len(clumps),1))
+boundedness = np.zeros((len(clumps),1))
+logger.info("Initialization of Data Arrays completed.")
 
-#Sorting the Data by filename
-flist_data.sort()
+#This value is used to correct for pixel resolution on length computation.
+pixel = ((10 * u.pc).to(u.cm) / 256).value
 
-logger.info("Glob function has found the following to be analyzed: %s",
-            flist_data)
-#Make a list of all the yaml files found in data_dir
-logger.info("Finding All Config Files.")
-flist_config_yaml = glob.glob(tree_top_dir+'*.yaml')
-flist_config_yaml.sort()
+#%%
 
-logger.info("The following files will be inputs to the analyzer: %s",
-            flist_config_yaml)
-
-carry_on_analyzer = False #Initialization Value - this is the default
-logger.debug("Setting Initialization value for carry_on to: %s",
-             carry_on_analyzer)
-for i in range(0,len(flist_config_yaml)):
-    logger.debug("Currentl Working on Config File: %s", flist_config_yaml[i])
-    #Grabs the config file name here
-    naming_string = flist_config_yaml[i].split("/")[-1].split(".")[0]
-    #Creating String for Directory
-    save_dir = data_dir + naming_string + '/'
-    
-    #Checking if Directory Exists
-    if os.path.isdir(save_dir) == True:
-        logger.info("Save Directory: %s has been detected as existing.", save_dir)
-        if overwrite_analyzer == True:
-            logger.info("Overwrite for Analyzer has been set to TRUE.")
-            logger.info("Carry On Value is being set to TRUE.")
-            carry_on_analyzer = True
-        else:
-            logger.info("Overwrite for Analyzer has been set to FALSE.")
-            logger.info("Carry On Value will remain as FALSE.")
-    else:
-        logger.info("Save Directory: %s , has been detected as non-existent.", save_dir)
-        logger.info("Save Directory: %s , is being created.", save_dir)
-        os.mkdir(save_dir)
-        logger.info("Setting Carry On Value to TRUE.")
-        carry_on_analyzer = True
+for i in range(0,1):
+        while True: #This is for catching IndexError if YT finds clump with no data
+            try:
+                logger.info("Currently Working on Clump Number %s out of %s",
+                            str(i+1),
+                            str(len(clumps)))
+                logger.info("Computing Center of Mass Values.")
+                com = clumps[i].quantities.center_of_mass()
+                if str(com[0].value) == 'nan':
+                    """
+                    This will check to see if there is any data stored in the clump
+                    this will raise an error and divert the code to the appropriate section
+                    for dealing with this clump object.
+                    Will return to the top of the for loop for the next clump.
+                    """
+                    logger.info("Center of Mass x detected to be nan. Raising error.")
+                    raise ValueError
+                
+                logger.info("Setting COM and Mass Values.")
+                com_x[i] = com[0].value
+                com_y[i] = com[1].value
+                com_z[i] = com[2].value
+                logger.debug("Center_Of_Mass x Quantity found to be %s",
+                             str(com_x[i]))
+                logger.debug("Center_Of_Mass y Quantity found to be %s",
+                             str(com_y[i]))
+                logger.debug("Center_Of_Mass z Quantity found to be %s",
+                             str(com_z[i]))
+                '''
+                Using the following technique to compute total mass.
+                Originally used clumps[i].quantities.total_mass()
+                This way takes more memory and time, the following is equivalent in terms
+                of output, for actual data runs.
+                '''
+                mass[i] = clumps[i]['cell_mass'].sum()
+                logger.debug("Mass found to be: %s", str(mass[i]))
+                
+                logger.info("Setting Coords and Length values.")
+                x_coords = clumps[i]['x']
+                logger.debug("x_coords found to be: %s", str(x_coords))
+                y_coords = clumps[i]['y']
+                logger.debug("y_coords found to be: %s", str(y_coords))
+                z_coords = clumps[i]['z']
+                logger.debug("z_coords found to be: %s", str(z_coords))
+                
+                x_length[i] = (x_coords.max()-x_coords.min()).value + pixel
+                y_length[i] = (y_coords.max()-y_coords.min()).value + pixel
+                z_length[i] = (z_coords.max()-z_coords.min()).value + pixel
+                logger.debug("x_length found to be: %s", str(x_length[i]))
+                logger.debug("y_length found to be: %s", str(y_length[i]))
+                logger.debug("z_length found to be: %s", str(z_length[i]))
+                
+                #Using x_coords by convention to determine number of pixels in clump.
+                volume_pix[i] = len(x_coords)
+                logger.debug("volume_pix found to be %s", volume_pix[i])
         
-    #If Carry_on_Analyzer has been set to true, then run the analysis.    
-    if carry_on_analyzer == True:
-        logger.info("Carry On Value has been detected as TRUE.")
-        logger.info("Proceeding with Analysis.")
-        #Importing Config File settings here
-        with io.open(flist_config_yaml[i], 'r') as stream:
-            data_loaded = yaml.load(stream)
-            logger.info("Config File has been opened and settings extracted.")
+                x_velocity = clumps[i]['velocity_x']
+                y_velocity = clumps[i]['velocity_y']
+                z_velocity = clumps[i]['velocity_z']
+                logger.debug("x_velocity found to be: %s", str(x_velocity))
+                logger.debug("y_velocity found to be: %s", str(y_velocity))
+                logger.debug("z_velocity found to be: %s", str(z_velocity))
         
-        #Call main code here
-        #Testing first file here
-        for j in range(0,len(flist_data)):
-            logger.info("Currently working on file: %s", flist_data[j])
-            logger.info("Invoking Analyzer function (cc).")
-            analyzer.Analyzer(flist_data[j],
-                              data_loaded['l'],
-                              data_loaded['cmin'],
-                              data_loaded['step'],
-                              data_loaded['beta'],
-                              data_loaded['clump_sizing'],
-                              save_dir)
-    else:
-        logger.info("Carry On Value has been detected as FALSE.")
-        logger.info("Skipping Analysis for current config file.")
-
-logger.info("Analysis Section Complete.")
+                #Add in for basic visualization of data.
+            #    fig = plt.figure()
+            #    ax = fig.add_subplot(111, projection='3d')
+            #    ax.scatter(x_coords, y_coords, z_coords)
+            
+            
+                x_coords_flat = ArrayFlattener(x_coords)
+                y_coords_flat = ArrayFlattener(y_coords)
+                z_coords_flat = ArrayFlattener(z_coords)
+                x_velocity_flat = ArrayFlattener(x_velocity)
+                y_velocity_flat = ArrayFlattener(y_velocity)
+                z_velocity_flat = ArrayFlattener(z_velocity)
+                logger.info("Coordinate and Velocity Arrays flattened.")
+        
+                actual_angular_momentum[i] = clumps[i].quantities.angular_momentum_vector()
+                
+                actual_angular_momentum_x[i] = actual_angular_momentum[i,0]
+                actual_angular_momentum_y[i] = actual_angular_momentum[i,1]
+                actual_angular_momentum_z[i] = actual_angular_momentum[i,2]
+                
+                #Using vectorial addition because of pos/neg quantities found.
+                actual_angular_momentum_par_xy[i] = ((actual_angular_momentum_x[i]**2) +
+                                              (actual_angular_momentum_y[i]**2))**(1/2)
+                actual_angular_momentum_par_xz[i] = ((actual_angular_momentum_x[i]**2) +
+                                              (actual_angular_momentum_z[i]**2))**(1/2)
+                actual_angular_momentum_par_yz[i] = ((actual_angular_momentum_y[i]**2) +
+                                              (actual_angular_momentum_z[i]**2))**(1/2)
+                actual_angular_momentum_total[i] = ((actual_angular_momentum_x[i]**2) +
+                                              (actual_angular_momentum_y[i]**2) + 
+                                              (actual_angular_momentum_z[i]**2))**(1/2)
+                
+                logger.info("Actual Angular Momentum has been found.")
+                
+                # Implied Angular Momentum Calulations Here
+                '''
+                Plane Fitting is done using actual cm coordinate space, thus output
+                coefficients for both gradient terms, are already in units of 1/s.
+                Thus gradient_x/y/z_los are in units of 1/s.
+                '''
+                logger.info("Plane Fitting Commencing.")
+                #For X LOS
+                coeffs_x_los = PlaneFit(y_coords_flat,z_coords_flat,x_velocity_flat)
+                gradient_x_los[i] = Gradient(coeffs_x_los)
+                
+                #For Y LOS
+                coeffs_y_los = PlaneFit(z_coords_flat,x_coords_flat,y_velocity_flat)
+                gradient_y_los[i] = Gradient(coeffs_y_los)
+                
+                #For Z LOS
+                coeffs_z_los = PlaneFit(x_coords_flat, y_coords_flat, z_velocity_flat)
+                gradient_z_los[i] = Gradient(coeffs_z_los)
+                
+                logger.info("Plane Fitting Completed.")
+                
+                implied_angular_momentum_x_los[i] = AngularMomentumImplied(gradient_x_los[i],
+                                                                            y_length[i],
+                                                                            z_length[i])
+                implied_angular_momentum_y_los[i] = AngularMomentumImplied(gradient_y_los[i],
+                                                                            x_length[i],
+                                                                            z_length[i])
+                implied_angular_momentum_z_los[i] = AngularMomentumImplied(gradient_z_los[i],
+                                                                            x_length[i],
+                                                                            y_length[i])
+                
+                ## Computation of Kinetic and Gravitational Energy
+                bulk_velocity[i] = clumps[i].quantities.bulk_velocity(use_gas=True)
+                kinetic_energy[i] = KineticEnergy(clumps[i],bulk_velocity[i])
+                if volume_pix[i] < 10000:
+                    gravitational_energy[i] = GravitationalEnergy(clumps[i],
+                                        kinetic_energy[i])
+                    if gravitational_energy[i] > kinetic_energy[i]:
+                        logger.info("Clump is Gravitationall Bound.")
+                        boundedness[i] = True
+                    else:
+                        boundedness[i] = False
+                        logger.info("Clump is Not Gravitationally Bound.")
+                else:
+                    gravitational_energy[i] = 0
+                    boundedness[i] = False
+                    err_string.append("Pixel Volume Exceeds Threshold for Clump Number: " +
+                                      str(i+1) + ". Gravitational Energy not being computed.")
+                    
+            except (ValueError, IndexError):
+                err_string.append("Clump Number: " +
+                                  str(i+1) +
+                                  " has no data. Setting all values to nan.")
+                logger.info("Setting all values to nan.")
+                com_x[i] = np.nan
+                com_y[i] = np.nan
+                com_z[i] = np.nan
+                mass[i] = np.nan
+                actual_angular_momentum_x[i] = np.nan
+                actual_angular_momentum_y[i] = np.nan
+                actual_angular_momentum_z[i] = np.nan
+                actual_angular_momentum_total[i] = np.nan
+                actual_angular_momentum_par_xy[i] = np.nan
+                actual_angular_momentum_par_xz[i] = np.nan
+                actual_angular_momentum_par_yz[i] = np.nan
+                implied_angular_momentum_x_los[i] = np.nan
+                implied_angular_momentum_y_los[i] = np.nan
+                implied_angular_momentum_z_los[i] = np.nan
+                x_length[i] = np.nan
+                y_length[i] = np.nan
+                z_length[i] = np.nan
+                volume_pix[i] = np.nan
+                gradient_x_los[i] = np.nan
+                gradient_y_los[i] = np.nan
+                gradient_z_los[i] = np.nan
+                bulk_velocity[i] = np.nan
+                kinetic_energy[i] = np.nan
+                gravitational_energy[i] = np.nan
+                boundedness[i] = False # Needs to be a boolean for FITS File
+                break # Out of Except and Restart the Loop at next iteration.
+            break #Out of While Loop
 
