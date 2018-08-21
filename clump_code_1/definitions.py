@@ -879,58 +879,40 @@ def jCompPlotter(x, y1, y2, axis_str, tit_str):
     #Grabs Min and Max for x-axis (searches all imputted data however)
     x_min = min(x)
     x_max = max(x)
+    length = len(x)
     logger.debug("x_min found to be: %s", str(x_min))
     logger.debug("x_max found to be: %s", str(x_max))
-# Legacy Code for finding correct min/max values for graph.
-#    y1_min = min(y1)
-#    y1_max = max(y1)
-#    y2_min = min(y2)
-#    y2_max = max(y2)
-#    x_master_min = min(x_min, y1_min,y2_min)
-#    x_master_max = min(x_max, y1_max,y2_max)
+    
     logger.debug("Creating Line of Constant Slope.")
     unity_x = np.linspace(x_min,x_max,1000) #Makes line of unity values
     ax.loglog(unity_x,unity_x, 'k--', label='Line of Unity') #Adds to plot here
     
-    #Best Fit Calculations here
-    logger.debug("Starting Line of Best Fit Calculations.")
-    log_x = np.log10(x)
-    log_y1 = np.log10(y1)
-    log_y2 = np.log10(y2)
-    slope_1, intercept_1 = np.polyfit(log_x, log_y1, 1)
-    slope_2, intercept_2 = np.polyfit(log_x, log_y2, 1)
+    if length > 10:
+        #Best Fit Calculations here
+        logger.debug("Starting Line of Best Fit Calculations.")
+        log_x = np.log10(x)
+        log_y1 = np.log10(y1)
+        log_y2 = np.log10(y2)
+        slope_1, intercept_1 = np.polyfit(log_x, log_y1, 1)
+        slope_2, intercept_2 = np.polyfit(log_x, log_y2, 1)
+        
+        logger.debug("Creating Data for Lines.")
+        fit_1 = 1e1**(slope_1 * log_x + intercept_1)
+        fit_2 = 1e1**(slope_2 * log_x + intercept_2)
+        
+        #Insert on Plot Here
+        logger.debug("Inserting on Plot.")
+        ax.loglog(x,
+                fit_1,
+                'b-',
+                alpha=0.5,
+                label='Line of Best Fit - Full')
+        ax.loglog(x,
+                fit_2,
+                'r-',
+                alpha=0.5,
+                label='Line of Best Fit - Partial')
     
-    logger.debug("Creating Data for Lines.")
-    fit_1 = 1e1**(slope_1 * log_x + intercept_1)
-    fit_2 = 1e1**(slope_2 * log_x + intercept_2)
-    
-    #Insert on Plot Here
-    logger.debug("Inserting on Plot.")
-    ax.loglog(x,
-            fit_1,
-            'b-',
-            alpha=0.5,
-            label='Line of Best Fit - Full')
-    ax.loglog(x,
-            fit_2,
-            'r-',
-            alpha=0.5,
-            label='Line of Best Fit - Partial')
-    
-#Legacy Code to set axis limits based on min/max values - use equal aspect above
-#        x_axis_min = np.min(x)
-#        x_axis_max = np.max(x)
-#        y_axis_min = min(np.amin(y1),np.amin(y2))
-#        y_axis_max = max(np.amax(y1),np.amax(y2))
-#        
-#        p = percentage
-#        x_axis_min -= p*x_axis_min
-#        x_axis_max += p*x_axis_max
-#        y_axis_min -= p*y_axis_min
-#        y_axis_max += p*y_axis_max
-#        
-#        ax.set_xlim(left=x_axis_min, right=x_axis_max)
-#        ax.set_ylim(bottom=y_axis_min,top=y_axis_max)
     
     logger.debug("Tweaking plot settings.")
     ax.set_aspect('equal')   
@@ -1003,6 +985,7 @@ def jCompPlotterColormap(x, y1, y2, mass, axis_str, tit_str):
     #Grabs Min and Max for x-axis
     x_min = min(x)
     x_max = max(x)
+    length = len(x)
     logger.debug("x_min found to be: %s", str(x_min))
     logger.debug("x_max found to be: %s", str(x_max))
     logger.debug("Creating Line of Constant Slope.")
@@ -1015,33 +998,34 @@ def jCompPlotterColormap(x, y1, y2, mass, axis_str, tit_str):
             c='k',
             label='Line of Unity') #Adds to plot here
     
-    #Line Fitting Linear in Loglog Scaling
-    logger.debug("Starting Line of Best Fit Calculations.")
-    log_x = np.log10(x)
-    log_y1 = np.log10(y1)
-    log_y2 = np.log10(y2)
-    slope_1, intercept_1 = np.polyfit(log_x, log_y1, 1)
-    slope_2, intercept_2 = np.polyfit(log_x, log_y2, 1)
-
-    fit_1 = 1e1**(slope_1 * log_x + intercept_1)
-    fit_2 = 1e1**(slope_2 * log_x + intercept_2)
+    if length > 10:
+        #Line Fitting Linear in Loglog Scaling
+        logger.debug("Starting Line of Best Fit Calculations.")
+        log_x = np.log10(x)
+        log_y1 = np.log10(y1)
+        log_y2 = np.log10(y2)
+        slope_1, intercept_1 = np.polyfit(log_x, log_y1, 1)
+        slope_2, intercept_2 = np.polyfit(log_x, log_y2, 1)
     
-    #Insert on Plot Here
-    logger.debug("Inserting on Plot.")
-    ax.plot(x,
-            fit_1,
-            linestyle='-',
-            linewidth=1,
-            alpha=0.75,
-            c='b',
-            label='Line of Best Fit - Full')
-    ax.plot(x,
-            fit_2,
-            linestyle='-',
-            linewidth=1,
-            alpha=0.75,
-            c='r',
-            label='Line of Best Fit - Partial')
+        fit_1 = 1e1**(slope_1 * log_x + intercept_1)
+        fit_2 = 1e1**(slope_2 * log_x + intercept_2)
+        
+        #Insert on Plot Here
+        logger.debug("Inserting on Plot.")
+        ax.plot(x,
+                fit_1,
+                linestyle='-',
+                linewidth=1,
+                alpha=0.75,
+                c='b',
+                label='Line of Best Fit - Full')
+        ax.plot(x,
+                fit_2,
+                linestyle='-',
+                linewidth=1,
+                alpha=0.75,
+                c='r',
+                label='Line of Best Fit - Partial')
     
     #Setting LOG LOG Scale for Scatter Plots
     logger.debug("Tweaking plot settings.")
@@ -1150,6 +1134,7 @@ def jComparisonPlotter(current_file):
     logger.debug("hdu_table extracted as: %s", str(hdu_table))
     logger.debug("Extracting data out of the HDU Table Object.")
     data = hdu_table.data #Grabs data stored in the table -> FITS REC   
+    import pdb; pdb.set_trace()
     logger.debug("Invoking DataGrabber function.")
     d = DataGrabber(data)
     logger.debug("Closing hdu object.")
