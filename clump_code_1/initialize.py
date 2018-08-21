@@ -141,7 +141,10 @@ Overwrite Protection Here:
 overwrite_analyzer = False
 overwrite_header = True
 overwrite_timestep_plots = True
-overwrite_simulation_plots = False
+overwrite_simulation_plots = True
+
+#Fitting Overlay for the Timestep plots, gets quite busy, added an option to not do it
+fitting_overlay_timestep = False
 
 logger.info("Overwrite Protection for Analyzer function has been set to: %s",
             overwrite_analyzer)
@@ -274,7 +277,7 @@ else:
 
 logger.info("Timestep Plots Section Completed.")
 # =============================================================================
-"""
+
 logger.info("Simulation Plots Section Started.")
 # Comparison Plots over Fiducial Runs (by timestep) happens here:
 carry_on_simulation_plots = False #Initialize value - this is the default
@@ -316,10 +319,13 @@ for k in range(0,len(flist_config)): #Adding Loop for config directories
             #Calling Main Function Here
             logger.info("Current Timestep being worked on: %s", str(data_check_list_print))
             logger.info("Invoking TimestepPlotter function.")
-            TimestepPlotter(flist,simulation_dir,data_check_list_print)
+            TimestepPlotter(flist,
+                            simulation_dir,
+                            data_check_list_print,
+                            fitting_overlay_timestep)
 
 logger.info("Simulation Plots Section Completed.")
-"""
+
 message_end = client.messages.create(to=my_phone_number, from_=twilio_phone_number,
                                  body="Python Script has Ended.")
 # =============================================================================

@@ -1251,7 +1251,8 @@ def jTimestepPlotter(dict_list,
                      x_data_key,
                      y_data_key,
                      axis_str,
-                     tit_str): 
+                     tit_str,
+                     fitting_overlay): 
     """
     Plots the Timestep Comparison Plots for each timestep in all of the data
     acquired by the analyzer function.
@@ -1271,6 +1272,8 @@ def jTimestepPlotter(dict_list,
         - axis_str: string
             Used to set the LOS value: Options: 'X', 'Y', 'Z'.
         - tit_str: Either 'Full' or 'Partial' - Sets the title and datasets used
+        - fitting_overlay: boolean
+            Run the fits on top of the plot or not.
     
     Outputs:
         - fig: matplotlib object
@@ -1339,17 +1342,18 @@ def jTimestepPlotter(dict_list,
         y_min.append(min(y))
         y_max.append(max(y))
         
-        #Fitting Here
-        log_x = np.log10(x)
-        log_y = np.log10(y)
-        slope, intercept = np.polyfit(log_x, log_y, 1)
-        fit_y = 1e1**(slope * log_x + intercept) #Creating Fit Line
-        label_fit = 'Line of Best Fit: ' + simulation_list[i]
-        ax.plot(x,fit_y,
-                linestyle = line_tuples_list[i][1],
-                color = line_tuples_list[i][2],
-                alpha=0.5,
-                label = label_fit)
+        if fitting_overlay == True:
+            #Fitting Here
+            log_x = np.log10(x)
+            log_y = np.log10(y)
+            slope, intercept = np.polyfit(log_x, log_y, 1)
+            fit_y = 1e1**(slope * log_x + intercept) #Creating Fit Line
+            label_fit = 'Line of Best Fit: ' + simulation_list[i]
+            ax.plot(x,fit_y,
+                    linestyle = line_tuples_list[i][1],
+                    color = line_tuples_list[i][2],
+                    alpha=0.5,
+                    label = label_fit)
         logger.debug("Data for entry: %s has been plotted.", str(i))
 
 # =============================================================================
@@ -1378,7 +1382,7 @@ def jTimestepPlotter(dict_list,
     logger.debug("jTimestepPlotter has been run successfully.")
     return(fig)
 
-def TimestepPlotter(flist, save_dir, timestamp):
+def TimestepPlotter(flist, save_dir, timestamp,fitting_overlay):
     """
     Master Function for starting the Timestep Plotting
     
@@ -1455,7 +1459,8 @@ def TimestepPlotter(flist, save_dir, timestamp):
                              x_string,
                              y_string,
                              axis_string,
-                             title_string)
+                             title_string,
+                             fitting_overlay)
             #Make the filename for the pdf saved
             save_string = save_dir + timestamp + '_'+title_string+'_j_comp_'+axis_string+'_LOS.pdf'
             logger.debug("Save Directory set to: %s", str(save_string))
