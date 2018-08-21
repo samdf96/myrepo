@@ -239,6 +239,11 @@ def Analyzer(filename, l, cmin, step, beta, clump_sizing, save_dir_fits):
                 
                 #Using x_coords by convention to determine number of pixels in clump.
                 volume_pix[i] = len(x_coords)
+                if volume_pix[i] < 6:
+                    err_string.append("Clump Number: " +
+                                      str(i+1) +
+                                      " , has volume of pixels: " + str(volume_pix[i]))
+                
                 logger.debug("volume_pix found to be %s", volume_pix[i])
         
                 x_velocity = clumps[i]['velocity_x']
@@ -287,6 +292,7 @@ def Analyzer(filename, l, cmin, step, beta, clump_sizing, save_dir_fits):
                 coefficients for both gradient terms, are already in units of 1/s.
                 Thus gradient_x/y/z_los are in units of 1/s.
                 '''
+                
                 logger.info("Plane Fitting Commencing.")
                 #For X LOS
                 coeffs_x_los = PlaneFit(y_coords_flat,z_coords_flat,x_velocity_flat)

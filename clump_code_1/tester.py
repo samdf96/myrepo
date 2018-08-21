@@ -155,7 +155,7 @@ pixel = ((10 * u.pc).to(u.cm) / 256).value
 
 #%%
 
-for i in range(0,1):
+for i in range(0,len(clumps)):
         while True: #This is for catching IndexError if YT finds clump with no data
             try:
                 logger.info("Currently Working on Clump Number %s out of %s",
@@ -333,3 +333,197 @@ for i in range(0,1):
                 break # Out of Except and Restart the Loop at next iteration.
             break #Out of While Loop
 
+#Recasting Arrays as Quantities with proper units, will be used to track data
+logger.info("Re-casting numpy arrays as Quantities.")
+com_x *= u.cm
+com_y *= u.cm
+com_z *= u.cm
+mass *= u.g
+actual_angular_momentum_x *= (u.cm**2) / u.s
+actual_angular_momentum_y *= (u.cm**2) / u.s
+actual_angular_momentum_z *= (u.cm**2) / u.s
+actual_angular_momentum_total *= (u.cm**2) / u.s
+actual_angular_momentum_par_xy *= (u.cm**2) / u.s
+actual_angular_momentum_par_xz *= (u.cm**2) / u.s
+actual_angular_momentum_par_yz *= (u.cm**2) / u.s
+implied_angular_momentum_x_los *= (u.cm**2) / u.s
+implied_angular_momentum_y_los *= (u.cm**2) / u.s
+implied_angular_momentum_z_los *= (u.cm**2) / u.s
+x_length *= u.cm
+y_length *= u.cm
+z_length *= u.cm
+gradient_x_los /= u.s
+gradient_y_los /= u.s
+gradient_z_los /= u.s
+bulk_velocity *= u.cm / u.s
+kinetic_energy *= u.g * (u.cm**2) / (u.s**2)
+gravitational_energy *= u.g * (u.cm**2) / (u.s**2)
+boundedness = np.array(boundedness)
+
+'''
+pixel = (10 * u.pc).to(u.cm) / 256
+
+#Have conversion ready if needed (just divide gradients by this term)
+km_per_pc = 3.24077929e-14
+
+logger.info("Length in pixels found for each clump.")
+x_length_pix = (x_length / pixel).round()
+y_length_pix = (y_length / pixel).round()
+z_length_pix = (z_length / pixel).round()
+'''
+
+#Creation of Columns for Astropy FITS for all quantities computed above
+logger.debug("Creating Column obects for new quantities.")
+
+q_clump_number = fits.Column(name='Clump Number',
+                             format='D',
+                             unit='dimensionless_unscaled',
+                             array=clump_number)
+
+#Center Of Mass
+q_com_x = fits.Column(name='Center of Mass - x',
+                      format='D',
+                      unit = str(com_x.unit),
+                      array=com_x.value)
+q_com_y = fits.Column(name='Center of Mass - y',
+                      format='D',
+                      unit = str(com_y.unit),
+                      array=com_y.value)
+q_com_z = fits.Column(name='Center of Mass - z',
+                      format='D',
+                      unit = str(com_z.unit),
+                      array=com_z.value)
+
+#Mass
+q_mass = fits.Column(name='Mass',
+                     format='D',
+                     unit=str(mass.unit),
+                     array=mass.value)
+
+#Lengths and Volumes
+q_x_length = fits.Column(name='Length (x)',
+                     format='D',
+                     unit=str(x_length.unit),
+                     array=x_length.value)
+q_y_length = fits.Column(name='Length (y)',
+                     format='D',
+                     unit=str(y_length.unit),
+                     array=y_length.value)
+q_z_length = fits.Column(name='Length (z)',
+                     format='D',
+                     unit=str(z_length.unit),
+                     array=z_length.value)
+q_volume_pix = fits.Column(name='Volume (pixels)',
+                     format='D',
+                     unit='dimensionless_unscaled',
+                     array=volume_pix)
+
+
+#Actual Data for Angular Momentum
+q_am_actual_total = fits.Column(name='Actual Total Angular Momentum',
+                                format='D',
+                                unit=str(actual_angular_momentum_total.unit),
+                                array=actual_angular_momentum_total.value)
+q_am_actual_partial_xy = fits.Column(name='Actual Partial Angular Momentum (x+y components)',
+                                     format='D',
+                                     unit=str(actual_angular_momentum_par_xy.unit),
+                                     array=actual_angular_momentum_par_xy.value)
+q_am_actual_partial_xz = fits.Column(name='Actual Partial Angular Momentum (x+z components)',
+                                     format='D',
+                                     unit=str(actual_angular_momentum_par_xz.unit),
+                                     array=actual_angular_momentum_par_xz.value)
+q_am_actual_partial_yz = fits.Column(name='Actual Partial Angular Momentum (y+z components)',
+                                     format='D',
+                                     unit=str(actual_angular_momentum_par_yz.unit),
+                                     array=actual_angular_momentum_par_yz.value)
+
+# Implied Data for Angular Momentum
+q_am_implied_x = fits.Column(name='Implied Total Angular Momentum (x LOS)',
+                             format='D',
+                             unit=str(implied_angular_momentum_x_los.unit),
+                             array=implied_angular_momentum_x_los.value)
+q_am_implied_y = fits.Column(name='Implied Total Angular Momentum (y LOS)',
+                             format='D',
+                             unit=str(implied_angular_momentum_y_los.unit),
+                             array=implied_angular_momentum_y_los.value)
+q_am_implied_z = fits.Column(name='Implied Total Angular Momentum (z LOS)',
+                             format='D',
+                             unit=str(implied_angular_momentum_z_los.unit),
+                             array=implied_angular_momentum_z_los.value)
+
+# Gradients for Implied Angular Momentum Plane Fitting
+q_grad_x = fits.Column(name='Plane Fitting Gradient (x LOS)',
+                       format='D',
+                       unit=str(gradient_x_los.unit),
+                       array=gradient_x_los.value)
+q_grad_y = fits.Column(name='Plane Fitting Gradient (y LOS)',
+                       format='D',
+                       unit=str(gradient_y_los.unit),
+                       array=gradient_y_los.value)
+q_grad_z = fits.Column(name='Plane Fitting Gradient (z LOS)',
+                       format='D',
+                       unit=str(gradient_z_los.unit),
+                       array=gradient_z_los.value)
+q_kinetic = fits.Column(name='Kinetic Energy',
+                        format='D',
+                        unit=str(kinetic_energy.unit),
+                        array=kinetic_energy)
+q_gravitational = fits.Column(name='Gravitational Energy',
+                              format='D',
+                              unit=str(gravitational_energy.unit),
+                              array=gravitational_energy)
+q_boundedness = fits.Column(name='Gravitational Boundedness',
+                            format='L',
+                            array=boundedness) # Not a quantity, no need for .value
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
+
+#Creating ColDefs Object
+logger.debug("coldefs object being created.")
+coldefs = fits.ColDefs([q_clump_number,
+                        q_com_x,
+                        q_com_y,
+                        q_com_z,
+                        q_mass,
+                        q_x_length,
+                        q_y_length,
+                        q_z_length,
+                        q_volume_pix,
+                        q_am_actual_total,
+                        q_am_actual_partial_xy,
+                        q_am_actual_partial_xz,
+                        q_am_actual_partial_yz,
+                        q_am_implied_x,
+                        q_am_implied_y,
+                        q_am_implied_z,
+                        q_grad_x,
+                        q_grad_y,
+                        q_grad_z,
+                        q_kinetic,
+                        q_gravitational,
+                        q_boundedness])
+
+# Creating HDU Object from ColDefs
+logger.debug("Creating HDU Object with Coldefs.")
+hdu = fits.BinTableHDU.from_columns(coldefs, nrows=len(x_length.value))
+logger.debug('ColDefs Object Created')
+hdu.header['MINCLMP'] = clump_sizing
+hdu.header['STEP'] = step
+hdu.header['BETA'] = beta
+hdu.header['LENGTH'] = l
+hdu.header['CMIN'] = cmin
+
+logger.debug("Setting Array from err_string.")
+err_string_array = np.array(err_string)
+
+#For Loop for Adding in all the Error Statements for clumps (if any)
+logger.debug("Appending err_string statements to header as COMMENT(s).")
+for i in range(0,len(err_string_array)):
+    hdu.header.add_comment(err_string_array[i])
+
+
+#INSERT STRING CONNECTED TO DATAFILE INPUT FOR SCRIPT
+hdu.writeto(save_dir_specific+sim_str+"_"+time_stamp+".fits",
+            overwrite=True)
+logger.debug('FITS FILE SAVED')
+logger.info("Analyzer has been run successfully.")

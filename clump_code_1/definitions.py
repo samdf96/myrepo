@@ -821,9 +821,15 @@ def DataGrabber(data):
     actual_par_xz = data['Actual Partial Angular Momentum (x+z components)']
     actual_par_yz = data['Actual Partial Angular Momentum (y+z components)']
     
+    grad_x = data['Plane Fitting Gradient (x LOS)']
+    grad_y = data['Plane Fitting Gradient (y LOS)']
+    grad_z = data['Plane Fitting Gradient (z LOS)']
+    
     imp_x_los = data['Implied Total Angular Momentum (x LOS)']
     imp_y_los = data['Implied Total Angular Momentum (y LOS)']
     imp_z_los = data['Implied Total Angular Momentum (z LOS)']
+    
+    volume_pix = data['Volume (pixels)']
     
     logger.debug("All the Data extracted.")
     logger.debug("Making Dictionary with all key/value pairs.")
@@ -835,7 +841,11 @@ def DataGrabber(data):
             'actual_par_yz': actual_par_yz,
             'imp_x_los': imp_x_los,
             'imp_y_los': imp_y_los,
-            'imp_z_los': imp_z_los}
+            'imp_z_los': imp_z_los,
+            'volume_pix': volume_pix,
+            'grad_x': grad_x,
+            'grad_y': grad_y,
+            'grad_z': grad_z}
     
     logger.debug("DataGrabber has been run successfully.")
     return(dict)
@@ -1067,21 +1077,39 @@ def DictionarySifter(d):
     logger = logging.getLogger("initialize.definitions.DictionarySifter")
     
     logger.debug("Masking Data using act_tot nan values as filter.")
-    imp_x_los_mask = np.ma.masked_where(np.isnan(d['actual_tot']) == True,
+    
+    mask_array_actual_tot = np.isnan(d['actual_tot'])
+    
+    mask_array_grad_x = np.equal(d['grad_x'],0)
+    mask_array_grad_y = np.equal(d['grad_y'],0)
+    mask_array_grad_z = np.equal(d['grad_z'],0)
+    
+    mask_master = np.zeros((len(mask_array_actual_tot)), dtype=bool)
+    
+    for i in range(0,len(mask_array_actual_tot)):
+        if (mask_array_actual_tot[i]==True) or (
+                mask_array_grad_x[i]==True
+                ) or (
+                        mask_array_grad_y[i]==True
+                ) or (
+                        mask_array_grad_z[i]==True):
+            mask_master[i] = True
+    
+    imp_x_los_mask = np.ma.masked_where(mask_master == True,
                                         d['imp_x_los'])
-    imp_y_los_mask = np.ma.masked_where(np.isnan(d['actual_tot']) == True,
+    imp_y_los_mask = np.ma.masked_where(mask_master == True,
                                         d['imp_y_los'])
-    imp_z_los_mask = np.ma.masked_where(np.isnan(d['actual_tot']) == True,
+    imp_z_los_mask = np.ma.masked_where(mask_master == True,
                                         d['imp_z_los'])
-    act_tot_mask = np.ma.masked_where(np.isnan(d['actual_tot']) == True,
+    act_tot_mask = np.ma.masked_where(mask_master == True,
                                       d['actual_tot'])
-    act_par_xy_mask = np.ma.masked_where(np.isnan(d['actual_tot']) == True,
+    act_par_xy_mask = np.ma.masked_where(mask_master == True,
                                          d['actual_par_xy'])
-    act_par_xz_mask = np.ma.masked_where(np.isnan(d['actual_tot']) == True,
+    act_par_xz_mask = np.ma.masked_where(mask_master == True,
                                          d['actual_par_xz'])
-    act_par_yz_mask = np.ma.masked_where(np.isnan(d['actual_tot']) == True,
+    act_par_yz_mask = np.ma.masked_where(mask_master == True,
                                          d['actual_par_yz'])
-    mass_mask = np.ma.masked_where(np.isnan(d['actual_tot']) == True,
+    mass_mask = np.ma.masked_where(mask_master == True,
                                    d['mass'])
     
     #Compress all the masked array to array with correct data
