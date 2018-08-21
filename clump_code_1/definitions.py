@@ -1134,7 +1134,6 @@ def jComparisonPlotter(current_file):
     logger.debug("hdu_table extracted as: %s", str(hdu_table))
     logger.debug("Extracting data out of the HDU Table Object.")
     data = hdu_table.data #Grabs data stored in the table -> FITS REC   
-    import pdb; pdb.set_trace()
     logger.debug("Invoking DataGrabber function.")
     d = DataGrabber(data)
     logger.debug("Closing hdu object.")
