@@ -1311,14 +1311,14 @@ def jTimestepPlotter(dict_list,
     logger.debug("Setting tuples for markers.")
     tuples_max = 12
     tuples_max_list = np.arange(0,tuples_max,1)
-    marker_color = itertools.cycle(['r','k','b'])
+    marker_color = itertools.cycle(['r','k','b','m'])
     marker_style = itertools.cycle(['>','.','^','*','>'])
     marker_tuples = zip(tuples_max_list,marker_style,marker_color)
     marker_tuples_list = list(marker_tuples)
     logger.debug("Marker List Tuple has been set to: %s", str(marker_tuples_list))
 
     logger.debug("Setting tuples for best fit lines.")
-    line_color = itertools.cycle(['r','k','b'])
+    line_color = itertools.cycle(['r','k','b','m'])
     line_style = itertools.cycle(['-','--','-.',':'])
     line_tuples = zip(tuples_max_list,line_style,line_color)
     line_tuples_list = list(line_tuples)
