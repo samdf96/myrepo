@@ -95,7 +95,7 @@ if messaging == True:
 # THIS WILL NEED TO BE CHANGED FOR THE NEWER DESIGN SIMULATIONS
 
 #This batches input filters the search criteria to only look for `batches` simulation directories
-batches = 'Fiducial'
+batches = 'Design'
 flist = glob.glob('/mnt/bigdata/erosolow/Orion2/*'+batches+'*/data.*.hdf5')
 
 #Call ALL Found Files in input directory
