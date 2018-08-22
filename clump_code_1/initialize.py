@@ -144,7 +144,7 @@ overwrite_timestep_plots = False
 overwrite_simulation_plots = True
 
 #Fitting Overlay for the Timestep plots, gets quite busy, added an option to not do it
-fitting_overlay_timestep = False
+fitting_overlay_timestep = True
 
 logger.info("Overwrite Protection for Analyzer function has been set to: %s",
             overwrite_analyzer)
