@@ -173,13 +173,17 @@ def Analyzer(filename, l, cmin, step, beta, clump_sizing, save_dir_fits):
     y_length = np.zeros((len(clumps),1))
     z_length = np.zeros((len(clumps),1))
     volume_pix = np.zeros((len(clumps),1))
+    size = np.zeros((len(clumps),1))
     gradient_x_los = np.zeros((len(clumps),1))
     gradient_y_los = np.zeros((len(clumps),1))
     gradient_z_los = np.zeros((len(clumps),1))
     bulk_velocity = np.zeros((len(clumps),3))
     kinetic_energy = np.zeros((len(clumps),1))
+    magnetic_energy = np.zeros((len(clumps),1))
     gravitational_energy = np.zeros((len(clumps),1))
     boundedness = np.zeros((len(clumps),1))
+    vel_dis = np.zeros((len(clumps),1))
+    
     logger.info("Initialization of Data Arrays completed.")
     
     #This value is used to correct for pixel resolution on length computation.
@@ -321,6 +325,16 @@ def Analyzer(filename, l, cmin, step, beta, clump_sizing, save_dir_fits):
                 ## Computation of Kinetic and Gravitational Energy
                 bulk_velocity[i] = clumps[i].quantities.bulk_velocity(use_gas=True)
                 kinetic_energy[i] = KineticEnergy(clumps[i],bulk_velocity[i])
+                                
+                #Computing Magnetic Energy Here
+                magnetic_energy[i] = clumps[i]['magnetic_energy'].sum() * volume_pix[i] * (pixel**3)
+                
+                #Size measurement:
+                size[i] = (volume_pix[i] * (3/4) * np.pi)**(1/3.) * pixel
+                
+                #Velocity Dispersion
+                vel_dis[i] = 2 * ((kinetic_energy[i]/mass[i])**(1/2.))
+                
                 if volume_pix[i] < 10000:
                     gravitational_energy[i] = GravitationalEnergy(clumps[i],
                                         kinetic_energy[i])
@@ -359,11 +373,14 @@ def Analyzer(filename, l, cmin, step, beta, clump_sizing, save_dir_fits):
                 y_length[i] = np.nan
                 z_length[i] = np.nan
                 volume_pix[i] = np.nan
+                size[i] = np.nan
+                vel_dis[i] = np.nan
                 gradient_x_los[i] = np.nan
                 gradient_y_los[i] = np.nan
                 gradient_z_los[i] = np.nan
                 bulk_velocity[i] = np.nan
                 kinetic_energy[i] = np.nan
+                magnetic_energy[i] = np.nan
                 gravitational_energy[i] = np.nan
                 boundedness[i] = False # Needs to be a boolean for FITS File
                 break # Out of Except and Restart the Loop at next iteration.
@@ -388,13 +405,16 @@ def Analyzer(filename, l, cmin, step, beta, clump_sizing, save_dir_fits):
     x_length *= u.cm
     y_length *= u.cm
     z_length *= u.cm
+    size *= u.cm
     gradient_x_los /= u.s
     gradient_y_los /= u.s
     gradient_z_los /= u.s
     bulk_velocity *= u.cm / u.s
     kinetic_energy *= u.g * (u.cm**2) / (u.s**2)
     gravitational_energy *= u.g * (u.cm**2) / (u.s**2)
+    magnetic_energy *= u.g * (u.cm**2) / (u.s**2)
     boundedness = np.array(boundedness)
+    vel_dis *= u.cm / u.s
 
     '''
     pixel = (10 * u.pc).to(u.cm) / 256
@@ -511,6 +531,18 @@ def Analyzer(filename, l, cmin, step, beta, clump_sizing, save_dir_fits):
     q_boundedness = fits.Column(name='Gravitational Boundedness',
                                 format='L',
                                 array=boundedness) # Not a quantity, no need for .value
+    q_magnetic = fits.Column(name='Magnetic Energy',
+                            format='D',
+                            unit=str(magnetic_energy.unit),
+                            array=magnetic_energy)
+    q_size = fits.Column(name='Characteristic Size',
+                            format='D',
+                            unit=str(size.unit),
+                            array=size)
+    q_vel_dis = fits.Column(name='Velocity Dispersion',
+                            format='D',
+                            unit=str(vel_dis.unit),
+                            array=vel_dis)
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
 
@@ -525,6 +557,7 @@ def Analyzer(filename, l, cmin, step, beta, clump_sizing, save_dir_fits):
                             q_y_length,
                             q_z_length,
                             q_volume_pix,
+                            q_size,
                             q_am_actual_total,
                             q_am_actual_partial_xy,
                             q_am_actual_partial_xz,
@@ -535,8 +568,10 @@ def Analyzer(filename, l, cmin, step, beta, clump_sizing, save_dir_fits):
                             q_grad_x,
                             q_grad_y,
                             q_grad_z,
+                            q_vel_dis,
                             q_kinetic,
                             q_gravitational,
+                            q_magnetic,
                             q_boundedness])
 
     # Creating HDU Object from ColDefs
