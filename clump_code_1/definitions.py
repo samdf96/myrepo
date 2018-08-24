@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+ #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
 Created on Wed May 16 14:43:26 2018
@@ -6,19 +6,6 @@ Created on Wed May 16 14:43:26 2018
 @author: sfielder
 
 This file contains all the definitions used for the clump finding coding.
-Default coding structure for comments inside modules:
-"""    
-"""
-
-Arguments:
-----------
-
-Global: for global parameter inputs
-
-Returns:
---------
-
-
 """
 
 #Importing Modules used in the definitions
@@ -28,9 +15,9 @@ import yt as yt
 from yt.analysis_modules.level_sets.api import Clump
 from yt.analysis_modules.level_sets.api import find_clumps
 from yt.analysis_modules.level_sets.api import get_lowest_clumps
+
 #Definitions for Gravitational Energy Calculations
 from yt.utilities.lib.misc_utilities import gravitational_binding_energy
-
 from yt.utilities.physical_constants import \
     gravitational_constant_cgs as G
 
@@ -45,16 +32,13 @@ import scipy.linalg
 import matplotlib.ticker as mtick
 import itertools
 
-#For Plotting Definition
+# For Plotting Definition
 from astropy import units as u
 from astropy.io import fits
 
+#Logging
 import logging
- 
 module_logger = logging.getLogger("initialize.definitions")
-
-
-
 
 def OctantSplit(data_object,ds,l):
     """
@@ -148,9 +132,7 @@ def ClumpFinder(master_clump,clump_sizing,cmin,cmax,step):
             print('ClumpFinder has not been run successfully.')
             break
         break
-
     return(leaf_clumps)
-        
 
 def ArrayFlattener(x):
     '''
@@ -298,7 +280,6 @@ def Gradient(results):
     logger.debug("Gradient has been run successfully.")
     return(gradient)
 
-
 def AngularMomentumImplied(gradient,dist_perp_1,dist_perp_2,beta=1):
     '''
     Computes the specific angular momentum given input parameters
@@ -368,7 +349,6 @@ def GravitationalEnergy(data_object, kinetic_energy):
                                                    (kinetic_energy/G))
     logger.debug("GravitationalEnergy has been run successfully.")
     return(grav_energy)
-
 
 def ProjCreator(ds,
                  data_object,
@@ -774,6 +754,8 @@ def DictionarySifter(d):
     
     mask_master = np.zeros((len(mask_array_actual_tot)), dtype=bool)
     
+    #Creating the Master Mask Here
+    # Uses all three masks above and combines them
     for i in range(0,len(mask_array_actual_tot)):
         if (mask_array_actual_tot[i]==True
                 ) or (
@@ -935,7 +917,6 @@ def jComparisonPlotter(current_file):
     logger.debug("jComparisonPlotter has been run successfully.")
     return()
     
-
 def jTimestepPlotter(dict_list,
                      simulation_list,
                      save_dir,
@@ -1003,7 +984,7 @@ def jTimestepPlotter(dict_list,
     tuples_max = 20
     tuples_max_list = np.arange(0,tuples_max,1)
     marker_color = itertools.cycle(['r','k','b','m'])
-    marker_style = itertools.cycle(['>','.','^','*'])
+    marker_style = itertools.cycle(['>','.','^','*','<'])
     marker_tuples = zip(tuples_max_list,marker_style,marker_color)
     marker_tuples_list = list(marker_tuples)
     logger.debug("Marker List Tuple has been set to: %s", str(marker_tuples_list))

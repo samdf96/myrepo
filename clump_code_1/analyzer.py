@@ -40,7 +40,8 @@ def Analyzer(filename, l, cmin, step, beta, clump_sizing, save_dir_fits):
 
     '''
     Takes in certain global parameters, and a simulation datafile and computes
-    all the relevant values for angular momentum, implied and actual.
+    all the relevant values for angular momentum, implied and actual, kinetic
+    energy, gravitational energy, magnetic energy, ... etc.
 
     Arguments:
     ----------
@@ -69,7 +70,7 @@ def Analyzer(filename, l, cmin, step, beta, clump_sizing, save_dir_fits):
 
     '''
     logger = logging.getLogger("initialize.analyzer.Analyzer")
-
+    
     logger.info('Simulation File Current Working On: %s', filename)
 
     #Loading File into Dataset
@@ -78,9 +79,10 @@ def Analyzer(filename, l, cmin, step, beta, clump_sizing, save_dir_fits):
     master_dist_data = int(ds.domain_dimensions[0])
     logger.debug('Master Distance Data set as: %s', master_dist_data)
 
-    #Might be Deprecated
+    #Setting Error String List
     err_string = []
 
+    #Setting Main String.
     main_string = filename.split("/")
 
     #Make this modular in the future.
@@ -90,9 +92,8 @@ def Analyzer(filename, l, cmin, step, beta, clump_sizing, save_dir_fits):
     sim_string_id = [i for i, x in enumerate(sim_string_true) if x]
 
     sim_str = main_string[sim_string_id[0]] #sim_string_id should only have one entry!
-
-    out_string = main_string[-1].split(".") # Splits the data file name by periods
-    time_stamp = out_string[1]
+    out_string = main_string[-1].split(".") #Splits the data file name by periods
+    time_stamp = out_string[1]              #Grabs the Timestamp of the simulation.
 
     #First Layer Here
     save_dir = save_dir_fits + sim_str
@@ -104,7 +105,7 @@ def Analyzer(filename, l, cmin, step, beta, clump_sizing, save_dir_fits):
         logger.debug("Directory not detected. Creating Directory.")
         os.mkdir(save_dir)
     
-        #Second Layer Here
+    #Second Layer Here
     save_dir_specific = save_dir + '/' + time_stamp + "/"
     logger.debug("Specific Save Directory string set as: %s", save_dir_specific)
     if os.path.isdir(save_dir_specific) == True:
@@ -128,14 +129,15 @@ def Analyzer(filename, l, cmin, step, beta, clump_sizing, save_dir_fits):
     #Grabs each of the octants and runs them through the Clump Finding algorithm
     clumps = [] #Defining Empty List for loop
     logger.info("Clump Finding Section Started.")
+
     for i in range(0,len(octant)):
         logger.info("Working on Octant: %s", i+1)
         logger.debug("Invoking MasterClumpMaker function.")
-        master_clump_main = MasterClumpMaker(octant[i])
-        cmax = octant[i]["gas", "density"].max()
+        master_clump_main = MasterClumpMaker(octant[i])                 #Creating Master Clump
+        cmax = octant[i]["gas", "density"].max()                        #Setting cmax for Clump Finding
         logger.debug("cmax has been set to: %s", cmax)
         logger.debug("Invoking ClumpFinder function.")
-        lc = ClumpFinder(master_clump_main,clump_sizing,cmin,cmax,step)
+        lc = ClumpFinder(master_clump_main,clump_sizing,cmin,cmax,step) #Finding Clumps Here
 
         #If lc returns empty the next for-loop will not be triggered. Write out message to err_string
         if len(lc) == 0:
@@ -217,12 +219,7 @@ def Analyzer(filename, l, cmin, step, beta, clump_sizing, save_dir_fits):
                              str(com_y[i]))
                 logger.debug("Center_Of_Mass z Quantity found to be %s",
                              str(com_z[i]))
-                '''
-                Using the following technique to compute total mass.
-                Originally used clumps[i].quantities.total_mass()
-                This way takes more memory and time, the following is equivalent in terms
-                of output, for actual data runs.
-                '''
+
                 mass[i] = clumps[i]['cell_mass'].sum()
                 logger.debug("Mass found to be: %s", str(mass[i]))
                 
@@ -244,6 +241,11 @@ def Analyzer(filename, l, cmin, step, beta, clump_sizing, save_dir_fits):
                 #Using x_coords by convention to determine number of pixels in clump.
                 volume_pix[i] = len(x_coords)
                 if volume_pix[i] < 6:
+                    """
+                    Writing out Error Message if the clump data points total is underneath the 6 threshold.
+                    Will be handy to know if any of the plane fitting is off for any reason, this might
+                    be a good indicator.
+                    """
                     err_string.append("Clump Number: " +
                                       str(i+1) +
                                       " , has volume of pixels: " + str(volume_pix[i]))
@@ -258,11 +260,10 @@ def Analyzer(filename, l, cmin, step, beta, clump_sizing, save_dir_fits):
                 logger.debug("z_velocity found to be: %s", str(z_velocity))
         
                 #Add in for basic visualization of data.
-            #    fig = plt.figure()
-            #    ax = fig.add_subplot(111, projection='3d')
-            #    ax.scatter(x_coords, y_coords, z_coords)
-            
-            
+                #fig = plt.figure()
+                #ax = fig.add_subplot(111, projection='3d')
+                #ax.scatter(x_coords, y_coords, z_coords)
+
                 x_coords_flat = ArrayFlattener(x_coords)
                 y_coords_flat = ArrayFlattener(y_coords)
                 z_coords_flat = ArrayFlattener(z_coords)
@@ -324,6 +325,11 @@ def Analyzer(filename, l, cmin, step, beta, clump_sizing, save_dir_fits):
                 
                 ## Computation of Kinetic and Gravitational Energy
                 bulk_velocity[i] = clumps[i].quantities.bulk_velocity(use_gas=True)
+                """
+                Kinetic Energy Must take into account the bulk_velocity of the clump,
+                thus simply doing clumps[i]['kinetic_energy'].sum() is not correct.
+                We use the custom definition instead.
+                """
                 kinetic_energy[i] = KineticEnergy(clumps[i],bulk_velocity[i])
                                 
                 #Computing Magnetic Energy Here
@@ -336,6 +342,11 @@ def Analyzer(filename, l, cmin, step, beta, clump_sizing, save_dir_fits):
                 vel_dis[i] = 2 * ((kinetic_energy[i]/mass[i])**(1/2.))
                 
                 if volume_pix[i] < 10000:
+                    """
+                    This sets a threshold of how many points a clump needs to stay under
+                    to compute its gravitational energy, this is to avoid excessive
+                    compuational time for the script.
+                    """
                     gravitational_energy[i] = GravitationalEnergy(clumps[i],
                                         kinetic_energy[i])
                     if gravitational_energy[i] > kinetic_energy[i]:
@@ -383,8 +394,8 @@ def Analyzer(filename, l, cmin, step, beta, clump_sizing, save_dir_fits):
                 magnetic_energy[i] = np.nan
                 gravitational_energy[i] = np.nan
                 boundedness[i] = False # Needs to be a boolean for FITS File
-                break # Out of Except and Restart the Loop at next iteration.
-            break #Out of While Loop
+                break   #Out of Except and Restart the Loop at next iteration.
+            break       #Out of While Loop
 
     #Recasting Arrays as Quantities with proper units, will be used to track data
     logger.info("Re-casting numpy arrays as Quantities.")
@@ -415,18 +426,6 @@ def Analyzer(filename, l, cmin, step, beta, clump_sizing, save_dir_fits):
     magnetic_energy *= u.g * (u.cm**2) / (u.s**2)
     boundedness = np.array(boundedness)
     vel_dis *= u.cm / u.s
-
-    '''
-    pixel = (10 * u.pc).to(u.cm) / 256
-
-    #Have conversion ready if needed (just divide gradients by this term)
-    km_per_pc = 3.24077929e-14
-
-    logger.info("Length in pixels found for each clump.")
-    x_length_pix = (x_length / pixel).round()
-    y_length_pix = (y_length / pixel).round()
-    z_length_pix = (z_length / pixel).round()
-    '''
 
     #Creation of Columns for Astropy FITS for all quantities computed above
     logger.debug("Creating Column obects for new quantities.")
@@ -473,7 +472,6 @@ def Analyzer(filename, l, cmin, step, beta, clump_sizing, save_dir_fits):
                          format='D',
                          unit='dimensionless_unscaled',
                          array=volume_pix)
-
 
     #Actual Data for Angular Momentum
     q_am_actual_total = fits.Column(name='Actual Total Angular Momentum',
@@ -535,6 +533,8 @@ def Analyzer(filename, l, cmin, step, beta, clump_sizing, save_dir_fits):
                             format='D',
                             unit=str(magnetic_energy.unit),
                             array=magnetic_energy)
+
+    # Size and Velocity Dispersion
     q_size = fits.Column(name='Characteristic Size',
                             format='D',
                             unit=str(size.unit),
@@ -543,7 +543,6 @@ def Analyzer(filename, l, cmin, step, beta, clump_sizing, save_dir_fits):
                             format='D',
                             unit=str(vel_dis.unit),
                             array=vel_dis)
-    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
 
     #Creating ColDefs Object
@@ -591,7 +590,6 @@ def Analyzer(filename, l, cmin, step, beta, clump_sizing, save_dir_fits):
     logger.debug("Appending err_string statements to header as COMMENT(s).")
     for i in range(0,len(err_string_array)):
         hdu.header.add_comment(err_string_array[i])
-
 
     #INSERT STRING CONNECTED TO DATAFILE INPUT FOR SCRIPT
     hdu.writeto(save_dir_specific+sim_str+"_"+time_stamp+".fits",

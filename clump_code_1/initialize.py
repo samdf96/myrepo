@@ -88,33 +88,22 @@ if messaging == True:
     message_start = client.messages.create(to=my_phone_number, from_=twilio_phone_number,
                                            body="Python Script has Started.")
 
-
-#INPUTS HERE
-
 #Creates a list of directories with the appropriate files for analysis
-# THIS WILL NEED TO BE CHANGED FOR THE NEWER DESIGN SIMULATIONS
 
 #This batches input filters the search criteria to only look for `batches` simulation directories
 batches = 'Design'
-flist = glob.glob('/mnt/bigdata/erosolow/Orion2/*'+batches+'*/data.*.hdf5')
-
-#Call ALL Found Files in input directory
-#flist = glob.glob('/mnt/bigdata/erosolow/Orion2/**/data.*.hdf5')
+flist = glob.glob('/mnt/bigdata/erosolow/Orion2/*'+batches+'*/data.*.hdf5') #Calls only 'batches' files
+#flist = glob.glob('/mnt/bigdata/erosolow/Orion2/**/data.*.hdf5')           #Calls all files with .hdf5 ending.
 
 #This is to filter out the timestamps that we want to analyze over
 data_check_list = ['0060','0070','0080','0090','0100']
 
-
 #This is where the config files are
-tree_top_dir = '/home/sfielder/bigdata/Clumps/'
+tree_top_dir = '/home/sfielder/bigdata/Clumps/'     #See Notes above for directory structure
 data_dir = '/home/sfielder/bigdata/Clumps/Output/'
 
-#Load CONFIG FILE HERE
+#Load logging.conf here.
 logging.config.fileConfig('logging.conf', defaults={'logfilename': data_dir+'output.log'})
-
-#Set the Batch to do here:
-#Batches will be by Simulation Directory General Name (ex. Fiducial or Design...)
-
 
 # create logger
 logger = logging.getLogger('initialize')
@@ -155,7 +144,7 @@ logger.info("Overwrite Protection for Timestep Plots function has been set to: %
 logger.info("Overwrite Protection for Simulation Plots function has been set to: %s",
             overwrite_simulation_plots)
 
-# =============================================================================
+#Analysis Section
 # =============================================================================
 logger.info("Analysis Section Started.")
 #Creating empty list for data sorting
@@ -174,6 +163,7 @@ flist_data.sort()
 
 logger.info("Glob function has found the following to be analyzed: %s",
             flist_data)
+
 #Make a list of all the yaml files found in data_dir
 logger.info("Finding All Config Files.")
 flist_config_yaml = glob.glob(tree_top_dir+'*.yaml')
@@ -235,6 +225,8 @@ for i in range(0,len(flist_config_yaml)):
         logger.info("Skipping Analysis for current config file.")
 
 logger.info("Analysis Section Complete.")
+
+#Header Printer Section
 # =============================================================================
 logger.info("Header Printer Section Started.")
 if overwrite_header == True:
@@ -255,8 +247,9 @@ else:
     logger.info("Skipping Header Printer Function.")
 
 logger.info("Header Printer Section Completed.")
-# =============================================================================
 
+# TimeStep Plot Section
+# =============================================================================
 logger.info("Timestep Plots Section Started.")
 if overwrite_timestep_plots == True:
     logger.info("Overwrite for Timestep Plots has been set to TRUE.")
@@ -276,8 +269,9 @@ else:
     logger.info("Skipping Timestep Plot Creation.")
 
 logger.info("Timestep Plots Section Completed.")
-# =============================================================================
 
+#Simulation Plots Section
+# =============================================================================
 logger.info("Simulation Plots Section Started.")
 # Comparison Plots over Fiducial Runs (by timestep) happens here:
 carry_on_simulation_plots = False #Initialize value - this is the default
@@ -326,9 +320,12 @@ for k in range(0,len(flist_config)): #Adding Loop for config directories
 
 logger.info("Simulation Plots Section Completed.")
 
-message_end = client.messages.create(to=my_phone_number, from_=twilio_phone_number,
-                                 body="Python Script has Ended.")
+#End of Script Wrap Up.
 # =============================================================================
+if messaging == True:
+    message_end = client.messages.create(to=my_phone_number, from_=twilio_phone_number,
+                                         body="Python Script has Ended.")
+
 
 
 
