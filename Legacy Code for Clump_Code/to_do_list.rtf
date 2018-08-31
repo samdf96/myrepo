@@ -1,0 +1,126 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1561\cocoasubrtf600
+{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\margl1440\margr1440\vieww13740\viewh16580\viewkind0
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
+
+\f0\fs28 \cf0 To Do List:\
+\
+TESTING\
+\
+May 16th 2018\
+\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\
+\
+Change the config file and locations of the output files, all depending on what the yaml files are called (maybe xx-xx numbering system)?\
+\
+Work on plotting multiple images on one plot then saving these to the respective directories inside the directory tree given (perhaps input parameter along with the rest of the data passed to the function?)\
+\
+\
+May 16th 2018\
+\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\
+\
+- Have two more files (scripts) \
+	- which take the outputted data and plot it visually\
+	- takes the data and makes beautiful tables using astropy.tables, astropy.units\
+\
+- change import statements to a general statement and change all internal commands to use this new way\
+\
+i.e. \'91import definitions as d\'92 then \'91d.octant_split()\'92\
+\
+May 18th 2018: 4:00PM\
+\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\
+\
+- Created data_table.py to create data tables using astropy.table module.\
+\
+I think it would be best to associate the numpy arrays with units prior to exporting them, as long as the archived file can handle that type of data, that way the data set that is archived will be completely ready to go for tabling and plotting right out of the gate. Seems more organized if we defined quantities inside the main script file as that is where the data is computed.\
+\
+May 18th 2018 4:21PM\
+\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\
+\
+Tested and not working: associating a unit with a certain array and then exporting via numpy.savez() function looses the unit information and just returns the array data when called upon.\
+\
+Look into astropy.io.fits data file system to move data from one location to another. This should retain unit information so that we can define units in the computational section of the file, and not have to deal with it after importing to the tabling file or plotting file.\
+\
+May 18th 2018 10:50PM\
+\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\
+\
+Looks like the astropy.nddata will be the most useful way to transfer data with built in units to export from one file, and call up in the other. Will take a look at building data sets and associating a certain unit to each of those data sets.\
+\
+Looks at this portion of the documentation, might be possible to convert lists straight into NDdata to skip the numpy array creation step. Could save on code length and complexity:\
+\
+{\field{\*\fldinst{HYPERLINK "http://docs.astropy.org/en/stable/nddata/nddata.html#overview"}}{\fldrslt http://docs.astropy.org/en/stable/nddata/nddata.html#overview}}\
+\
+May 23rd 2018\
+\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\
+\
+Talked to Erik and decided this is the best way of doing things:\
+\
+{\field{\*\fldinst{HYPERLINK "http://docs.astropy.org/en/stable/io/fits/usage/table.html"}}{\fldrslt http://docs.astropy.org/en/stable/io/fits/usage/table.html}}\
+\
+Look for Creating a FITS table in the webpage for information as where to get started.\
+\
+May 24th 2018\
+\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\
+\
+So I think what I will do is, create columns when certain data is computed, using `fits.Column()`. I checked the function, and you can pass it a _unit_ argument, so that checks out. I can either keep these columns until the end, or as I go through the code I can add it into a table by using `fits.BinTableHDU.from_columns()`, there's probably an append command I can use to continually add on columns as I go. Then I can save it all to a fits file using `.writeto('file_name_here.fits')`\
+\
+May 25th 2018\
+\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\
+\
+Next Steps include:\
+	- Separating a cgs BinTable object from a astro BinTable, this way we can have all the data set in terms of both cgs for main export of values, and astro for plotting purposes\
+	- Start Writing Plotting Script, which takes in the data, separates it accordingly, then outputs the plots into a separate folder.\
+	- Start Writing Tabling Script, takes in the FITS file and creates a table,		- Perhaps multiple tables for different things, angular momentum comparison, gradient, clump object info\
+\
+Inquire about the following:\
+\
+Saving FITS file with string that is related to the input datafile name of the simulation data\
+Using `dtype=` option when saving the data to a column. Would forgo the formatting to do afterwards, if not overridden at a later time.\
+\
+\
+May 28th 2018\
+\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\
+\
+Steps to import data into script from FITS file:\
+\
+\'95 from astropy.oi import fits\
+\'95 hdu1 = fits.open(\'91file_name.fits\'92)\
+\'95 hdu1.info() # This returns information about hdu1, displays all the HDULists objects that are in the FITS file\
+\'95 hdu_table = hdu1[1] # Takes the HduBinTable and sets it as its own object\
+\'95 hdu_table.columns #Gives the Coldefs result of the object, lists all the columns\
+\'95 hdu_table.columns[0] #Returns the name, format, and unit of the column\
+\'95 hdu_table.columns.names #returns the names of each column (could be handy for naming variables)\
+\'95 hdu_table.data #returns all the data in a FITS_rec(), goes from left to right, then top to bottom\
+\
+Important pieces: Can save a column as an object simply by calling:\
+	\'95 column1 = hdu_table.columns[0] # OR\
+	\'95 column1 = hdu_table.columns[\'91Clump Number\'92] # By calling it\'92s name\
+\
+Now we can grab the data (or array values from that column) by invoking the command:\
+	\'95 column1.array\
+\
+Now we can call the usual functions of the object (array) and manipulate it accordingly\
+\
+
+\fs36 Is there a way to store what the variable was originally called in order to transfer that to another file?\
+\
+\'95 I think the best way to go about it is this:\
+		\'95 Name them as python variables, and output this to the FITS file, the tabling.py file will handle naming them properly for the table itself.\
+		\'95 That way, we don\'92t have to create two sets of variables across two files.\
+\
+Only problem - can\'92t extract unit info from the columns, at least I haven\'92t found it yet\
+\
+
+\fs28 May 28th 3:20PM\
+\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\
+\
+Scrapping whole plan to have a tabling script, just have the FITS file outputted for now, and we will deal with tabling at a later point.\
+\
+Now need to work on making the whole script into a definition, with one input (filename) and output (FITS file)\
+\
+\
+May 31st 2018\
+\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\
+\
+Have complete working code which outputs a FITS file with all necessary information}
